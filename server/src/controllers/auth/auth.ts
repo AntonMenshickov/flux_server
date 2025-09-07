@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUser, User } from '../model/mongo/user';
-import { responseMessages } from '../strings/responseMessages';
-import { tokenUtil } from '../utils/tokenUtil';
+import { IUser, User } from '../../model/mongo/user';
+import { responseMessages } from '../../strings/responseMessages';
+import { tokenUtil } from '../../utils/tokenUtil';
 import { Document } from 'mongoose';
-import { bcryptUtil } from '../utils/bcryptUtil';
+import { bcryptUtil } from '../../utils/bcryptUtil';
 
-// typedef UserDocument = IUser & Document;
 export async function auth(req: Request, res: Response, next: NextFunction) {
   const { login, password } = req.body;
   const usersCount = await User.countDocuments().exec();

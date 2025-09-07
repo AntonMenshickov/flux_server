@@ -1,4 +1,4 @@
-import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken';
+import jwt, { JsonWebTokenError, JwtPayload, SignOptions, TokenExpiredError } from 'jsonwebtoken';
 
 interface ITokenPayload {
   accessToken: string;
@@ -10,10 +10,10 @@ interface ITokenPayload {
 export const tokenUtil = {
   create: (userId: string): ITokenPayload => {
     const secret: string = process.env.JWT_SECRET!;
-    const accessToken = jwt.sign({userId}, secret, <SignOptions>{ expiresIn: process.env.JWT_AT_EXPIRES_IN });
+    const accessToken = jwt.sign({ userId }, secret, <SignOptions>{ expiresIn: process.env.JWT_AT_EXPIRES_IN });
     const decodedAccess = jwt.decode(accessToken) as JwtPayload;
     const accessTokenExpiresAt = decodedAccess?.exp ? new Date(decodedAccess.exp * 1000) : null;
-    const refreshToken = jwt.sign({userId}, secret, <SignOptions>{ expiresIn: process.env.JWT_RT_EXPIRES_IN });
+    const refreshToken = jwt.sign({ userId }, secret, <SignOptions>{ expiresIn: process.env.JWT_RT_EXPIRES_IN });
     const decodedRefresh = jwt.decode(accessToken) as JwtPayload;
     const refreshTokenExpiresAt = decodedRefresh?.exp ? new Date(decodedRefresh.exp * 1000) : null;
     return {
@@ -23,11 +23,11 @@ export const tokenUtil = {
       refreshTokenExpiresAt: refreshTokenExpiresAt!,
     }
   },
-  decode: (token: string): JwtPayload => {
-    return jwt.decode(token) as JwtPayload;
+  decode: (token: string): JwtPayload & { userId: string } => {
+    return jwt.decode(token) as JwtPayload & { userId: string };
   },
-  verify: (token: string): JwtPayload => {
+  verify: (token: string): JwtPayload & { userId: string } | TokenExpiredError | JsonWebTokenError => {
     const secret: string = process.env.JWT_SECRET!;
-    return jwt.verify(token, secret) as JwtPayload;
+    return jwt.verify(token, secret) as JwtPayload & { userId: string };
   }
 }
