@@ -1,11 +1,14 @@
 <template>
   <div class="dashboard-app-bar">
+    <div class="logo">
+      <img src="../assets/logo_on_dark.svg" alt="Logo" />
+    </div>
     <span class="page-name">Dashboard</span>
     <div class="profile-options">
       <div class="profile-name">
         <UserCircleIcon class="profile-options-icon" />Welcome, {{ userName }}
       </div>
-      <ArrowLeftEndOnRectangleIcon class="profile-options-icon logout-icon" @click="doLogout"/>
+      <ArrowLeftEndOnRectangleIcon class="profile-options-icon logout-icon" @click="doLogout" />
     </div>
   </div>
 </template>
@@ -39,6 +42,7 @@ export default class DashboardAppBar extends Vue {
 
 <style scoped>
 .dashboard-app-bar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -48,7 +52,15 @@ export default class DashboardAppBar extends Vue {
   color: var(--color-secondary);
 }
 
+.logo img{
+  height: 2em;
+}
+
 .page-name {
+  position: absolute;
+  left: 250px; 
+  right: 0; 
+  margin-inline: auto; 
   font-size: 1.25em;
   font-weight: bold;
 }

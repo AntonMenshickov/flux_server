@@ -1,7 +1,7 @@
 <template>
   <div class="user-list">
     <!-- Поле поиска -->
-    <input type="text" v-model="searchQuery" placeholder="Поиск пользователей..." @input="onSearchInput"
+    <input type="text" v-model="searchQuery" placeholder="Search users..." @input="onSearchInput"
       class="search-input" />
 
     <!-- Кнопка создания пользователя -->

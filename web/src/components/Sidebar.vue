@@ -1,8 +1,5 @@
 <template>
   <aside class="sidebar">
-    <div class="logo">
-      <img src="../assets/logo_on_dark.svg" alt="Logo" />
-    </div>
 
     <nav class="menu">
       <ul>
@@ -64,17 +61,9 @@ export default class Sidebar extends Vue {
 }
 
 
-.logo {
-  text-align: center;
-  margin: 2em;
-}
-
-.logo img {
-  width: 120px;
-}
 
 .menu {
-  padding: 0 1em;
+  padding: 1.1em 1em;
 }
 
 .menu ul {
