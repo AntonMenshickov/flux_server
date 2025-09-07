@@ -3,6 +3,15 @@ import { IUser, User } from '../../model/mongo/user';
 import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
 import { AuthRequest } from '../../middleware/authorizationRequired';
+import z from 'zod';
+
+export const searchUserValidateSchema = z.object({
+  query: z.object({
+    search: z.string().trim().nullable().optional(),
+    limit: z.coerce.number().int().nonnegative(),
+    offset: z.coerce.number().int().nonnegative(),
+  })
+});
 
 export async function searchUsers(req: AuthRequest, res: Response, next: NextFunction) {
   const search = (req.query.search as string || '').trim();

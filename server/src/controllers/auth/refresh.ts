@@ -3,8 +3,14 @@ import { IUser, User } from '../../model/mongo/user';
 import { responseMessages } from '../../strings/responseMessages';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { Document } from 'mongoose';
-import { bcryptUtil } from '../../utils/bcryptUtil';
 import { TokenExpiredError } from 'jsonwebtoken';
+import z from 'zod';
+
+export const refreshValidateSchema = z.object({
+  body: z.object({
+    refreshToken: z.jwt(),
+  })
+});
 
 export async function refresh(req: Request, res: Response, next: NextFunction) {
   const { refreshToken } = req.body;

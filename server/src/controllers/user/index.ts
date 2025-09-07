@@ -1,15 +1,16 @@
 import { Router } from 'express';
-import { addUser } from './addUser';
+import { addUser, addUserValidateSchema } from './addUser';
 import { authorizationRequired } from '../../middleware/authorizationRequired';
-import { deleteUser } from './deleteUser';
+import { deleteUser, deleteUserValidateSchema } from './deleteUser';
 import { profile } from './profile';
-import { searchUsers } from './searchUsers';
+import { searchUsers, searchUserValidateSchema } from './searchUsers';
+import { validate } from '../../middleware/validate';
 
 export default function userModule(router: Router) {
-  router.post('/users/add', authorizationRequired, addUser);
-  router.delete('/users/delete', authorizationRequired, deleteUser);
+  router.post('/users/add', validate(addUserValidateSchema), authorizationRequired, addUser);
+  router.delete('/users/delete', validate(deleteUserValidateSchema), authorizationRequired, deleteUser);
   router.get('/users/profile', authorizationRequired, profile);
-  router.get('/users/search', authorizationRequired, searchUsers);
+  router.get('/users/search', validate(searchUserValidateSchema), authorizationRequired, searchUsers);
 
   console.log('User module loaded');
 }

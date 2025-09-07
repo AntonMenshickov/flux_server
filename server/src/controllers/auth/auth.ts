@@ -4,6 +4,14 @@ import { responseMessages } from '../../strings/responseMessages';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { Document } from 'mongoose';
 import { bcryptUtil } from '../../utils/bcryptUtil';
+import z from 'zod';
+
+export const authValidateSchema = z.object({
+  body: z.object({
+    login: z.string().trim().nonempty(),
+    password: z.string().trim().nonempty(),
+  })
+});
 
 export async function auth(req: Request, res: Response, next: NextFunction) {
   const { login, password } = req.body;

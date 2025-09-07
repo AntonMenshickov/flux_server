@@ -1,5 +1,5 @@
 import { model, Types } from 'mongoose';
-import { IBaseSchema, withTimestamps } from './baseSchema';
+import { IBaseSchema, baseSchema } from './baseSchema';
 
 export interface IUser extends IBaseSchema {
   _id: Types.ObjectId;
@@ -8,7 +8,7 @@ export interface IUser extends IBaseSchema {
   isOwner: boolean;
 }
 
-export const userSchema = withTimestamps<IUser>({
+export const userSchema = baseSchema<IUser>({
   login: { type: String, required: true },
   passwordHash: { type: String, required: true },
   isOwner: { type: Boolean, required: true, default: false },

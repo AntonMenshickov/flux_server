@@ -4,6 +4,17 @@ import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
 import { bcryptUtil } from '../../utils/bcryptUtil';
 import { AuthRequest } from '../../middleware/authorizationRequired';
+import { authValidateSchema } from '../auth/auth';
+import z from 'zod';
+
+export const addUserValidateSchema = z.object({
+  body: z.object({
+    login: z.string().trim().min(3),
+    password: z.string().trim().min(5).regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least one digit"),
+  })
+});
 
 export async function addUser(req: AuthRequest, res: Response, next: NextFunction) {
   const { login, password } = req.body;

@@ -5,7 +5,7 @@ export interface IBaseSchema {
   updatedAt?: Date;
 }
 // Helper to extend a schema definition with createdAt/updatedAt and a pre-save hook
-export function withTimestamps<T extends {}>(definition: Record<string, any>) {
+export function baseSchema<T extends {}>(definition: Record<string, any>) {
   const base = {
     createdAt: { type: Date, required: false },
     updatedAt: { type: Date, required: false },
