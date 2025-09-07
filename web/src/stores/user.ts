@@ -25,4 +25,5 @@ export const useUserStore = defineStore('user', {
       this.profile = null;
     }
   },
+  persist: true,
 });
