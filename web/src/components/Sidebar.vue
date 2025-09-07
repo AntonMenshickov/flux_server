@@ -1,7 +1,7 @@
 <template>
   <aside class="sidebar">
     <div class="logo">
-      <img src="../assets/logo.svg" alt="Logo" />
+      <img src="../assets/logo_on_dark.svg" alt="Logo" />
     </div>
 
     <nav class="menu">
@@ -28,6 +28,7 @@ import { Options, Vue } from 'vue-class-component';
 import { UserIcon, DocumentTextIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
 import { useUserStore } from '@/stores/user';
 
+type SidebarItem = 'users' | 'logs' | 'settings';
 @Options({
   components: {
     UserIcon,
@@ -37,16 +38,16 @@ import { useUserStore } from '@/stores/user';
 }
 )
 export default class Sidebar extends Vue {
-  activeItem = 'users';
+  activeItem: SidebarItem = 'logs';
 
   private userStore = useUserStore();
+
 
   get showUsers() {
     return this.userStore.profile?.isOwner || false;
   }
-  
 
-  setActive(item: string) {
+  setActive(item: SidebarItem) {
     this.activeItem = item;
     this.$emit('update:active', item);
   }
@@ -56,7 +57,6 @@ export default class Sidebar extends Vue {
 <style scoped>
 .sidebar {
   width: 250px;
-  height: 100vh;
   background-color: var(--color-primary);
   color: #fff;
   display: flex;

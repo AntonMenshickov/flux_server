@@ -25,7 +25,9 @@ export async function addUser(req: AuthRequest, res: Response, next: NextFunctio
   return res.status(200).json({
     success: true,
     result: {
-      userId: user._id.toString(),
+      id: user._id.toString(),
+      login: user.login,
+      isOwner: user.isOwner,
     }
   });
 }

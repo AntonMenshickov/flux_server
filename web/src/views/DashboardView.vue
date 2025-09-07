@@ -26,16 +26,24 @@ import UserList from '@/components/UsersList.vue';
   },
 })
 export default class DashboardView extends Vue {
-  activeMenu = 'users';
+  activeMenu = 'logs';
 }
 </script>
 <style scoped>
+.dashboard {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .content {
   flex: 1;
   padding: 1rem;
 }
+
 .page-content {
   display: flex;
-  height: calc(100vh - 50px);
+  flex-direction: row;
+  flex: auto;
 }
 </style>

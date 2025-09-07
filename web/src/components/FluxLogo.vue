@@ -1,5 +1,5 @@
 <template>
-  <img alt="Flux logo" src="../assets/logo.svg">
+  <img alt="Flux logo" src="../assets/logo_on_light.svg">
 </template>
 
 <script lang="ts">

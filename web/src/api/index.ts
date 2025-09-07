@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useUserStore } from '@/stores/user';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
-import { refresh } from './auth';
 import { Either, left, right } from '@sweet-monads/either';
+import { auth } from './auth';
 
 const api = axios.create({
   baseURL: 'http://localhost:4000/api',
@@ -70,7 +70,7 @@ api.interceptors.request.use(async (config) => {
         const refreshTokenPayload = jwtDecode<JwtPayload>(refreshToken);
         if (refreshTokenPayload.exp != null && refreshTokenPayload.exp > now) {
 
-          const refreshResult = await refresh(refreshToken);
+          const refreshResult = await auth.refresh(refreshToken);
           if (refreshResult.isRight()) {
             const token = refreshResult.value.result;
             userStore.setToken(token);
