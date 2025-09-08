@@ -14,17 +14,17 @@
 </template>
 
 <script setup lang="ts">
-import { Application, applications } from '@/api/applications';
-import BaseSelector from '@/components/BaseSelector.vue';
+import { applications } from '@/api/applications';
+import BaseSelector from '@/components/base/BaseSelector.vue';
 import { ref, computed } from 'vue'
 
-// список приложений
+
 const apps = ['App A', 'App B', 'App C']
 
-// выбранное приложение
-const selectedApp = ref(apps[0])
 
-// "моковые" логи
+const selectedApp = ref<string>('')
+
+
 const logs = ref([
   { app: 'App A', timestamp: '2025-09-08 12:01', message: 'App A запустился' },
   { app: 'App A', timestamp: '2025-09-08 12:02', message: 'Получены данные' },
@@ -32,16 +32,15 @@ const logs = ref([
   { app: 'App C', timestamp: '2025-09-08 12:04', message: 'App C завершил работу' },
 ])
 
-// фильтрация логов под выбранное приложение
 const filteredLogs = computed(() =>
   logs.value.filter((l) => l.app === selectedApp.value)
 )
 
-async function fetchApps(search: string): Promise<{label: string, value: string}[]> {
+async function fetchApps(search: string): Promise<{ label: string, value: string }[]> {
   const searchResult = await applications.search(search, 10, 0);
   if (searchResult.isRight()) {
-    return searchResult.value.result.applications.map(a => ({label: a.name, value: a.id}));
-  } 
+    return searchResult.value.result.applications.map(a => ({ label: a.name, value: a.id }));
+  }
   return [];
 }
 </script>

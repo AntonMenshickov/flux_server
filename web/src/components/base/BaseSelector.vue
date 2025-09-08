@@ -19,14 +19,13 @@
 
 <script setup lang="ts">
 import { debounce } from 'lodash';
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 
 
 type Option = { label: string; value: string }
 
 
 
-// 🔹 props
 const props = defineProps<{
   modelValue?: string
   fetchOptions: (query: string) => Promise<Option[]>
@@ -34,12 +33,10 @@ const props = defineProps<{
   id?: string
 }>()
 
-// 🔹 emit
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
 }>()
 
-// 🔹 state
 const search = ref('')
 const options = ref<Option[]>([])
 const loading = ref(false)
@@ -63,7 +60,6 @@ async function fetchData() {
 }
 
 
-// 🔹 функция поиска
 const onSearch = async () => {
   showDropdown.value = true
   loading.value = true
@@ -74,7 +70,7 @@ const onSearch = async () => {
   }
 }
 
-// 🔹 выбор элемента
+
 const selectOption = (option: Option) => {
   emit('update:modelValue', option.value)
   search.value = option.label

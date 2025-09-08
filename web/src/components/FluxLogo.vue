@@ -2,10 +2,6 @@
   <img alt="Flux logo" src="../assets/logo_on_light.svg">
 </template>
 
-<script lang="ts">
-import { Vue } from 'vue-class-component';
-export default class FluxLogo extends Vue { }
-</script>
 
 <style scoped>
 img {

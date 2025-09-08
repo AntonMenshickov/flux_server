@@ -51,11 +51,12 @@
 <script setup lang="ts">
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import ModalDialog from '@/components/ModalDialog.vue';
+import BaseInput from '@/components/base/BaseInput.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
 import { debounce } from 'lodash';
 import { onMounted, ref } from 'vue';
 import { Application, applications } from '@/api/applications';
-import BaseInput from './BaseInput.vue';
-import BaseButton from './BaseButton.vue';
+
 
 
 

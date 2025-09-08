@@ -13,26 +13,16 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script setup lang="ts">
 import DashboardAppBar from '@/components/DashboardAppBar.vue';
 import DashboardSidebar from '@/components/DashboardSidebar.vue';
 import UserList from '@/components/UsersList.vue';
 import ApplicationsList from '@/components/ApplicationsList.vue';
 import LogsList from '@/components/LogsList.vue';
+import { ref } from 'vue';
 
-@Options({
-  components: {
-    DashboardAppBar,
-    DashboardSidebar,
-    UserList,
-    ApplicationsList,
-    LogsList,
-  },
-})
-export default class DashboardView extends Vue {
-  activeMenu = 'logs';
-}
+const activeMenu = ref<string>('logs');
+
 </script>
 <style scoped>
 .dashboard {

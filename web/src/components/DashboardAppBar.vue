@@ -6,37 +6,27 @@
     <span class="page-name">Dashboard</span>
     <div class="profile-options">
       <div class="profile-name">
-        <UserCircleIcon class="profile-options-icon" />Welcome, {{ userName }}
+        <UserCircleIcon class="profile-options-icon" />Welcome, {{ userName() }}
       </div>
       <ArrowLeftEndOnRectangleIcon class="profile-options-icon logout-icon" @click="doLogout" />
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script setup lang="ts">
 import { ArrowLeftEndOnRectangleIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { useUserStore } from '@/stores/user';
 import router from '@/router';
 
-@Options({
-  components: {
-    ArrowLeftEndOnRectangleIcon,
-    UserCircleIcon
-  },
-})
-export default class DashboardAppBar extends Vue {
+const userStore = useUserStore();
 
-  private userStore = useUserStore();
+function userName() {
+  return userStore.profile?.login || 'Guest';
+}
 
-  get userName() {
-    return this.userStore.profile?.login || 'Guest';
-  }
-
-  public doLogout() {
-    this.userStore.logout();
-    router.push({ path: '/' });
-  }
+function doLogout() {
+  userStore.logout();
+  router.push({ path: '/' });
 }
 </script>
 
@@ -52,15 +42,15 @@ export default class DashboardAppBar extends Vue {
   color: var(--color-secondary);
 }
 
-.logo img{
+.logo img {
   height: 2em;
 }
 
 .page-name {
   position: absolute;
-  left: 250px; 
-  right: 0; 
-  margin-inline: auto; 
+  left: 250px;
+  right: 0;
+  margin-inline: auto;
   font-size: 1.25em;
   font-weight: bold;
 }

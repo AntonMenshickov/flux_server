@@ -10,42 +10,37 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script setup lang="ts">
 import { useUserStore } from '@/stores/user';
 import FluxLogo from '@/components/FluxLogo.vue';
 import router from '@/router';
 import { users } from '@/api/users';
 import { auth } from '@/api/auth';
+import { ref } from 'vue';
 
-@Options({
-  components: {
-    FluxLogo
-  },
-})
-export default class LoginView extends Vue {
-  username: string = '';
-  password: string = '';
-  private userStore = useUserStore();
 
-  public async doLogin() {
-    const authResult = await auth.login(this.username, this.password);
-    if (authResult.isLeft()) {
-      alert(`Login failed: ${authResult.value.message}`);
-      return;
-    }
-    const token = authResult.value.result;
-    this.userStore.setToken(token);
+const username = ref<string>('');
+const password = ref<string>('');
+const userStore = useUserStore();
 
-    const profileResult = await users.profile();
-    if (profileResult.isLeft()) {
-      alert(`Failed to fetch profile: ${profileResult.value.message}`);
-      return;
-    }
-    this.userStore.setProfile(profileResult.value.result);
-    router.push({ path: '/dashboard' });
+async function doLogin() {
+  const authResult = await auth.login(username.value, password.value);
+  if (authResult.isLeft()) {
+    alert(`Login failed: ${authResult.value.message}`);
+    return;
   }
+  const token = authResult.value.result;
+  userStore.setToken(token);
+
+  const profileResult = await users.profile();
+  if (profileResult.isLeft()) {
+    alert(`Failed to fetch profile: ${profileResult.value.message}`);
+    return;
+  }
+  userStore.setProfile(profileResult.value.result);
+  router.push({ path: '/dashboard' });
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -57,6 +52,7 @@ export default class LoginView extends Vue {
   flex-direction: column;
   gap: 10px;
 }
+
 .login form {
   display: flex;
   flex-direction: column;
