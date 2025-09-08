@@ -3,16 +3,18 @@
     <div class="modal">
       <slot></slot>
       <div class="modal-buttons">
-        <button v-if="cancelText" class="cancel" @click="onCancel">{{ cancelText }}</button>
-        <button v-if="confirmText" :class="{ 'danger': isDanger, 'confirm': true }" @click="onConfirm">{{
+        <BaseButton v-if="cancelText" class="cancel" @click="onCancel">{{ cancelText }}</BaseButton>
+        <BaseButton v-if="confirmText" :class="{ 'danger': isDanger, 'primary': !isDanger, 'confirm': true }" @click="onConfirm">{{
           confirmText
-        }}</button>
+        }}</BaseButton>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import BaseButton from './BaseButton.vue';
+
 defineProps<{
   show: boolean,
   cancelText: string,
@@ -60,25 +62,4 @@ function onConfirm() {
   justify-content: space-around;
 }
 
-.modal-buttons .cancel {
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-}
-
-.modal-buttons .confirm {
-  background-color: var(--color-accent);
-  color: var(--color-secondary);
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-}
-
-.modal-buttons .confirm.danger {
-  background-color: var(--color-danger);
-}
 </style>

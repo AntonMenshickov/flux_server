@@ -1,10 +1,9 @@
 <template>
   <div class="applications-list">
     <div class="top-bar">
-      <input type="text" v-model="searchQuery" placeholder="Search applications..." @input="onSearchInput"
-        class="search-input" />
+      <BaseInput type="text" v-model="searchQuery" placeholder="Search applications..." @input="onSearchInput" />
 
-      <button class="create-btn" @click="openCreateModal">Create Application</button>
+      <BaseButton @click="openCreateModal">Add app</BaseButton>
     </div>
 
     <ul v-if="applicationsList.length > 0">
@@ -35,15 +34,15 @@
     <ModalDialog :show="showCreateModal" cancelText="Cancel" confirmText="Create" :isDanger="false"
       @cancel="closeCreateModal" @confirm="createApplication">
       <p>Create new application</p>
-      <input type="text" v-model="newLogin" placeholder="Application name" />
+      <BaseInput type="text" v-model="newLogin" placeholder="Application name" />
       <ul v-if="newBundleIds && newBundleIds.length > 0">
         <li v-for="(bundle, index) in newBundleIds" :key="index">
-          <input type="text" v-model="bundle.platform" placeholder="Platform" />
-          <input type="text" v-model="bundle.bundleId" placeholder="Bundle id" />
+          <BaseInput type="text" v-model="bundle.platform" placeholder="Platform" />
+          <BaseInput type="text" v-model="bundle.bundleId" placeholder="Bundle id" />
           <TrashIcon class="delete-icon" @click="deleteBundle(index)" />
         </li>
       </ul>
-      <button class="create-btn" @click="addBundle">Add bundle id</button>
+      <BaseButton class="create-btn" @click="addBundle">Add bundle id</BaseButton>
 
     </ModalDialog>
   </div>
@@ -55,6 +54,8 @@ import ModalDialog from '@/components/ModalDialog.vue';
 import { debounce } from 'lodash';
 import { onMounted, ref } from 'vue';
 import { Application, applications } from '@/api/applications';
+import BaseInput from './BaseInput.vue';
+import BaseButton from './BaseButton.vue';
 
 
 
@@ -126,7 +127,7 @@ async function deleteApplication() {
 
 function openCreateModal() {
   newLogin.value = '';
-  newBundleIds.value = null;
+  newBundleIds.value = [{platform: '', bundleId: ''}];
   showCreateModal.value = true;
 }
 
@@ -168,29 +169,8 @@ async function createApplication() {
   gap: 1rem;
 }
 
-.search-input {
+.top-bar input {
   flex: 1;
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-on-primary);
-  font-size: 0.95rem;
-}
-
-.create-btn {
-  padding: 0.6rem 0.8rem;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  font-size: 0.95rem;
-}
-
-.create-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 /* Список */
@@ -247,18 +227,10 @@ async function createApplication() {
   color: #555;
 }
 
-/* Модалка */
-.modal input {
-  width: 100%;
-  padding: 0.6rem 0.8rem;
-  margin-bottom: 0.75rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-on-primary);
-  font-size: 0.95rem;
-}
 
 .modal ul {
   margin-bottom: 0.75rem;
+  margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
