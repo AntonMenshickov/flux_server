@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import ModalDialog from '@/components/ModalDialog.vue';
-import { User, users } from '@/api/users';
+import { type User, users } from '@/api/users';
 import { debounce } from 'lodash';
 import { onMounted, ref } from 'vue';
 

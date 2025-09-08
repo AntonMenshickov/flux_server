@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import { useUserStore } from '@/stores/user'
 import DashboardView from '@/views/DashboardView.vue'

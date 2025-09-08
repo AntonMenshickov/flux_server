@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { useUserStore } from '@/stores/user';
-import { jwtDecode, JwtPayload } from 'jwt-decode';
-import { Either, left, right } from '@sweet-monads/either';
+import { jwtDecode, type JwtPayload} from 'jwt-decode';
+import { left, right, type Either } from '@sweet-monads/either';
 import { auth } from './auth';
 
 const api = axios.create({
