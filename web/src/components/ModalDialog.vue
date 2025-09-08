@@ -13,8 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
-
 defineProps<{
   show: boolean,
   cancelText: string,
@@ -56,13 +54,6 @@ function onConfirm() {
   min-width: 300px;
 }
 
-.modal input {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--color-on-primary);
-}
-
 .modal-buttons {
   margin-top: 1rem;
   display: flex;
@@ -70,7 +61,7 @@ function onConfirm() {
 }
 
 .modal-buttons .cancel {
-  background-color: var(--color-on-primary);
+  background-color: var(--color-primary);
   color: var(--color-secondary);
   border: none;
   border-radius: 4px;

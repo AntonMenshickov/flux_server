@@ -14,117 +14,114 @@
     <p v-else>No users found.</p>
 
 
-    <ModalDialog :show="showDeleteModal" cancelText="Отмена" confirmText="Удалить" :isDanger="true"
+    <ModalDialog :show="showDeleteModal" cancelText="Cancel" confirmText="Delete" :isDanger="true"
       @cancel="cancelDelete" @confirm="deleteUser">
-      <p>Удалить пользователя <strong>{{ userToDelete?.login }}</strong>?</p>
+      <p>Delete user <strong>{{ userToDelete?.login }}</strong>?</p>
     </ModalDialog>
 
-    <ModalDialog :show="showCreateModal" cancelText="Отмена" confirmText="Создать" :isDanger="false"
+    <ModalDialog :show="showCreateModal" cancelText="Cancel" confirmText="Create" :isDanger="false"
       @cancel="closeCreateModal" @confirm="createUser">
-      <p>Создать нового пользователя</p>
-      <input type="text" v-model="newLogin" placeholder="Логин" />
-      <input type="password" v-model="newPassword" placeholder="Пароль" />
+      <p>Create new user</p>
+      <input type="text" v-model="newLogin" placeholder="Login" />
+      <input type="password" v-model="newPassword" placeholder="Password" />
     </ModalDialog>
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script setup lang="ts">
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import ModalDialog from '@/components/ModalDialog.vue';
 import { User, users } from '@/api/users';
 import { debounce } from 'lodash';
+import { onMounted, ref } from 'vue';
 
-@Options({
-  components: {
-    TrashIcon,
-    ModalDialog
-  },
-})
-export default class UserList extends Vue {
-  usersList: User[] = [];
-  private totalUsers: number = 0;
-  private usersPerPage: number = 10;
 
-  searchQuery = '';
-  private debouncedSearch = debounce(this.fetchUsers, 200);
 
-  showDeleteModal = false;
-  userToDelete: User | null = null;
+const usersList = ref<User[]>([]);
+const searchQuery = ref<string>('');
+const showDeleteModal = ref<boolean>(false);
+const userToDelete = ref<User | null>(null);
 
-  showCreateModal = false;
-  newLogin = '';
-  newPassword = '';
+const showCreateModal = ref<boolean>(false);
+const newLogin = ref<string>('');
+const newPassword = ref<string>('');
 
-  async mounted() {
-    await this.fetchUsers();
+
+let totalUsers: number = 0;
+const usersPerPage: number = 10;
+
+let debouncedSearch = debounce(fetchUsers, 200);
+
+
+onMounted(() => {
+  fetchUsers(); // Call the function when the component is mounted
+});
+
+async function fetchUsers() {
+  const result = await users.search(searchQuery.value, usersPerPage, 0);
+  if (result.isLeft()) {
+    alert(`Failed to fetch users: ${result.value.message}`);
+    return;
   }
+  usersList.value = result.value.result.users;
+  totalUsers = result.value.result.total;
+}
 
-  private async fetchUsers() {
-    const result = await users.search(this.searchQuery, this.usersPerPage, 0);
-    if (result.isLeft()) {
-      alert(`Failed to fetch users: ${result.value.message}`);
-      return;
-    }
-    this.usersList = result.value.result.users;
-    this.totalUsers = result.value.result.total;
-  }
+function onSearchInput() {
+  debouncedSearch();
+}
 
-  onSearchInput() {
-    this.debouncedSearch();
-  }
+function confirmDelete(user: User) {
+  userToDelete.value = user;
+  showDeleteModal.value = true;
+}
 
-  public confirmDelete(user: User) {
-    this.userToDelete = user;
-    this.showDeleteModal = true;
-  }
+function cancelDelete() {
+  userToDelete.value = null;
+  showDeleteModal.value = false;
+}
 
-  public cancelDelete() {
-    this.userToDelete = null;
-    this.showDeleteModal = false;
-  }
+async function deleteUser() {
+  const deleteUser = userToDelete.value;
+  if (deleteUser) {
 
-  public async deleteUser() {
-    const userToDelete = this.userToDelete;
-    if (userToDelete) {
-
-      const deleteResult = await users.deleteUser(userToDelete.id);
-      if (deleteResult.isLeft()) {
-        alert(`Failed to delete user: ${deleteResult.value.message}`);
-      } else {
-        this.usersList = this.usersList.filter(u => u.id !== userToDelete.id);
-      }
-    }
-    this.cancelDelete();
-  }
-
-  public openCreateModal() {
-    this.newLogin = '';
-    this.newPassword = '';
-    this.showCreateModal = true;
-  }
-
-  public closeCreateModal() {
-    this.showCreateModal = false;
-  }
-
-  public async createUser() {
-    if (!this.newLogin || !this.newPassword) {
-      alert('Enter both login and password');
-      return;
-    }
-
-    const addResult = await users.addUser(this.newLogin, this.newPassword);
-    if (addResult.isLeft()) {
-      alert(`Failed to create user: ${addResult.value.message}`);
+    const deleteResult = await users.deleteUser(deleteUser.id);
+    if (deleteResult.isLeft()) {
+      alert(`Failed to delete user: ${deleteResult.value.message}`);
     } else {
-      this.usersList = [addResult.value.result, ...this.usersList];
+      usersList.value = usersList.value.filter(u => u.id !== deleteUser.id);
     }
-
-    this.closeCreateModal();
   }
+  cancelDelete();
+}
+
+function openCreateModal() {
+  newLogin.value = '';
+  newPassword.value = '';
+  showCreateModal.value = true;
+}
+
+function closeCreateModal() {
+  showCreateModal.value = false;
+}
+
+async function createUser() {
+  if (!newLogin.value || !newPassword.value) {
+    alert('Enter both login and password');
+    return;
+  }
+
+  const addResult = await users.addUser(newLogin.value, newPassword.value);
+  if (addResult.isLeft()) {
+    alert(`Failed to create user: ${addResult.value.message}`);
+  } else {
+    usersList.value = [addResult.value.result, ...usersList.value];
+  }
+
+  closeCreateModal();
 }
 </script>
+
 
 <style scoped>
 .search-input {
@@ -198,60 +195,11 @@ export default class UserList extends Vue {
   opacity: 1;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-secondary);
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-  min-width: 300px;
-}
 
 .modal input {
   padding: 0.5rem;
   margin-bottom: 0.5rem;
   border-radius: 4px;
   border: 1px solid var(--color-on-primary);
-}
-
-.modal-buttons {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: space-around;
-}
-
-.modal-buttons button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.modal-buttons .cancel {
-  background-color: var(--color-on-primary);
-  color: var(--color-secondary);
-}
-
-.modal-buttons .confirm {
-  background-color: var(--color-accent);
-  color: var(--color-secondary);
-}
-
-.modal-buttons .confirm.danger {
-  background-color: var(--color-danger);
 }
 </style>

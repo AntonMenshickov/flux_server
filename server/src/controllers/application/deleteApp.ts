@@ -3,7 +3,6 @@ import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
 import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
-import { BundleId, IBundleId } from '../../model/mongo/bundleId';
 import { objectIdSchema } from '../../utils/zodUtil';
 
 

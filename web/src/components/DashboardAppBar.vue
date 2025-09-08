@@ -88,6 +88,7 @@ export default class DashboardAppBar extends Vue {
 }
 
 .profile-options {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1em;

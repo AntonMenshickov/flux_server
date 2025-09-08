@@ -1,6 +1,6 @@
 import { request } from '.';
 
-interface BundleId {
+interface Bundle {
   id: string;
   platform: string;
   bundleId: boolean;
@@ -9,7 +9,7 @@ interface BundleId {
 export interface Application {
   id: string;
   name: string;
-  bundleIds: BundleId[];
+  bundles: Bundle[];
 }
 
 interface ApplicationsSearchResponse {
@@ -18,18 +18,18 @@ interface ApplicationsSearchResponse {
 }
 
 export const applications = {
-  addUser: addApplication,
-  deleteUser: deleteApplication,
+  addApplication,
+  deleteApplication,
   search,
 }
 
-async function addApplication(name: string, bundleIds: { platform: string, bundleId: string }) {
-  const result = await request<Application>({ 'method': 'post', url: '/applications/add', data: { name, bundleIds } },);
+async function addApplication(name: string, bundles: { platform: string, bundleId: string }[]) {
+  const result = await request<Application>({ 'method': 'post', url: '/applications/add', data: { name, bundles } },);
   return result;
 }
 
 async function deleteApplication(applicationId: string) {
-  const result = await request<null>({ 'method': 'delete', url: '/applications/delete', params: { userId: applicationId } },);
+  const result = await request<null>({ 'method': 'delete', url: '/applications/delete', params: { applicationId } },);
   return result;
 }
 

@@ -35,7 +35,7 @@ export async function searchApps(req: AuthRequest, res: Response, next: NextFunc
       applications: applications.map(app => ({
         id: app._id.toString(),
         name: app.name,
-        bundleIds: app.bundleIds.map(bundle => ({
+        bundles: app.bundles.map(bundle => ({
           platform: bundle.platform,
           bundleId: bundle.bundleId,
         })),

@@ -7,6 +7,10 @@
           <UserIcon class="icon" />
           <span>Users</span>
         </li>
+        <li :class="{ active: activeItem === 'apps' }" @click="setActive('apps')">
+          <CommandLineIcon class="icon" />
+          <span>Apps</span>
+        </li>
         <li :class="{ active: activeItem === 'logs' }" @click="setActive('logs')">
           <DocumentTextIcon class="icon" />
           <span>Logs</span>
@@ -20,34 +24,25 @@
   </aside>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import { UserIcon, DocumentTextIcon, Cog6ToothIcon } from '@heroicons/vue/24/outline';
+<script setup lang="ts">
+import { UserIcon, DocumentTextIcon, Cog6ToothIcon, CommandLineIcon } from '@heroicons/vue/24/outline';
 import { useUserStore } from '@/stores/user';
+import { ref } from 'vue';
 
-type SidebarItem = 'users' | 'logs' | 'settings';
-@Options({
-  components: {
-    UserIcon,
-    DocumentTextIcon,
-    Cog6ToothIcon
-  }
+type SidebarItem = 'users' | 'logs' | 'apps' | 'settings';
+const activeItem = ref<SidebarItem>('logs')
+const emit = defineEmits(['update:active'])
+const userStore = useUserStore();
+
+
+
+function showUsers(): boolean {
+  return userStore.profile?.isOwner || false;
 }
-)
-export default class Sidebar extends Vue {
-  activeItem: SidebarItem = 'logs';
 
-  private userStore = useUserStore();
-
-
-  get showUsers() {
-    return this.userStore.profile?.isOwner || false;
-  }
-
-  setActive(item: SidebarItem) {
-    this.activeItem = item;
-    this.$emit('update:active', item);
-  }
+function setActive(item: SidebarItem) {
+  activeItem.value = item;
+  emit('update:active', item);
 }
 </script>
 
