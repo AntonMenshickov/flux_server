@@ -30,7 +30,7 @@ export async function deleteUser(req: AuthRequest, res: Response, next: NextFunc
   if (!user) {
     return res.status(404).json({ error: responseMessages.USER_NOT_FOUND });
   }
-  await User.deleteOne({ _id: userId }).exec();
+  await user.deleteOne().exec();
   console.log('Deleted user:', userId);
 
 

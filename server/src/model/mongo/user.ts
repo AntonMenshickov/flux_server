@@ -9,7 +9,7 @@ export interface IUser extends IBaseSchema {
 }
 
 export const userSchema = baseSchema<IUser>({
-  login: { type: String, required: true },
+  login: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
   isOwner: { type: Boolean, required: true, default: false },
 });

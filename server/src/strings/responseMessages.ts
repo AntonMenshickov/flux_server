@@ -12,5 +12,6 @@ export const responseMessages = {
   APP_NAME_ALREADY_TAKEN: 'App name is already taken',
   NAME_IS_REQUIRED: 'Name is required',
   BUNDLE_ID_IS_REQUIRED: 'At least one bundleId is required',
-  LOGIN_IS_REQUIRED: 'At least one bundleId is required'
+  LOGIN_IS_REQUIRED: 'At least one bundleId is required',
+  APPLICATION_NOT_FOUND: 'Application not found',
 }

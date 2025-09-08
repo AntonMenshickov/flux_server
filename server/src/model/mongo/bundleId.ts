@@ -13,4 +13,6 @@ export const bundleIdSchema = baseSchema<IBundleId>({
   bundleId: { type: String, required: true },
 });
 
+bundleIdSchema.index({ platform: 1, bundleId: 1 }, { unique: true });
+
 export const BundleId = model<IBundleId>('BundleId', bundleIdSchema);
