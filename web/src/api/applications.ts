@@ -1,7 +1,6 @@
 import { request } from '.';
 
 interface Bundle {
-  id: string;
   platform: string;
   bundleId: boolean;
 }
@@ -10,6 +9,7 @@ export interface Application {
   id: string;
   name: string;
   bundles: Bundle[];
+  token: string;
 }
 
 interface ApplicationsSearchResponse {

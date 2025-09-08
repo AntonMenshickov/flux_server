@@ -8,7 +8,12 @@ interface ITokenPayload {
 }
 
 export const tokenUtil = {
-  create: (userId: string): ITokenPayload => {
+  createDeviceToken: (applicationName: string): string => {
+    const secret: string = process.env.JWT_SECRET!;
+    const accessToken = jwt.sign({ applicationName }, secret, <SignOptions>{ expiresIn: '100y' });
+    return accessToken;
+  },
+  createUserToken: (userId: string): ITokenPayload => {
     const secret: string = process.env.JWT_SECRET!;
     const accessToken = jwt.sign({ userId }, secret, <SignOptions>{ expiresIn: process.env.JWT_AT_EXPIRES_IN });
     const decodedAccess = jwt.decode(accessToken) as JwtPayload;

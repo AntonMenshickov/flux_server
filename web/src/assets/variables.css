@@ -5,6 +5,7 @@
   --color-on-primary: #374151;
   --color-text: #111827;
   --color-danger: #cf312b;
+  --color-border: #ccc;
 }
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

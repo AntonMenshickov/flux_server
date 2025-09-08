@@ -36,7 +36,6 @@ import { debounce } from 'lodash';
 import { onMounted, ref } from 'vue';
 
 
-
 const usersList = ref<User[]>([]);
 const searchQuery = ref<string>('');
 const showDeleteModal = ref<boolean>(false);

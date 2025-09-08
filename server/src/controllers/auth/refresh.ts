@@ -31,7 +31,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
     return res.status(404).json({ error: responseMessages.USER_NOT_FOUND });
   }
 
-  const tokens = tokenUtil.create(user._id.toString());
+  const tokens = tokenUtil.createUserToken(user._id.toString());
 
   return res.status(200).json({
     success: true,

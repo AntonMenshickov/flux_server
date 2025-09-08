@@ -31,7 +31,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
   if (!passwordCorrect) {
     return res.status(401).json({ error: responseMessages.INVALID_PASSWORD });
   }
-  const tokens = tokenUtil.create(user._id.toString());
+  const tokens = tokenUtil.createUserToken(user._id.toString());
 
 
   return res.status(200).json({

@@ -3,6 +3,7 @@ import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
 import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
+import { tokenUtil } from '../../utils/tokenUtil';
 
 
 interface BundleIdObject {
@@ -29,9 +30,12 @@ export async function addApp(req: Request, res: Response, next: NextFunction) {
     return res.status(400).json({ error: responseMessages.APP_NAME_ALREADY_TAKEN });
   }
 
+  const token = tokenUtil.createDeviceToken(name);
+
   const app: IApplication & Document = new Application({
-    name: name,
-    bundles: bundles
+    name,
+    bundles: bundles,
+    token,
   });
 
   await app.save();
@@ -43,6 +47,7 @@ export async function addApp(req: Request, res: Response, next: NextFunction) {
       id: app.id,
       name: app.name,
       bundles: bundles,
+      token,
     }
   });
 }

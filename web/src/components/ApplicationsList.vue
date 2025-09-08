@@ -12,10 +12,10 @@
           <span>{{ app.name }}</span>
           <TrashIcon class="delete-icon" @click="confirmDelete(app)" />
         </div>
-
-        <div v-if="app.bundles.length > 0" class="bundles-list">
+        <div v-if="app.bundles.length > 0" class="application-options">
+          <span><strong>Token: </strong><BaseInput :readonly="true" :initialValue="app.token" /></span>
           <strong>Bundle Ids:</strong>
-          <div v-for="bundle in app.bundles" :key="bundle.id">
+          <div v-for="(bundle, index) in app.bundles" :key="index">
             <span>{{ bundle.platform }}: {{ bundle.bundleId }}</span>
           </div>
         </div>
@@ -185,7 +185,7 @@ async function createApplication() {
 
 .applications-list li {
   background: var(--color-secondary);
-  border: 1px solid var(--color-on-primary);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 1rem;
   transition: box-shadow 0.2s;
@@ -217,7 +217,7 @@ async function createApplication() {
   transform: scale(1.1);
 }
 
-.bundles-list {
+.application-options {
   margin-top: 0.75em;
   display: flex;
   flex-direction: column;

@@ -39,6 +39,7 @@ export async function searchApps(req: AuthRequest, res: Response, next: NextFunc
           platform: bundle.platform,
           bundleId: bundle.bundleId,
         })),
+        token: app.token,
       }))
     }
   });

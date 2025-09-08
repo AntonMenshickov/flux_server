@@ -5,6 +5,7 @@ export interface IApplication extends IBaseSchema {
   _id: Types.ObjectId;
   name: string;
   bundles: IBundleId[];
+  token: string;
   deleted: boolean;
   deletedAt?: Date;
 }
@@ -12,7 +13,6 @@ export interface IApplication extends IBaseSchema {
 export interface IBundleId {
   platform: string;
   bundleId: string;
-
 }
 
 export const bundleSchema = new Schema<IBundleId>({
@@ -38,6 +38,7 @@ export const applicationSchema = baseSchema<IApplication>({
       message: 'bundleIds must be unique within the application',
     },
   },
+  token: {type: String, required: true},
   deleted: { type: Boolean, required: true, default: false },
   deletedAt: { type: Date, default: null }
 });
