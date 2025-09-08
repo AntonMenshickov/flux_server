@@ -42,7 +42,7 @@ const options = ref<Option[]>([])
 const loading = ref(false)
 const showDropdown = ref(false)
 
-let debouncedSearch = debounce(fetchData, 200);
+const debouncedSearch = debounce(fetchData, 200);
 
 
 

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useUserStore } from '@/stores/user';
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 import { Either, left, right } from '@sweet-monads/either';
@@ -40,15 +40,22 @@ export async function request<T>(
       url: options.url,
       data: options.data,
       params: options.params,
-      headers: options.headers,      
+      headers: options.headers,
     });
     return right(response.data);
-  } catch (err: any) {
-    const error: ApiError = {
-      code: err.response?.status ?? 500,
-      message: err.response?.data?.error ?? err.message ?? 'Unknown error',
-    };
-    return left(error);
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      const error: ApiError = {
+        code: err.response?.status ?? 500,
+        message: err.response?.data?.error ?? err.message ?? 'Unknown error',
+      };
+      return left(error);
+    } else {
+      return left({
+        code: 500,
+        message: `Unknown error of type ${typeof err} ${err}`
+      });
+    }
   }
 }
 

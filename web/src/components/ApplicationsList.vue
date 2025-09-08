@@ -70,10 +70,10 @@ const newLogin = ref<string>('');
 const newBundleIds = ref<{ platform: string, bundleId: string }[] | null>(null);
 
 
-let totalApplications: number = 0;
+// let totalApplications: number = 0;
 const appsPerPage: number = 10;
 
-let debouncedSearch = debounce(fetchApplications, 200);
+const debouncedSearch = debounce(fetchApplications, 200);
 
 
 onMounted(() => {
@@ -95,7 +95,7 @@ async function fetchApplications() {
     return;
   }
   applicationsList.value = result.value.result.applications;
-  totalApplications = result.value.result.total;
+  // totalApplications = result.value.result.total;
 }
 
 function onSearchInput() {

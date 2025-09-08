@@ -19,7 +19,7 @@ import BaseSelector from '@/components/base/BaseSelector.vue';
 import { ref, computed } from 'vue'
 
 
-const apps = ['App A', 'App B', 'App C']
+// const apps = ['App A', 'App B', 'App C']
 
 
 const selectedApp = ref<string>('')
