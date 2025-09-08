@@ -1,10 +1,8 @@
 <template>
   <div class="user-list">
-    <!-- Поле поиска -->
     <input type="text" v-model="searchQuery" placeholder="Search users..." @input="onSearchInput"
       class="search-input" />
 
-    <!-- Кнопка создания пользователя -->
     <button class="create-btn" @click="openCreateModal">Create User</button>
 
     <ul v-if="usersList.length > 0">
@@ -16,40 +14,31 @@
     <p v-else>No users found.</p>
 
 
-    <div v-if="showDeleteModal" class="modal-overlay">
-      <div class="modal">
-        <p>Удалить пользователя <strong>{{ userToDelete?.login }}</strong>?</p>
-        <div class="modal-buttons">
-          <button class="cancel" @click="cancelDelete">Отмена</button>
-          <button class="confirm danger" @click="deleteUser">Удалить</button>
-        </div>
-      </div>
-    </div>
+    <ModalDialog :show="showDeleteModal" cancelText="Отмена" confirmText="Удалить" :isDanger="true"
+      @cancel="cancelDelete" @confirm="deleteUser">
+      <p>Удалить пользователя <strong>{{ userToDelete?.login }}</strong>?</p>
+    </ModalDialog>
 
-    <!-- Модальное окно создания пользователя -->
-    <div v-if="showCreateModal" class="modal-overlay">
-      <div class="modal">
-        <p>Создать нового пользователя</p>
-        <input type="text" v-model="newLogin" placeholder="Логин" />
-        <input type="password" v-model="newPassword" placeholder="Пароль" />
-        <div class="modal-buttons">
-          <button class="cancel" @click="closeCreateModal">Отмена</button>
-          <button class="confirm" @click="createUser">Создать</button>
-        </div>
-      </div>
-    </div>
+    <ModalDialog :show="showCreateModal" cancelText="Отмена" confirmText="Создать" :isDanger="false"
+      @cancel="closeCreateModal" @confirm="createUser">
+      <p>Создать нового пользователя</p>
+      <input type="text" v-model="newLogin" placeholder="Логин" />
+      <input type="password" v-model="newPassword" placeholder="Пароль" />
+    </ModalDialog>
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import { TrashIcon } from '@heroicons/vue/24/outline';
+import ModalDialog from '@/components/ModalDialog.vue';
 import { User, users } from '@/api/users';
 import { debounce } from 'lodash';
 
 @Options({
   components: {
-    TrashIcon
+    TrashIcon,
+    ModalDialog
   },
 })
 export default class UserList extends Vue {

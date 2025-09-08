@@ -5,8 +5,8 @@
       <Sidebar @update:active="activeMenu = $event" />
       <main class="content">
         <UserList v-if="activeMenu === 'users'" />
-        <LogsList v-if="activeMenu === 'logs'" />
-        <SettingsPanel v-if="activeMenu === 'settings'" />
+        <div v-if="activeMenu === 'logs'" />
+        <div v-if="activeMenu === 'settings'" />
       </main>
     </div>
   </div>

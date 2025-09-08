@@ -1,0 +1,93 @@
+<template>
+  <div v-if="show" class="modal-overlay">
+    <div class="modal">
+      <slot></slot>
+      <div class="modal-buttons">
+        <button v-if="cancelText" class="cancel" @click="onCancel">{{ cancelText }}</button>
+        <button v-if="confirmText" :class="{ 'danger': isDanger, 'confirm': true }" @click="onConfirm">{{
+          confirmText
+        }}</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { defineProps, defineEmits } from 'vue';
+
+defineProps<{
+  show: boolean,
+  cancelText: string,
+  confirmText: string,
+  isDanger: boolean,
+}>()
+
+const emit = defineEmits(['cancel', 'confirm'])
+
+function onCancel() {
+  emit('cancel');
+}
+
+function onConfirm() {
+  emit('confirm');
+}
+</script>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-secondary);
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 300px;
+}
+
+.modal input {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-on-primary);
+}
+
+.modal-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-around;
+}
+
+.modal-buttons .cancel {
+  background-color: var(--color-on-primary);
+  color: var(--color-secondary);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.modal-buttons .confirm {
+  background-color: var(--color-accent);
+  color: var(--color-secondary);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.modal-buttons .confirm.danger {
+  background-color: var(--color-danger);
+}
+</style>
