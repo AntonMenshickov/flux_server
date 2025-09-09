@@ -36,7 +36,6 @@ export class ReliableBatchQueue {
   async init() {
     // await this.clearQueue();
     await this.restoreProcessing();
-    await this.processQueue();
     if (!this.flushTimer) {
       this.flushTimer = setInterval(() => this.flush().catch(console.error), this.flushIntervalMs);
     }
@@ -57,17 +56,13 @@ export class ReliableBatchQueue {
 
 
   private async restoreProcessing() {
-    console.log('[ReliableBatchQueue] Restoring unprocessed messages');
-    // this.listQueue(this.queueName);
-    // this.listQueue(this.processingName);
-    let msgStr: string | null;
-    while ((msgStr = await this.redis.lpop(this.processingName))) {
-      await this.redis.rpush(this.queueName, msgStr);
-    }
+    const processingLen = await this.redis.llen(this.processingName);
     this.queueLen = await this.redis.llen(this.queueName);
-    console.log(`[ReliableBatchQueue] ${this.queueLen} messages in queue`);
-    // this.listQueue(this.queueName);
-    // this.listQueue(this.processingName);
+    if (processingLen > 0) {
+      await this.flush();
+    } else if (this.queueLen > 0) {
+      await this.flush();
+    }
   }
 
 
@@ -98,7 +93,7 @@ export class ReliableBatchQueue {
     const events: string[] = [];
     const processingLen = await this.redis.llen(this.processingName);
     if (processingLen > 0) {
-      await this.redis.lrange(this.processingName, -this.batchSize, -1)
+      events.push(...(await this.redis.lrange(this.processingName, 0, -1)) as string[]);
     } else {
       events.push(...(await this.redis.eval(script, 2, this.queueName, this.processingName, this.batchSize)) as string[]);
       this.queueLen -= events.length;
@@ -116,10 +111,16 @@ export class ReliableBatchQueue {
 
 
   private async flush() {
-    if (this.queueLen === 0 || this.flushing) return;
+    if (this.flushing) return;
     this.flushing = true;
 
     const batch = await this.prepareBatch();
+
+    if (batch.length == 0) {
+      this.flushing = false;
+      return;
+    }
+    console.log(`[ReliableBatchQueue] Flushing ${batch.length} messages`);
 
     try {
       await this.eventsRepo.insert(batch);
@@ -127,10 +128,10 @@ export class ReliableBatchQueue {
       await this.redis.del(this.processingName);
       // this.listQueue(this.queueName);
       // this.listQueue(this.processingName);
-      console.log(`[ReliableBatchQueue] Flushed ${batch.length} messages`);
     } catch (err) {
       console.error('[ReliableBatchQueue] error while flushing messages to database', err);
     } finally {
+      console.log(`[ReliableBatchQueue] Flushed ${batch.length} messages`);
       this.flushing = false;
     }
   }
