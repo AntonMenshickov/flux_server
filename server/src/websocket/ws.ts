@@ -1,10 +1,18 @@
 import { NextFunction, Request } from 'express';
 import { WebSocket } from 'ws';
-
+import { v4 as uuidv4 } from 'uuid';
+import { ReliableBatchQueue } from '../eventsQueue/reliableBatchQueue';
+let index = 0;
 export function websocket(ws: WebSocket, req: Request, next: NextFunction): void {
   ws.onmessage = (event) => {
     const logMessage = JSON.parse(event.data as string);
-    console.log('Received message:', logMessage);
+    const eventData = {
+      ...logMessage,
+      // id: uuidv4()
+      id: `${index++}`
+    }
+    ReliableBatchQueue.instance.enqueue(eventData);
+    // console.log('Received message:', eventData);
     ws.send(`Echo: ${event.data}`);
   }
   ws.onclose = () => {

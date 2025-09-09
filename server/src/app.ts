@@ -7,8 +7,8 @@ import { websocket } from './websocket/ws';
 import expressWs from 'express-ws';
 import dotenv from 'dotenv';
 import { connect } from 'mongoose';
-import { tokenUtil } from './utils/tokenUtil';
-import { clickhouseUtil } from './clickhouse/clickhouseUtil';
+import { CLickhouse } from './clickhouse/clickhouse';
+import { ReliableBatchQueue } from './eventsQueue/reliableBatchQueue';
 
 const environmentConfig = path.join(__dirname, '/config.env');
 dotenv.config({ path: environmentConfig })
@@ -18,10 +18,13 @@ export async function startServer() {
   await connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`);
   console.log('Connected to MongoDB');
 
+  const clickhouse: CLickhouse = CLickhouse.instance;
   console.log('Checking ClickHouse database...');
-  await clickhouseUtil.ensureDatabase();
+  await clickhouse.ensureDatabase();
   console.log('Checking ClickHouse table...');
-  await clickhouseUtil.ensureTable();
+  await clickhouse.ensureTable();
+
+  ReliableBatchQueue.instance.init();
 
   const app = express();
   const wsInstance = expressWs(app);

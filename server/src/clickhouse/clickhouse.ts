@@ -1,70 +1,91 @@
 import { createClient } from '@clickhouse/client';
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
 
-export const clickhouseUtil = {
-  createClient: (): NodeClickHouseClient => {
-    const username = process.env.CLICKHOUSE_USERNAME;
-    const password = process.env.CLICKHOUSE_PASSWORD;
-    const host = process.env.CLICKHOUSE_HOST;
-    const port = process.env.CLICKHOUSE_PORT;
-    const connectionUrl = `http://${host}:${port}`;
-    return createClient({
-      url: connectionUrl,
-      username: username,
-      password: password
-    });
-  },
-  databaseExists: async (): Promise<boolean> => {
+export class CLickhouse {
+  private static _instance: CLickhouse;
+  private static _client: NodeClickHouseClient;
+  private username: string;
+  private password: string;
+  private host: string;
+  private port: number;
+  public database: string;
+  public table: string;
+
+  constructor() {
+    this.username = process.env.CLICKHOUSE_USERNAME as string;
+    this.password = process.env.CLICKHOUSE_PASSWORD as string;
+    this.host = process.env.CLICKHOUSE_HOST as string;
+    this.port = Number(process.env.CLICKHOUSE_PORT);
+    this.database = process.env.CLICKHOUSE_DATABASE as string;
+    this.table = process.env.CLICKHOUSE_EVENTS_TABLE as string;
+  }
+
+  static get instance(): CLickhouse {
+    if (!CLickhouse._instance) {
+      CLickhouse._instance = new CLickhouse();
+    }
+    return CLickhouse._instance;
+  }
+
+  get client(): NodeClickHouseClient {
+    if (!CLickhouse._client) {
+      const connectionUrl = `http://${this.host}:${this.port}`;
+      CLickhouse._client = createClient({
+        url: connectionUrl,
+        username: this.username,
+        password: this.password
+      });
+    }
+    return CLickhouse._client;
+  };
+
+  public async databaseExists(): Promise<boolean> {
     const dbName = process.env.CLICKHOUSE_DATABASE;
-    const resultSet = await clickhouseUtil.createClient().query({
+    const resultSet = await this.client.query({
       query: `SELECT name FROM system.databases WHERE name = {db:String}`,
       query_params: { db: dbName },
     });
 
     const result = await resultSet.json();
     return result.data.length > 0;
-  },
+  };
 
-  ensureDatabase: async (): Promise<void> => {
+  public async ensureDatabase(): Promise<void> {
     const dbName = process.env.CLICKHOUSE_DATABASE;
-    const exists = await clickhouseUtil.databaseExists();
+    const exists = await this.databaseExists();
     if (!exists) {
-      await clickhouseUtil.createClient().command({
+      await this.client.command({
         query: `CREATE DATABASE IF NOT EXISTS ${dbName}`,
       });
       console.log(`ClickHouse database ${dbName} created`);
     } else {
       console.log(`ClickHouse database ${dbName} exists`);
     }
-  },
+  };
 
-  tableExists: async (): Promise<boolean> => {
-    const dbName = process.env.CLICKHOUSE_DATABASE;
-    const tableName = process.env.CLICKHOUSE_EVENTS_TABLE;
-    const resultSet = await clickhouseUtil.createClient().query({
+  public async tableExists(): Promise<boolean> {
+    const resultSet = await this.client.query({
       query: `
       SELECT name 
       FROM system.tables 
       WHERE database = {db:String} AND name = {table:String}
     `,
       query_params: {
-        db: dbName,
-        table: tableName,
+        db: this.database,
+        table: this.table,
       },
     });
 
     const result = await resultSet.json();
     return result.data.length > 0;
-  },
+  };
 
-  ensureTable: async (): Promise<void> => {
-    const dbName = process.env.CLICKHOUSE_DATABASE;
-    const tableName = process.env.CLICKHOUSE_EVENTS_TABLE;
-    const exists = await clickhouseUtil.tableExists();
+  public async ensureTable(): Promise<void> {
+    const exists = await this.tableExists();
     if (!exists) {
-      await clickhouseUtil.createClient().command({
+      await this.client.command({
         query: `
-          CREATE TABLE ${dbName}.${tableName}
+          CREATE TABLE ${this.database}.${this.table}
           (
               id String,  -- уникальный идентификатор (UUID или что-то своё)
 
@@ -93,9 +114,9 @@ export const clickhouseUtil = {
           SETTINGS index_granularity = 8192;
       `,
       });
-      console.log(`ClickHouse table ${dbName}.${tableName} created`);
+      console.log(`ClickHouse table ${this.database}.${this.table} created`);
     } else {
-      console.log(`ClickHouse table ${dbName}.${tableName} exists`);
+      console.log(`ClickHouse table ${this.database}.${this.table} exists`);
     }
 
   }

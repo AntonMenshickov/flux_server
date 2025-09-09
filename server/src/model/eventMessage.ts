@@ -7,7 +7,8 @@ export enum LogLevel {
 
 export interface EventMessage {
   id: string;
-  timestamp: Date;
+  timestamp: number;
+  receiveTimestamp?: number;
   logLevel: LogLevel;
   applicationId: string;
   platform: string;

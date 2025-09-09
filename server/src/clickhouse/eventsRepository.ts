@@ -1,19 +1,20 @@
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
-import { EventMessage } from '../model/logMessage';
+import { EventMessage } from '../model/eventMessage';
 import { InsertResult } from '@clickhouse/client';
+import { CLickhouse } from './clickhouse';
 
 export class EventsRepository {
   private client: NodeClickHouseClient;
   private table: string;
 
-  constructor(client: NodeClickHouseClient, dbName: string = 'flux') {
-    this.client = client;
-    this.table = `${dbName}.logs`;
+  constructor() {
+    this.client = CLickhouse.instance.client;
+    this.table = `${CLickhouse.instance.database}.${CLickhouse.instance.table}`;
   }
 
   async insert(events: EventMessage[]): Promise<InsertResult> {
     return this.client.insert<EventMessage>({
-      table: 'logs',
+      table: this.table,
       values: events,
       format: 'JSONEachRow',
     });
