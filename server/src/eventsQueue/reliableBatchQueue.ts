@@ -23,7 +23,12 @@ export class ReliableBatchQueue {
 
   static get instance(): ReliableBatchQueue {
     if (!ReliableBatchQueue._instance) {
-      ReliableBatchQueue._instance = new ReliableBatchQueue(new EventsRepository());
+      ReliableBatchQueue._instance = new ReliableBatchQueue(new EventsRepository(),
+        'queue',
+        'processing',
+        Number(process.env.EVENTS_BATCH_SIZE),
+        Number(process.env.EVENTS_BATCH_SIZEFLUSH_INTERVAL_MS),
+      );
     }
     return ReliableBatchQueue._instance;
   }
