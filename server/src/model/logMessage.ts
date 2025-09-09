@@ -5,11 +5,16 @@ export enum LogLevel {
   DEBUG = 'debug',
 }
 
-export interface LogMessage {
+export interface EventMessage {
   id: string;
   timestamp: Date;
-  LogLevel: LogLevel;
+  logLevel: LogLevel;
+  applicationId: string;
+  platform: string;
+  bundleId: string;
+  deviceId: string;
   message: string;
-  context?: Record<string, any>;
+  tags: string[];
+  meta: Map<string, string>;
   stackTrace?: string;
 }

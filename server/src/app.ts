@@ -8,6 +8,7 @@ import expressWs from 'express-ws';
 import dotenv from 'dotenv';
 import { connect } from 'mongoose';
 import { tokenUtil } from './utils/tokenUtil';
+import { clickhouseUtil } from './clickhouse/clickhouseUtil';
 
 const environmentConfig = path.join(__dirname, '/config.env');
 dotenv.config({ path: environmentConfig })
@@ -16,6 +17,11 @@ export async function startServer() {
   console.log('Connecting to MongoDB...');
   await connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`);
   console.log('Connected to MongoDB');
+
+  console.log('Checking ClickHouse database...');
+  await clickhouseUtil.ensureDatabase();
+  console.log('Checking ClickHouse table...');
+  await clickhouseUtil.ensureTable();
 
   const app = express();
   const wsInstance = expressWs(app);
