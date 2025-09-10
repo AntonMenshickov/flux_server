@@ -1,7 +1,19 @@
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
-import { EventMessage } from '../model/eventMessage';
+import { EventMessage, LogLevel } from '../model/eventMessage';
 import { InsertResult } from '@clickhouse/client';
 import { CLickhouse } from './clickhouse';
+
+interface EventFilter {
+  message?: string;
+  logLevel?: LogLevel;
+  tags?: string[];
+  meta?: Record<string, string>;
+  platform?: string;
+  bundleId?: string;
+  deviceId?: string;
+  from?: Date;
+  to?: Date;
+}
 
 export class EventsRepository {
   private client: NodeClickHouseClient;
@@ -28,15 +40,82 @@ export class EventsRepository {
     return (await resultSet.json<EventMessage>()).data[0] ?? null;
   }
 
-  public async find(limit: number, offset: number): Promise<EventMessage[]> {
+
+  public async find(
+    limit: number,
+    offset: number,
+    filters: EventFilter = {}
+  ): Promise<EventMessage[]> {
+    const conditions: string[] = [];
+    const queryParams: Record<string, any> = { limit, offset };
+
+    if (filters.message) {
+      conditions.push(`message LIKE concat('%', {message:String}, '%')`);
+      queryParams.message = filters.message;
+    }
+
+    if (filters.logLevel) {
+      conditions.push(`logLevel = {logLevel:Enum8('info' = 1, 'warn' = 2, 'error' = 3, 'debug' = 4)}`);
+      queryParams.logLevel = filters.logLevel;
+    }
+
+    if (filters.tags && filters.tags.length > 0) {
+      conditions.push(
+        filters.tags.map((_, i) => `has(tags, {tag${i}:String})`).join(' AND ')
+      );
+      filters.tags.forEach((tag, i) => (queryParams[`tag${i}`] = tag));
+    }
+
+    if (filters.meta) {
+      Object.entries(filters.meta).forEach(([key, value], i) => {
+        conditions.push(`mapContains(meta, {metaKey${i}:String}, {metaValue${i}:String})`);
+        queryParams[`metaKey${i}`] = key;
+        queryParams[`metaValue${i}`] = value;
+      });
+    }
+
+    if (filters.platform) {
+      conditions.push(`platform = {platform:String}`);
+      queryParams.platform = filters.platform;
+    }
+
+    if (filters.bundleId) {
+      conditions.push(`bundleId = {bundleId:String}`);
+      queryParams.bundleId = filters.bundleId;
+    }
+
+    if (filters.deviceId) {
+      conditions.push(`deviceId = {deviceId:String}`);
+      queryParams.deviceId = filters.deviceId;
+    }
+
+    if (filters.from) {
+      conditions.push(`timestamp >= {from:DateTime64(3)}`);
+      queryParams.from = filters.from.toISOString();
+    }
+
+    if (filters.to) {
+      conditions.push(`timestamp <= {to:DateTime64(3)}`);
+      queryParams.to = filters.to.toISOString();
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const query = `
+    SELECT *
+    FROM ${this.table}
+    ${whereClause}
+    ORDER BY timestamp DESC
+    LIMIT {limit:Int} OFFSET {offset:Int};
+  `;
+
     const resultSet = await this.client.query({
-      query: `SELECT *
-      FROM ${this.table}
-      ORDER BY timestamp DESC
-      LIMIT {limit:Int} OFFSET {offset:Int};`,
-      query_params: { limit, offset },
+      query,
+      query_params: queryParams,
     });
-    const result =  await resultSet.json<EventMessage>();
+
+    const result = await resultSet.json<EventMessage>();
     return result.data;
   }
+
 }

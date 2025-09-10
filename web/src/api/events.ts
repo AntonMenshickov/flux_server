@@ -29,7 +29,15 @@ export const events = {
   search,
 }
 
-async function search( limit: number, offset: number) {
+async function search(limit: number, offset: number) {
   const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'get', url: '/events/search', params: { limit, offset } },);
-  return result;
+  return result.mapRight((r) => ({
+    ...r,
+    result: {
+      events: r.result.events.map(e => ({
+        ...e,
+        meta: e.meta instanceof Map ? e.meta : new Map<string, string>(Object.entries(e.meta || {})),
+      }))
+    }
+  }));
 }
