@@ -7,6 +7,7 @@ export class ReliableBatchQueue {
   private flushing = false;
   private redis: Redis;
   private queueLen: number = 0;
+  private processingLen: number = 0;
   private flushTimer?: NodeJS.Timeout;
 
   private constructor(
@@ -27,7 +28,7 @@ export class ReliableBatchQueue {
         'queue',
         'processing',
         Number(process.env.EVENTS_BATCH_SIZE),
-        Number(process.env.EVENTS_BATCH_SIZEFLUSH_INTERVAL_MS),
+        Number(process.env.FLUSH_INTERVAL_MS),
       );
     }
     return ReliableBatchQueue._instance;
@@ -56,11 +57,9 @@ export class ReliableBatchQueue {
 
 
   private async restoreProcessing() {
-    const processingLen = await this.redis.llen(this.processingName);
+    this.processingLen = await this.redis.llen(this.processingName);
     this.queueLen = await this.redis.llen(this.queueName);
-    if (processingLen > 0) {
-      await this.flush();
-    } else if (this.queueLen > 0) {
+    if (this.processingLen > 0 || this.queueLen > 0) {
       await this.flush();
     }
   }
@@ -91,12 +90,12 @@ export class ReliableBatchQueue {
       return moved
     `;
     const events: string[] = [];
-    const processingLen = await this.redis.llen(this.processingName);
-    if (processingLen > 0) {
+    if (this.processingLen > 0) {
       events.push(...(await this.redis.lrange(this.processingName, 0, -1)) as string[]);
     } else {
       events.push(...(await this.redis.eval(script, 2, this.queueName, this.processingName, this.batchSize)) as string[]);
       this.queueLen -= events.length;
+      this.processingLen += events.length;
     }
     // this.listQueue(this.queueName);
     // this.listQueue(this.processingName);
@@ -126,6 +125,7 @@ export class ReliableBatchQueue {
       await this.eventsRepo.insert(batch);
       console.log(`Вставлено ${batch.length} сообщений в БД`);
       await this.redis.del(this.processingName);
+      this.processingLen = 0;
       // this.listQueue(this.queueName);
       // this.listQueue(this.processingName);
     } catch (err) {
