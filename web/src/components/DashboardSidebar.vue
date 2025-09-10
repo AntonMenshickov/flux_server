@@ -53,8 +53,10 @@ function setActive(item: SidebarItem) {
   color: #fff;
   display: flex;
   flex-direction: column;
+  position: fixed;
+  height: calc(100% - var(--appbar-height));
+  bottom: 0;
 }
-
 
 
 .menu {

@@ -25,21 +25,21 @@ export const users = {
 }
 
 async function addUser(login: string, password: string) {
-  const result = await request<User>({ 'method': 'post', url: '/users/add', data: { login, password } },);
+  const result = await request<User>({ authorized: true, 'method': 'post', url: '/users/add', data: { login, password } },);
   return result;
 }
 
 async function deleteUser(userId: string) {
-  const result = await request<null>({ 'method': 'delete', url: '/users/delete', params: { userId } },);
+  const result = await request<null>({ authorized: true, 'method': 'delete', url: '/users/delete', params: { userId } },);
   return result;
 }
 
 async function profile() {
-  const result = await request<ProfileResponse>({ 'method': 'get', url: '/users/profile' });
+  const result = await request<ProfileResponse>({ authorized: true, 'method': 'get', url: '/users/profile' });
   return result;
 }
 
 async function search(search: string | null, limit: number, offset: number) {
-  const result = await request<UsersSearchResponse>({ 'method': 'get', url: '/users/search', params: { search, limit, offset } },);
+  const result = await request<UsersSearchResponse>({ authorized: true, 'method': 'get', url: '/users/search', params: { search, limit, offset } },);
   return result;
 }

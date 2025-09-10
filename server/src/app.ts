@@ -23,6 +23,8 @@ export async function startServer() {
   await clickhouse.ensureDatabase();
   console.log('Checking ClickHouse table...');
   await clickhouse.ensureTable();
+  // await clickhouse.clearTable();
+  // await clickhouse.dropTable();
 
   ReliableBatchQueue.instance.init();
 

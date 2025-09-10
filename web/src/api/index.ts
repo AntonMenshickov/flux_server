@@ -4,8 +4,16 @@ import { jwtDecode, type JwtPayload} from 'jwt-decode';
 import { left, right, type Either } from '@sweet-monads/either';
 import { auth } from './auth';
 
-const api = axios.create({
-  baseURL: 'http://localhost:4000/api',
+const baseUrl = 'http://localhost:4000/api';
+const privateApi = axios.create({
+  baseURL: baseUrl,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const publicApi = axios.create({
+  baseURL: baseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -24,6 +32,7 @@ export interface ApiError {
 export type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch';
 
 export interface RequestOptions {
+  authorized: boolean;
   method: HttpMethod;
   url: string;
   data?: unknown;
@@ -34,6 +43,7 @@ export interface RequestOptions {
 export async function request<T>(
   options: RequestOptions
 ): Promise<Either<ApiError, ApiResponse<T>>> {
+  const api = options.authorized ? privateApi : publicApi;
   try {
     const response = await api.request<ApiResponse<T>>({
       method: options.method,
@@ -60,7 +70,7 @@ export async function request<T>(
 }
 
 
-api.interceptors.request.use(async (config) => {
+privateApi.interceptors.request.use(async (config) => {
   const userStore = useUserStore();
 
   if (userStore.token) {
@@ -105,7 +115,22 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-api.interceptors.response.use(
+
+privateApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const userStore = useUserStore();
+
+    if (error.response?.status === 401) {
+      userStore.logout();
+      // например, редирект на /login
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+publicApi.interceptors.response.use(
   (response) => response,
   (error) => {
     const userStore = useUserStore();
@@ -120,4 +145,4 @@ api.interceptors.response.use(
 );
 
 
-export default api;
+export default privateApi;

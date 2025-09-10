@@ -11,11 +11,11 @@ export const auth = {
 }
 
 async function login(login: string, password: string) {
-  const result = await request<AuthResponse>({ 'method': 'post', url: '/auth', data: { login, password } },);
+  const result = await request<AuthResponse>({ authorized: false, 'method': 'post', url: '/auth', data: { login, password } },);
   return result;
 }
 
 async function refresh(refreshToken: string) {
-  const result = await request<AuthResponse>({ 'method': 'post', url: '/auth/refresh', data: { refreshToken } },);
+  const result = await request<AuthResponse>({ authorized: false, 'method': 'post', url: '/auth/refresh', data: { refreshToken } },);
   return result;
 }

@@ -33,7 +33,8 @@ export class CLickhouse {
       CLickhouse._client = createClient({
         url: connectionUrl,
         username: this.username,
-        password: this.password
+        password: this.password,
+        database: this.database,
       });
     }
     return CLickhouse._client;
@@ -89,7 +90,7 @@ export class CLickhouse {
           (
               id String,  -- уникальный идентификатор (UUID или что-то своё)
 
-              timestamp DateTime,  -- время события
+              timestamp DateTime64(3, 'UTC'),  -- время события
 
               logLevel Enum8(
                   'info'  = 1,
@@ -118,6 +119,17 @@ export class CLickhouse {
     } else {
       console.log(`ClickHouse table ${this.database}.${this.table} exists`);
     }
+  }
 
+  public async clearTable(): Promise<void> {
+    await this.client.command({
+      query: `TRUNCATE TABLE ${this.database}.${this.table};`,
+    });
+  }
+
+  public async dropTable(): Promise<void> {
+    await this.client.command({
+      query: `DROP TABLE ${this.database}.${this.table};`,
+    });
   }
 }

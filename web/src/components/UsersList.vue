@@ -53,7 +53,7 @@ const debouncedSearch = debounce(fetchUsers, 200);
 
 
 onMounted(() => {
-  fetchUsers(); // Call the function when the component is mounted
+  fetchUsers();
 });
 
 async function fetchUsers() {

@@ -12,7 +12,7 @@ export class EventsRepository {
     this.table = `${CLickhouse.instance.database}.${CLickhouse.instance.table}`;
   }
 
-  async insert(events: EventMessage[]): Promise<InsertResult> {
+  public async insert(events: EventMessage[]): Promise<InsertResult> {
     return this.client.insert<EventMessage>({
       table: this.table,
       values: events,
@@ -20,11 +20,23 @@ export class EventsRepository {
     });
   }
 
-  async findById(id: string): Promise<EventMessage | null> {
+  public async findById(id: string): Promise<EventMessage | null> {
     const resultSet = await this.client.query({
       query: `SELECT * FROM ${this.table} WHERE id = {id:String} LIMIT 1`,
       query_params: { id },
     });
     return (await resultSet.json<EventMessage>()).data[0] ?? null;
+  }
+
+  public async find(limit: number, offset: number): Promise<EventMessage[]> {
+    const resultSet = await this.client.query({
+      query: `SELECT *
+      FROM ${this.table}
+      ORDER BY timestamp DESC
+      LIMIT {limit:Int} OFFSET {offset:Int};`,
+      query_params: { limit, offset },
+    });
+    const result =  await resultSet.json<EventMessage>();
+    return result.data;
   }
 }

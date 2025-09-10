@@ -12,7 +12,6 @@ export function websocket(ws: WebSocket, req: Request, next: NextFunction): void
       id: `${index++}`
     }
     ReliableBatchQueue.instance.enqueue(eventData);
-    // console.log('Received message:', eventData);
     ws.send(`Echo: ${event.data}`);
   }
   ws.onclose = () => {

@@ -34,6 +34,8 @@ const activeMenu = ref<string>('logs');
 .content {
   flex: 1;
   padding: 1rem;
+  margin-left: var(--sidebar-width);
+  margin-top: var(--appbar-height);
 }
 
 .page-content {

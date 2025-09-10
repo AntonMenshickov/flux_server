@@ -32,7 +32,9 @@ function doLogout() {
 
 <style scoped>
 .dashboard-app-bar {
-  position: relative;
+  z-index: 1000;
+  position: fixed;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -40,6 +42,7 @@ function doLogout() {
   background-color: var(--color-primary);
   border-bottom: 1px solid #ddd;
   color: var(--color-secondary);
+  box-sizing: border-box;
 }
 
 .logo img {
