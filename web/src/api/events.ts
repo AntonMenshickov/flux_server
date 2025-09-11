@@ -6,6 +6,18 @@ export enum LogLevel {
   DEBUG = 'debug',
 }
 
+export interface EventFilter {
+  message?: string | null;
+  logLevel?: LogLevel | null;
+  tags?: string[] | null;
+  meta?: Record<string, string> | null;
+  platform?: string | null;
+  bundleId?: string | null;
+  deviceId?: string | null;
+  from?: Date | null;
+  to?: Date | null;
+}
+
 export interface EventMessage {
   id: string;
   timestamp: number;
@@ -29,8 +41,8 @@ export const events = {
   search,
 }
 
-async function search(limit: number, offset: number) {
-  const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'get', url: '/events/search', params: { limit, offset } },);
+async function search(limit: number, offset: number, filter: EventFilter | null = null) {
+  const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'get', url: '/events/search', params: { limit, offset, filter } },);
   return result.mapRight((r) => ({
     ...r,
     result: {

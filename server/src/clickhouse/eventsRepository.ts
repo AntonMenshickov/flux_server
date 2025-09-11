@@ -3,16 +3,16 @@ import { EventMessage, LogLevel } from '../model/eventMessage';
 import { InsertResult } from '@clickhouse/client';
 import { CLickhouse } from './clickhouse';
 
-interface EventFilter {
-  message?: string;
-  logLevel?: LogLevel;
-  tags?: string[];
-  meta?: Record<string, string>;
-  platform?: string;
-  bundleId?: string;
-  deviceId?: string;
-  from?: Date;
-  to?: Date;
+export interface EventFilter {
+  message?: string | null;
+  logLevel?: LogLevel | null;
+  tags?: string[] | null;
+  meta?: Record<string, string> | null;
+  platform?: string | null;
+  bundleId?: string | null;
+  deviceId?: string | null;
+  from?: number | null;
+  to?: number | null;
 }
 
 export class EventsRepository {
@@ -44,29 +44,29 @@ export class EventsRepository {
   public async find(
     limit: number,
     offset: number,
-    filters: EventFilter = {}
+    filters: EventFilter | null = null
   ): Promise<EventMessage[]> {
     const conditions: string[] = [];
     const queryParams: Record<string, any> = { limit, offset };
 
-    if (filters.message) {
-      conditions.push(`message LIKE concat('%', {message:String}, '%')`);
-      queryParams.message = filters.message;
+    if (filters?.message) {
+      conditions.push(`lower(message) LIKE concat('%', {message:String}, '%')`);
+      queryParams.message = filters.message.toLowerCase();
     }
 
-    if (filters.logLevel) {
+    if (filters?.logLevel) {
       conditions.push(`logLevel = {logLevel:Enum8('info' = 1, 'warn' = 2, 'error' = 3, 'debug' = 4)}`);
       queryParams.logLevel = filters.logLevel;
     }
 
-    if (filters.tags && filters.tags.length > 0) {
+    if (filters?.tags && filters.tags.length > 0) {
       conditions.push(
         filters.tags.map((_, i) => `has(tags, {tag${i}:String})`).join(' AND ')
       );
       filters.tags.forEach((tag, i) => (queryParams[`tag${i}`] = tag));
     }
 
-    if (filters.meta) {
+    if (filters?.meta) {
       Object.entries(filters.meta).forEach(([key, value], i) => {
         conditions.push(`mapContains(meta, {metaKey${i}:String}, {metaValue${i}:String})`);
         queryParams[`metaKey${i}`] = key;
@@ -74,29 +74,29 @@ export class EventsRepository {
       });
     }
 
-    if (filters.platform) {
+    if (filters?.platform) {
       conditions.push(`platform = {platform:String}`);
       queryParams.platform = filters.platform;
     }
 
-    if (filters.bundleId) {
+    if (filters?.bundleId) {
       conditions.push(`bundleId = {bundleId:String}`);
       queryParams.bundleId = filters.bundleId;
     }
 
-    if (filters.deviceId) {
+    if (filters?.deviceId) {
       conditions.push(`deviceId = {deviceId:String}`);
       queryParams.deviceId = filters.deviceId;
     }
 
-    if (filters.from) {
+    if (filters?.from) {
       conditions.push(`timestamp >= {from:DateTime64(3)}`);
-      queryParams.from = filters.from.toISOString();
+      queryParams.from = filters.from;
     }
 
-    if (filters.to) {
+    if (filters?.to) {
       conditions.push(`timestamp <= {to:DateTime64(3)}`);
-      queryParams.to = filters.to.toISOString();
+      queryParams.to = filters.to;
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';

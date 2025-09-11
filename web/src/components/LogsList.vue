@@ -1,13 +1,34 @@
 <template>
   <div class="logs-page">
-    <BaseSelector
-      v-model="selectedApp"
-      label="Application:"
-      id="appSelect"
-      :fetch-options="fetchApps"
-    />
+    <BaseSelector v-model="selectedApp" label="Application:" id="appSelect" :fetch-options="fetchApps" />
+
+    <!-- Панель фильтров -->
+    <div class="filters">
+      <input v-model="filters.message" type="text" placeholder="Message contains..." />
+      <select v-model="filters.logLevel">
+        <option value="">Log Level</option>
+        <option :value="LogLevel.DEBUG">DEBUG</option>
+        <option :value="LogLevel.INFO">INFO</option>
+        <option :value="LogLevel.WARN">WARN</option>
+        <option :value="LogLevel.ERROR">ERROR</option>
+      </select>
+      <input v-model="filters.platform" type="text" placeholder="Platform" />
+      <input v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
+      <input v-model="filters.deviceId" type="text" placeholder="Device ID" />
+      <label>
+        From:
+        <input v-model="filters.from" type="datetime-local" />
+      </label>
+      <label>
+        To:
+        <input v-model="filters.to" type="datetime-local" />
+      </label>
+      <button @click="applyFilters">Apply</button>
+      <button @click="resetFilters">Reset</button>
+    </div>
+
     <div class="logs-list">
-      <h2>Logs for: {{ selectedApp }}</h2>
+      <h2>Logs for: {{ selectedApp || 'All' }}</h2>
       <ul>
         <li v-for="(log, index) in filteredLogs" :key="index" class="log-card">
           <header class="log-header">
@@ -28,7 +49,8 @@
             <div class="detail"><strong>Platform:</strong> {{ log.platform }}</div>
             <div class="detail"><strong>Bundle:</strong> {{ log.bundleId }}</div>
             <div class="detail"><strong>Device:</strong> {{ log.deviceId }}</div>
-            <div v-if="log.receiveTimestamp" class="detail"><strong>Received:</strong> {{ formatDate(log.receiveTimestamp) }}</div>
+            <div v-if="log.receiveTimestamp" class="detail"><strong>Received:</strong> {{
+              formatDate(log.receiveTimestamp) }}</div>
           </section>
 
           <section class="tags-meta">
@@ -51,7 +73,7 @@
 
 <script setup lang="ts">
 import { applications } from '@/api/applications';
-import { events, type EventMessage } from '@/api/events';
+import { events, type EventMessage, type EventFilter, LogLevel } from '@/api/events';
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
@@ -59,6 +81,23 @@ import { ref, computed, onMounted } from 'vue';
 
 const selectedApp = ref<string>('');
 const logs = ref<EventMessage[]>([]);
+const filters = ref<{
+  message: string;
+  logLevel: LogLevel | null;
+  platform: string;
+  bundleId: string;
+  deviceId: string;
+  from: string | null;
+  to: string | null;
+}>({
+  message: '',
+  logLevel: null,
+  platform: '',
+  bundleId: '',
+  deviceId: '',
+  from: null,
+  to: null,
+});
 
 const filteredLogs = computed(() => logs.value);
 
@@ -67,13 +106,40 @@ onMounted(() => {
 });
 
 async function fetchLogs() {
-  const eventsResult = await events.search(500, 0);
+  const filter: EventFilter = {
+    message: filters.value.message || null,
+    logLevel: filters.value.logLevel ? filters.value.logLevel : null,
+    platform: filters.value.platform || null,
+    bundleId: filters.value.bundleId || null,
+    deviceId: filters.value.deviceId || null,
+    from: filters.value.from ? new Date(filters.value.from) : null,
+    to: filters.value.to ? new Date(filters.value.to) : null,
+  };
+
+  const eventsResult = await events.search(500, 0, filter);
   if (eventsResult.isRight()) {
-    logs.value.push(...eventsResult.value.result.events.map(e => ({
+    logs.value = eventsResult.value.result.events.map(e => ({
       ...e,
       meta: e.meta instanceof Map ? e.meta : new Map<string, string>(Object.entries(e.meta || {})),
-    })));
+    }));
   }
+}
+
+function applyFilters() {
+  fetchLogs();
+}
+
+function resetFilters() {
+  filters.value = {
+    message: '',
+    logLevel: null,
+    platform: '',
+    bundleId: '',
+    deviceId: '',
+    from: null,
+    to: null,
+  };
+  fetchLogs();
 }
 
 async function fetchApps(search: string): Promise<{ label: string; value: string }[]> {
@@ -118,7 +184,7 @@ function formatDate(ts: number) {
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -147,6 +213,7 @@ function formatDate(ts: number) {
   padding: 0.5rem;
   border-radius: 4px;
 }
+
 .stacktrace pre {
   margin: 0.2rem 0 0;
   white-space: pre-wrap;
@@ -182,5 +249,32 @@ function formatDate(ts: number) {
 .meta ul {
   padding-left: 1rem;
   margin: 0.3rem 0 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.filters input,
+.filters select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.filters button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background: #3a7afe;
+  color: #fff;
+  cursor: pointer;
+}
+
+.filters button:last-of-type {
+  background: #999;
 }
 </style>
