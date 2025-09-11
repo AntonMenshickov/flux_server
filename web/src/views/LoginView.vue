@@ -3,9 +3,9 @@
     <FluxLogo />
     <h1>Login</h1>
     <form @submit.prevent="doLogin">
-      <input class="input" v-model="username" placeholder="username" />
-      <input class="input" v-model="password" type="password" placeholder="password" />
-      <button class="button" @click="doLogin">Login</button>
+      <BaseInput class="input" v-model="username" placeholder="username" />
+      <BaseInput class="input" v-model="password" type="password" placeholder="password" />
+      <BaseButton class="button" @click="doLogin">Login</BaseButton>
     </form>
   </div>
 </template>
@@ -17,6 +17,8 @@ import router from '@/router';
 import { users } from '@/api/users';
 import { auth } from '@/api/auth';
 import { ref } from 'vue';
+import BaseInput from '@/components/base/BaseInput.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
 
 
 const username = ref<string>('');

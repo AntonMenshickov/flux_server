@@ -13,7 +13,7 @@ const dateStringSchema = z
 
 const filtersValidateSchema = z.object({
   message: z.string().trim().nullable().optional(),
-  logLevel: z.enum(LogLevel).nullable().optional(),
+  logLevel: z.array(z.enum(LogLevel)).nullable().optional(),
   tags: z.array(z.string().trim().nonempty()).nullable().optional(),
   meta: z.record(z.string(), z.string()).nullable().optional(),
   platform: z.string().trim().nullable().optional(),

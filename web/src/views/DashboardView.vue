@@ -33,7 +33,6 @@ const activeMenu = ref<string>('logs');
 
 .content {
   flex: 1;
-  padding: 1rem;
   margin-left: var(--sidebar-width);
   margin-top: var(--appbar-height);
 }
@@ -42,5 +41,6 @@ const activeMenu = ref<string>('logs');
   display: flex;
   flex-direction: row;
   flex: auto;
+  height: 100%;
 }
 </style>

@@ -11,7 +11,7 @@
 import { computed } from 'vue'
 
 const props = defineProps<{
-  modelValue?: string
+  modelValue?: string | null
   initialValue?: string
   readonly?: boolean
 }>()

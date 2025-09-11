@@ -5,7 +5,7 @@ import { CLickhouse } from './clickhouse';
 
 export interface EventFilter {
   message?: string | null;
-  logLevel?: LogLevel | null;
+  logLevel?: LogLevel[] | null;
   tags?: string[] | null;
   meta?: Record<string, string> | null;
   platform?: string | null;
@@ -54,8 +54,8 @@ export class EventsRepository {
       queryParams.message = filters.message.toLowerCase();
     }
 
-    if (filters?.logLevel) {
-      conditions.push(`logLevel = {logLevel:Enum8('info' = 1, 'warn' = 2, 'error' = 3, 'debug' = 4)}`);
+    if (filters?.logLevel && filters.logLevel.length > 0) {
+      conditions.push(`logLevel IN ({logLevel:Array(Enum8('info' = 1, 'warn' = 2, 'error' = 3, 'debug' = 4))})`);
       queryParams.logLevel = filters.logLevel;
     }
 

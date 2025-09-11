@@ -8,7 +8,7 @@ export enum LogLevel {
 
 export interface EventFilter {
   message?: string | null;
-  logLevel?: LogLevel | null;
+  logLevel?: LogLevel[] | null;
   tags?: string[] | null;
   meta?: Record<string, string> | null;
   platform?: string | null;

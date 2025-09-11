@@ -9,6 +9,15 @@
   --sidebar-width: 250px;
   --appbar-height: 61px;
 }
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  /* Отключает скролл на всей странице */
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--color-secondary);

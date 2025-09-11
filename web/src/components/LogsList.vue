@@ -2,32 +2,26 @@
   <div class="logs-page">
     <BaseSelector v-model="selectedApp" label="Application:" id="appSelect" :fetch-options="fetchApps" />
 
-    <!-- Панель фильтров -->
     <div class="filters">
-      <input v-model="filters.message" type="text" placeholder="Message contains..." />
-      <select v-model="filters.logLevel">
-        <option value="">Log Level</option>
-        <option :value="LogLevel.DEBUG">DEBUG</option>
-        <option :value="LogLevel.INFO">INFO</option>
-        <option :value="LogLevel.WARN">WARN</option>
-        <option :value="LogLevel.ERROR">ERROR</option>
-      </select>
-      <input v-model="filters.platform" type="text" placeholder="Platform" />
-      <input v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
-      <input v-model="filters.deviceId" type="text" placeholder="Device ID" />
+      <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
+      <multiselect v-model="filters.logLevel" :options="Object.values(LogLevel)" :multiple="true"
+        :placeholder="'Log level'" class="log-level-select" />
+      <BaseInput v-model="filters.platform" type="text" placeholder="Platform" />
+      <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
+      <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
       <label>
         From:
-        <input v-model="filters.from" type="datetime-local" />
+        <BaseInput v-model="filters.from" type="datetime-local" />
       </label>
       <label>
         To:
-        <input v-model="filters.to" type="datetime-local" />
+        <BaseInput v-model="filters.to" type="datetime-local" />
       </label>
-      <button @click="applyFilters">Apply</button>
-      <button @click="resetFilters">Reset</button>
+      <BaseButton @click="applyFilters" class="primary">Apply</BaseButton>
+      <BaseButton @click="resetFilters">Reset</BaseButton>
     </div>
 
-    <div class="logs-list">
+    <div class="logs-list" @scroll="handleScroll">
       <h2>Logs for: {{ selectedApp || 'All' }}</h2>
       <ul>
         <li v-for="(log, index) in filteredLogs" :key="index" class="log-card">
@@ -77,13 +71,16 @@ import { events, type EventMessage, type EventFilter, LogLevel } from '@/api/eve
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
+import Multiselect from 'vue-multiselect';
 import { ref, computed, onMounted } from 'vue';
+import BaseButton from './base/BaseButton.vue';
+import BaseInput from './base/BaseInput.vue';
 
 const selectedApp = ref<string>('');
 const logs = ref<EventMessage[]>([]);
 const filters = ref<{
   message: string;
-  logLevel: LogLevel | null;
+  logLevel: LogLevel[] | null;
   platform: string;
   bundleId: string;
   deviceId: string;
@@ -98,14 +95,34 @@ const filters = ref<{
   from: null,
   to: null,
 });
+const pageSize = 100;
+let offset = 0;
+let isLoading = false;
+let hasMore = true;
+
 
 const filteredLogs = computed(() => logs.value);
 
 onMounted(() => {
-  fetchLogs();
+  fetchLogs(true);
 });
 
-async function fetchLogs() {
+
+
+function handleScroll(event: Event) {
+  const target = event.target as HTMLDivElement;
+  const { scrollTop, clientHeight, scrollHeight } = target;
+  if (scrollTop + clientHeight >= scrollHeight - 50 && !isLoading && hasMore) {
+    fetchLogs();
+  }
+}
+
+async function fetchLogs(clear: boolean = false) {
+  isLoading = true;
+  if (clear) {
+    offset = 0;
+    hasMore = true;
+  }
   const filter: EventFilter = {
     message: filters.value.message || null,
     logLevel: filters.value.logLevel ? filters.value.logLevel : null,
@@ -116,17 +133,26 @@ async function fetchLogs() {
     to: filters.value.to ? new Date(filters.value.to) : null,
   };
 
-  const eventsResult = await events.search(500, 0, filter);
+  const eventsResult = await events.search(pageSize, offset, filter);
   if (eventsResult.isRight()) {
-    logs.value = eventsResult.value.result.events.map(e => ({
+    const events = eventsResult.value.result.events.map(e => ({
       ...e,
       meta: e.meta instanceof Map ? e.meta : new Map<string, string>(Object.entries(e.meta || {})),
     }));
+    if (clear) {
+      logs.value = events;
+    } else {
+      logs.value = [...logs.value, ...events];
+    }
+    hasMore = events.length == pageSize;
+    offset += events.length;
   }
+
+  isLoading = false;
 }
 
 function applyFilters() {
-  fetchLogs();
+  fetchLogs(true);
 }
 
 function resetFilters() {
@@ -139,7 +165,7 @@ function resetFilters() {
     from: null,
     to: null,
   };
-  fetchLogs();
+  fetchLogs(true);
 }
 
 async function fetchApps(search: string): Promise<{ label: string; value: string }[]> {
@@ -159,13 +185,22 @@ function formatDate(ts: number) {
 }
 </script>
 
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 .logs-page {
+  height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding: 1.5rem;
   font-family: sans-serif;
+}
+
+.logs-list {
+
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .logs-list h2 {
@@ -258,23 +293,9 @@ function formatDate(ts: number) {
   align-items: center;
 }
 
-.filters input,
-.filters select {
-  padding: 0.3rem 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+.log-level-select {
+  height: 27px;
+  width: 200px;
 }
 
-.filters button {
-  padding: 0.4rem 0.8rem;
-  border: none;
-  border-radius: 6px;
-  background: #3a7afe;
-  color: #fff;
-  cursor: pointer;
-}
-
-.filters button:last-of-type {
-  background: #999;
-}
 </style>
