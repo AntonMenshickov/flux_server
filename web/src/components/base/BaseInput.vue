@@ -28,6 +28,8 @@ const localValue = computed<string>({
 
 <style scoped>
 .base-input {
+  min-height: 40px;
+  box-sizing: border-box;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
   border: 1px solid var(--color-border);

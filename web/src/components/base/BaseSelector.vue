@@ -97,6 +97,8 @@ const selectOption = (option: Option) => {
 }
 
 .selector-input {
+  min-height: 40px;
+  box-sizing: border-box;
   width: 100%;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;

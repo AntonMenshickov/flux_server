@@ -12,6 +12,8 @@ defineEmits<{
 
 <style scoped>
 .base-btn {
+  min-height: 40px;
+  box-sizing: border-box;
   padding: 0.6rem 1rem;
   border: none;
   border-radius: 8px;

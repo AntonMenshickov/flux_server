@@ -4,8 +4,8 @@
 
     <div class="filters">
       <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
-      <multiselect v-model="filters.logLevel" :options="Object.values(LogLevel)" :multiple="true"
-        :placeholder="'Log level'" class="log-level-select" />
+      <BaseMultiselect v-model="filters.logLevel" :options="Object.values(LogLevel)"
+        :label-builder="logLevelLabelBuilder" label="Log level"/>
       <BaseInput v-model="filters.platform" type="text" placeholder="Platform" />
       <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
@@ -71,10 +71,10 @@ import { events, type EventMessage, type EventFilter, LogLevel } from '@/api/eve
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
-import Multiselect from 'vue-multiselect';
 import { ref, computed, onMounted } from 'vue';
 import BaseButton from './base/BaseButton.vue';
 import BaseInput from './base/BaseInput.vue';
+import BaseMultiselect from './base/BaseMultiselect.vue';
 
 const selectedApp = ref<string>('');
 const logs = ref<EventMessage[]>([]);
@@ -107,6 +107,9 @@ onMounted(() => {
   fetchLogs(true);
 });
 
+function logLevelLabelBuilder(logLevel: LogLevel): string {
+  return logLevel.toString();
+}
 
 
 function handleScroll(event: Event) {
@@ -297,5 +300,4 @@ function formatDate(ts: number) {
   height: 27px;
   width: 200px;
 }
-
 </style>
