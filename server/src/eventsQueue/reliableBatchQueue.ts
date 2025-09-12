@@ -123,7 +123,6 @@ export class ReliableBatchQueue {
 
     try {
       await this.eventsRepo.insert(batch);
-      console.log(`Вставлено ${batch.length} сообщений в БД`);
       await this.redis.del(this.processingName);
       this.processingLen = 0;
       // this.listQueue(this.queueName);

@@ -30,16 +30,15 @@ export async function addApp(req: Request, res: Response, next: NextFunction) {
     return res.status(400).json({ error: responseMessages.APP_NAME_ALREADY_TAKEN });
   }
 
-  const token = tokenUtil.createDeviceToken(name);
-
   const app: IApplication & Document = new Application({
     name,
     bundles: bundles,
-    token,
+    token: 'empty token',
   });
-
   await app.save();
-
+  const token = tokenUtil.createDeviceToken(app._id.toString());
+  app.token = token;
+  await app.save();
 
   return res.status(200).json({
     success: true,

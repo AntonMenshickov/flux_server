@@ -188,7 +188,6 @@ function formatDate(ts: number) {
 }
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 .logs-page {
   height: 100%;

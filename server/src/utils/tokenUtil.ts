@@ -8,9 +8,9 @@ interface ITokenPayload {
 }
 
 export const tokenUtil = {
-  createDeviceToken: (applicationName: string): string => {
+  createDeviceToken: (applicationId: string): string => {
     const secret: string = process.env.JWT_SECRET!;
-    const accessToken = jwt.sign({ applicationName }, secret, <SignOptions>{ expiresIn: '100y' });
+    const accessToken = jwt.sign({ applicationId }, secret, <SignOptions>{ expiresIn: '100y' });
     return accessToken;
   },
   createUserToken: (userId: string): ITokenPayload => {
