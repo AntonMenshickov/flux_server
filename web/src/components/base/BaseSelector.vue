@@ -1,10 +1,8 @@
 <template>
   <div class="base-selector">
-    <label v-if="label" :for="id" class="selector-label">{{ label }}</label>
-
     <div :class="{ 'selector-wrapper': true, 'opened': showDropdown }">
-      <input :id="id" v-model="search" type="text" :class="{ 'selector-input': true, 'opened': showDropdown }"
-        placeholder="Type for search..." @input="onSearch" />
+      <BaseInput v-model="search" @input="onSearch" :placeholder="placeholder"
+        :class="{ 'selector-input': true, 'opened': showDropdown }" />
 
       <ul v-if="showDropdown" class="dropdown">
         <li v-for="option in options" :key="option.value" @click="selectOption(option)">
@@ -20,6 +18,7 @@
 <script setup lang="ts">
 import { debounce } from 'lodash';
 import { ref, watch } from 'vue'
+import BaseInput from './BaseInput.vue';
 
 
 type Option = { label: string; value: string }
@@ -27,10 +26,9 @@ type Option = { label: string; value: string }
 
 
 const props = defineProps<{
-  modelValue?: string
+  modelValue?: string | null
   fetchOptions: (query: string) => Promise<Option[]>
-  label?: string
-  id?: string
+  placeholder?: string
 }>()
 
 const emit = defineEmits<{

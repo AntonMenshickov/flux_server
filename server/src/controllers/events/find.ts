@@ -1,8 +1,9 @@
-import { Response, NextFunction } from 'express';
+import { Response, NextFunction, application } from 'express';
 import { AuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { EventFilter, EventsRepository } from '../../clickhouse/eventsRepository';
 import { EventMessage, LogLevel } from '../../model/eventMessage';
+import { objectIdSchema } from '../../utils/zodUtil';
 
 const dateStringSchema = z
   .string()
@@ -12,6 +13,7 @@ const dateStringSchema = z
   });
 
 const filtersValidateSchema = z.object({
+  applicationId: objectIdSchema.nullable().optional(),
   message: z.string().trim().nullable().optional(),
   logLevel: z.array(z.enum(LogLevel)).nullable().optional(),
   tags: z.array(z.string().trim().nonempty()).nullable().optional(),

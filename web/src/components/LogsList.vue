@@ -1,12 +1,12 @@
 <template>
   <div class="logs-page">
-    <BaseSelector v-model="selectedApp" label="Application:" id="appSelect" :fetch-options="fetchApps" />
-
     <div class="filters">
+      <BaseSelector v-model="filters.applicationId" placeholder="Application" :fetch-options="fetchApps" />
       <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
       <BaseMultiselect v-model="filters.logLevel" :options="Object.values(LogLevel)"
-        :label-builder="logLevelLabelBuilder" label="Log level"/>
+        :label-builder="logLevelLabelBuilder" label="Log level" />
       <BaseInput v-model="filters.platform" type="text" placeholder="Platform" />
+      <BaseInput v-model="tagsValue" type="text" placeholder="Tags delimiter ','" />
       <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
       <label>
@@ -17,12 +17,14 @@
         To:
         <BaseInput v-model="filters.to" type="datetime-local" />
       </label>
-      <BaseButton @click="applyFilters" class="primary">Apply</BaseButton>
-      <BaseButton @click="resetFilters">Reset</BaseButton>
+      <div class="filter-actions">
+        <BaseButton @click="applyFilters" class="primary">Apply</BaseButton>
+        <BaseButton @click="resetFilters">Reset</BaseButton>
+      </div>
     </div>
 
     <div class="logs-list" @scroll="handleScroll">
-      <h2>Logs for: {{ selectedApp || 'All' }}</h2>
+      <h2>Logs for: {{ filters.applicationId || 'All' }}</h2>
       <ul>
         <li v-for="(log, index) in filteredLogs" :key="index" class="log-card">
           <header class="log-header">
@@ -76,19 +78,23 @@ import BaseButton from './base/BaseButton.vue';
 import BaseInput from './base/BaseInput.vue';
 import BaseMultiselect from './base/BaseMultiselect.vue';
 
-const selectedApp = ref<string>('');
+
 const logs = ref<EventMessage[]>([]);
 const filters = ref<{
-  message: string;
+  applicationId: string | null,
+  message: string | null;
   logLevel: LogLevel[] | null;
+  tags: string[] | null;
   platform: string;
   bundleId: string;
   deviceId: string;
   from: string | null;
   to: string | null;
 }>({
+  applicationId: '',
   message: '',
   logLevel: null,
+  tags: null,
   platform: '',
   bundleId: '',
   deviceId: '',
@@ -102,6 +108,11 @@ let hasMore = true;
 
 
 const filteredLogs = computed(() => logs.value);
+
+const tagsValue = computed({
+  get: () => filters.value.tags?.join(', '),
+  set: (val: string) => filters.value.tags = val.split(',').map(e => e.trim()).filter(e => e.length > 0),
+})
 
 onMounted(() => {
   fetchLogs(true);
@@ -127,8 +138,10 @@ async function fetchLogs(clear: boolean = false) {
     hasMore = true;
   }
   const filter: EventFilter = {
+    applicationId: filters.value.applicationId || null,
     message: filters.value.message || null,
     logLevel: filters.value.logLevel ? filters.value.logLevel : null,
+    tags: filters.value.tags || null,
     platform: filters.value.platform || null,
     bundleId: filters.value.bundleId || null,
     deviceId: filters.value.deviceId || null,
@@ -160,8 +173,10 @@ function applyFilters() {
 
 function resetFilters() {
   filters.value = {
+    applicationId: '',
     message: '',
     logLevel: null,
+    tags: null,
     platform: '',
     bundleId: '',
     deviceId: '',
@@ -295,8 +310,9 @@ function formatDate(ts: number) {
   align-items: center;
 }
 
-.log-level-select {
-  height: 27px;
-  width: 200px;
+.filter-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
 }
 </style>

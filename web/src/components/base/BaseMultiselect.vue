@@ -8,7 +8,8 @@
           <XMarkIcon @click="removeItem(index)" class="tag-badge-close" />
         </div>
       </div>
-      <PlusIcon @click="openDropdown" class="add-item" />
+      <PlusIcon v-show="!showDropdown" @click="openDropdown" class="add-item" />
+      <MinusIcon v-show="showDropdown" @click="closeDropdown" class="add-item" />
     </div>
     <div v-if="showDropdown" class="options">
       <div v-for="(option, index) in options" @mouseenter="optionHovered(option)" @click="toggleSelect(option)"
@@ -23,7 +24,7 @@
 
 <script setup lang="ts" generic="T extends { toString(): string }">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { XMarkIcon, PlusIcon, CheckIcon } from '@heroicons/vue/24/outline';
+import { XMarkIcon, PlusIcon, MinusIcon, CheckIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps<{
   modelValue?: Array<T> | null
@@ -76,7 +77,10 @@ function buildLabel(item: T): string {
 
 function openDropdown() {
   showDropdown.value = true;
+}
 
+function closeDropdown() {
+  showDropdown.value = false;
 }
 
 function optionHovered(option: T) {
@@ -92,7 +96,6 @@ function toggleSelect(option: T) {
   }
 
 }
-
 
 </script>
 

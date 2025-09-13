@@ -4,6 +4,7 @@ import { InsertResult } from '@clickhouse/client';
 import { CLickhouse } from './clickhouse';
 
 export interface EventFilter {
+  applicationId?: string | null;
   message?: string | null;
   logLevel?: LogLevel[] | null;
   tags?: string[] | null;
@@ -48,6 +49,11 @@ export class EventsRepository {
   ): Promise<EventMessage[]> {
     const conditions: string[] = [];
     const queryParams: Record<string, any> = { limit, offset };
+
+    if (filters?.applicationId) {
+      conditions.push(`applicationId = {applicationId:String}`);
+      queryParams.applicationId = filters.applicationId.toLowerCase();
+    }
 
     if (filters?.message) {
       conditions.push(`lower(message) LIKE concat('%', {message:String}, '%')`);

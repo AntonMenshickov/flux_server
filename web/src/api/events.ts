@@ -7,6 +7,7 @@ export enum LogLevel {
 }
 
 export interface EventFilter {
+  applicationId?: string | null;
   message?: string | null;
   logLevel?: LogLevel[] | null;
   tags?: string[] | null;
