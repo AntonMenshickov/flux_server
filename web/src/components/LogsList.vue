@@ -195,12 +195,10 @@ async function fetchApps(search: string): Promise<{ label: string; value: string
   return [];
 }
 
-function formatDate(dateStr: string) {
-  const cleanStr = dateStr.replace(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.(\d{3})\d+$/, "$1.$2");
-
-  const isoStr = cleanStr.replace(" ", "T") + "Z";
-  return new Date(isoStr).toLocaleString();
+function formatDate(ts: number) {
+  return new Date(ts / 1000).toLocaleString();
 }
+
 </script>
 
 <style scoped>

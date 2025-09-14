@@ -21,7 +21,7 @@ export interface EventFilter {
 
 export interface EventMessage {
   id: string;
-  timestamp: string;
+  timestamp: number;
   logLevel: LogLevel;
   applicationId: string;
   platform: string;

@@ -1,9 +1,9 @@
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
-import { EventMessage } from '../model/eventMessage';
+import { EventMessage, eventMessageFromDatabase } from '../model/eventMessage';
 import { InsertResult } from '@clickhouse/client';
 import { CLickhouse } from './clickhouse';
 import { LogLevel } from '../model/eventMessageDto';
-import { v4 as uuidv4 } from 'uuid';
+import { EventMessageDbView } from '../model/eventMessageDbView';
 
 export interface EventFilter {
   applicationId?: string | null;
@@ -121,9 +121,9 @@ export class EventsRepository {
       query,
       query_params: queryParams,
     });
+    const result = await resultSet.json<EventMessageDbView>();
 
-    const result = await resultSet.json<EventMessage>();
-    return result.data;
+    return result.data.map(eventMessageFromDatabase);
   }
 
 }

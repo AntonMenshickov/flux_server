@@ -1,14 +1,9 @@
+import { LogLevel } from './eventMessageDto';
 
-export enum LogLevel {
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  DEBUG = 'debug',
-}
-
-export interface EventMessageDto {
-  ///timestamp in microseconds
-  timestamp: number;
+export interface EventMessageDbView {
+  id: string;
+  applicationId: string;
+  timestamp: string;
   logLevel: LogLevel;
   platform: string;
   bundleId: string;
