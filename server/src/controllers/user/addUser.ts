@@ -3,7 +3,7 @@ import { IUser, User } from '../../model/mongo/user';
 import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
 import { bcryptUtil } from '../../utils/bcryptUtil';
-import { AuthRequest } from '../../middleware/authorizationRequired';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { authValidateSchema } from '../auth/auth';
 import z from 'zod';
 
@@ -16,7 +16,7 @@ export const addUserValidateSchema = z.object({
   })
 });
 
-export async function addUser(req: AuthRequest, res: Response, next: NextFunction) {
+export async function addUser(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { login, password } = req.body;
 
   if (req.user?.isOwner !== true) {

@@ -22,9 +22,9 @@ export async function startServer() {
   console.log('Checking ClickHouse database...');
   await clickhouse.ensureDatabase();
   console.log('Checking ClickHouse table...');
-  await clickhouse.ensureTable();
   // await clickhouse.clearTable();
   // await clickhouse.dropTable();
+  await clickhouse.ensureTable();
 
   ReliableBatchQueue.instance.init();
 
@@ -35,7 +35,10 @@ export async function startServer() {
 
   wsApp.ws('/ws', websocket);
   app.use(cors());
-  app.use(bodyParser.json());
+  app.use((req, res, next) => {
+    if (req.path === '/api/events/add') return next();
+    bodyParser.json()(req, res, next)
+  });
   app.use('/api', apiRouter);
 
   // Simple health route

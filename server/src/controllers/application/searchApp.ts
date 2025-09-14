@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { IUser, User } from '../../model/mongo/user';
 import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
-import { AuthRequest } from '../../middleware/authorizationRequired';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { Application, IApplication } from '../../model/mongo/application';
 
@@ -14,7 +14,7 @@ export const searchAppsValidateSchema = z.object({
   })
 });
 
-export async function searchApps(req: AuthRequest, res: Response, next: NextFunction) {
+export async function searchApps(req: UserAuthRequest, res: Response, next: NextFunction) {
   const search = (req.query.search as string || '').trim();
   const limit = Number(req.query.limit) || 20;
   const offset = Number(req.query.offset) || 0;

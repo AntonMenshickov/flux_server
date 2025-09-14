@@ -90,7 +90,7 @@ export class CLickhouse {
           (
               id String,  -- уникальный идентификатор (UUID или что-то своё)
 
-              timestamp DateTime64(3, 'UTC'),  -- время события
+              timestamp DateTime64(6, 'UTC'),  -- время события
 
               logLevel Enum8(
                   'info'  = 1,

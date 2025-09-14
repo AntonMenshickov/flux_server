@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { IUser, User } from '../../model/mongo/user';
 import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
-import { AuthRequest } from '../../middleware/authorizationRequired';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { objectIdSchema } from '../../utils/zodUtil';
 
@@ -14,7 +14,7 @@ export const deleteUserValidateSchema = z.object({
 });
 
 
-export async function deleteUser(req: AuthRequest, res: Response, next: NextFunction) {
+export async function deleteUser(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { userId } = req.query;
 
   if (req.user?.isOwner !== true) {

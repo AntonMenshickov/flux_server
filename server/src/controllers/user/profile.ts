@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
-import { AuthRequest } from '../../middleware/authorizationRequired';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
 
-export async function profile(req: AuthRequest, res: Response, next: NextFunction) {
+export async function profile(req: UserAuthRequest, res: Response, next: NextFunction) {
 
   return res.status(200).json({
     success: true,

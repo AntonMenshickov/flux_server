@@ -45,8 +45,6 @@
             <div class="detail"><strong>Platform:</strong> {{ log.platform }}</div>
             <div class="detail"><strong>Bundle:</strong> {{ log.bundleId }}</div>
             <div class="detail"><strong>Device:</strong> {{ log.deviceId }}</div>
-            <div v-if="log.receiveTimestamp" class="detail"><strong>Received:</strong> {{
-              formatDate(log.receiveTimestamp) }}</div>
           </section>
 
           <section class="tags-meta">
@@ -145,8 +143,8 @@ async function fetchLogs(clear: boolean = false) {
     platform: filters.value.platform || null,
     bundleId: filters.value.bundleId || null,
     deviceId: filters.value.deviceId || null,
-    from: filters.value.from ? new Date(filters.value.from) : null,
-    to: filters.value.to ? new Date(filters.value.to) : null,
+    from: filters.value.from ? new Date(filters.value.from).getTime() * 1000 : null,
+    to: filters.value.to ? new Date(filters.value.to).getTime() * 1000 : null,
   };
 
   const eventsResult = await events.search(pageSize, offset, filter);
@@ -197,9 +195,11 @@ async function fetchApps(search: string): Promise<{ label: string; value: string
   return [];
 }
 
-function formatDate(ts: number) {
-  const d = new Date(ts);
-  return d.toLocaleString();
+function formatDate(dateStr: string) {
+  const cleanStr = dateStr.replace(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.(\d{3})\d+$/, "$1.$2");
+
+  const isoStr = cleanStr.replace(" ", "T") + "Z";
+  return new Date(isoStr).toLocaleString();
 }
 </script>
 

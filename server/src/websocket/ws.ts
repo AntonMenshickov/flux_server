@@ -1,12 +1,15 @@
 import { NextFunction, Request } from 'express';
 import { WebSocket } from 'ws';
-import { v4 as uuidv4 } from 'uuid';
+
 import { ReliableBatchQueue } from '../eventsQueue/reliableBatchQueue';
 import { responseMessages } from '../strings/responseMessages';
 import { tokenUtil } from '../utils/tokenUtil';
 import { JwtPayload } from 'jsonwebtoken';
 import { Application, IApplication } from '../model/mongo/application';
 import { Document } from 'mongoose';
+import { EventMessageDto } from '../model/eventMessageDto';
+import { eventMessageDtoSchema } from '../utils/zodUtil';
+import { eventMessageFromDto } from '../model/eventMessage';
 
 export async function websocket(ws: WebSocket, req: Request, next: NextFunction): Promise<void> {
   const token = req.query.token as string;
@@ -27,15 +30,11 @@ export async function websocket(ws: WebSocket, req: Request, next: NextFunction)
     return;
   }
   ws.onmessage = (event) => {
-    const logMessage = JSON.parse(event.data as string);
+    const logMessage: EventMessageDto = eventMessageDtoSchema.parse(JSON.parse(event.data as string));
     if (!application.bundles.find(b => b.platform == logMessage.platform && b.bundleId == logMessage.bundleId)) {
       return;
     }
-    const eventData = {
-      ...logMessage,
-      id: uuidv4(),
-      applicationId: application._id.toString()
-    }
+    const eventData = eventMessageFromDto(logMessage, application._id.toString());
     ReliableBatchQueue.instance.enqueue(eventData);
     ws.send(`Echo: ${event.data}`);
   }

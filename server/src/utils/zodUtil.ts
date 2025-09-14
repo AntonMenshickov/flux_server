@@ -1,8 +1,24 @@
 import { Types } from 'mongoose';
 import z, { ZodNumber } from 'zod';
+import { LogLevel } from '../model/eventMessageDto';
 
 export const objectIdSchema = z
   .string()
   .refine((val: string) => Types.ObjectId.isValid(val), {
     message: "Invalid ObjectId",
   });
+
+  export const numberFromStringSchema = z
+  .string()
+  .transform((val: string) => Number(val)).refine((val) => !isNaN(val), { message: 'Invalid number', });
+
+export const eventMessageDtoSchema = z.object({
+  message: z.string().trim(),
+  logLevel: z.enum(LogLevel),
+  tags: z.array(z.string().trim().nonempty()).nullable().optional(),
+  meta: z.record(z.string(), z.string()).nullable().optional(),
+  platform: z.string().trim(),
+  bundleId: z.string().trim(),
+  deviceId: z.string().trim(),
+  timestamp: z.number(),
+});

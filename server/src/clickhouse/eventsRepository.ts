@@ -1,7 +1,9 @@
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
-import { EventMessage, LogLevel } from '../model/eventMessage';
+import { EventMessage } from '../model/eventMessage';
 import { InsertResult } from '@clickhouse/client';
 import { CLickhouse } from './clickhouse';
+import { LogLevel } from '../model/eventMessageDto';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface EventFilter {
   applicationId?: string | null;
@@ -96,12 +98,12 @@ export class EventsRepository {
     }
 
     if (filters?.from) {
-      conditions.push(`timestamp >= {from:DateTime64(3)}`);
+      conditions.push(`timestamp >= {from:DateTime64(6)}`);
       queryParams.from = filters.from;
     }
 
     if (filters?.to) {
-      conditions.push(`timestamp <= {to:DateTime64(3)}`);
+      conditions.push(`timestamp <= {to:DateTime64(6)}`);
       queryParams.to = filters.to;
     }
 

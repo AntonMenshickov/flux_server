@@ -1,21 +1,15 @@
-export enum LogLevel {
-  INFO = 'info',
-  WARN = 'warn',
-  ERROR = 'error',
-  DEBUG = 'debug',
+import { EventMessageDto } from './eventMessageDto';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface EventMessage extends EventMessageDto {
+  id: string;
+  applicationId: string;
 }
 
-export interface EventMessage {
-  id: string;
-  timestamp: number;
-  receiveTimestamp?: number;
-  logLevel: LogLevel;
-  applicationId: string;
-  platform: string;
-  bundleId: string;
-  deviceId: string;
-  message: string;
-  tags: string[];
-  meta: Map<string, string>;
-  stackTrace?: string;
+export function eventMessageFromDto(dto: EventMessageDto, applicationId: string) {
+  return {
+    ...dto,
+    id: uuidv4(),
+    applicationId: applicationId,
+  }
 }

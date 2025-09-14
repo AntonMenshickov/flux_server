@@ -15,14 +15,13 @@ export interface EventFilter {
   platform?: string | null;
   bundleId?: string | null;
   deviceId?: string | null;
-  from?: Date | null;
-  to?: Date | null;
+  from?: number | null;
+  to?: number | null;
 }
 
 export interface EventMessage {
   id: string;
-  timestamp: number;
-  receiveTimestamp?: number;
+  timestamp: string;
   logLevel: LogLevel;
   applicationId: string;
   platform: string;
