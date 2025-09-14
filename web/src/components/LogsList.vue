@@ -27,14 +27,14 @@
       <h2>Logs for: {{ filters.applicationId || 'All' }}</h2>
       <ul>
         <li v-for="(log, index) in filteredLogs" :key="index" class="log-card">
-          <header class="log-header">
+          <div class="log-card-header">
             <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
             <LogLevelBadge :level="log.logLevel" />
-          </header>
+          </div>
 
           <section class="log-main">
-            <h3 class="log-message">{{ log.message }}</h3>
-            <div v-if="log.stackTrace" class="stacktrace">
+            <p class="log-part-card log-message">{{ log.message }}</p>
+            <div v-if="log.stackTrace" class="log-part-card stack-trace">
               <strong>Stack Trace:</strong>
               <pre>{{ log.stackTrace }}</pre>
             </div>
@@ -48,11 +48,11 @@
           </section>
 
           <section class="tags-meta">
-            <div class="tags">
+            <div v-if="log.tags && log.tags.length > 0" class="tags">
               <strong>Tags:</strong>
               <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" />
             </div>
-            <div class="meta">
+            <div v-if="log.meta && log.meta.entries.length > 0" class="meta">
               <strong>Meta:</strong>
               <ul>
                 <li v-for="[key, value] in log.meta" :key="key">{{ key }}: {{ value }}</li>
@@ -231,7 +231,7 @@ function formatDate(ts: number) {
 .log-card {
   background: #fff;
   border: 1px solid #ddd;
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
@@ -240,7 +240,7 @@ function formatDate(ts: number) {
   gap: 0.8rem;
 }
 
-.log-header {
+.log-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -251,20 +251,28 @@ function formatDate(ts: number) {
   color: #666;
 }
 
-.log-main .log-message {
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.stacktrace {
+.log-part-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: #f9f9f9;
   border-left: 3px solid #ccc;
   padding: 0.5rem;
   border-radius: 4px;
 }
 
-.stacktrace pre {
+.log-part-card.log-message {
+  background-color: #0284c714;
+  border-left-color: #0284c733;
+}
+.log-part-card.stack-trace {
+  flex-direction: column;
+  align-items: start;
+  border-left-color: #ff000033;
+  background-color: #ff000014;
+}
+
+.log-part-card pre {
   margin: 0.2rem 0 0;
   white-space: pre-wrap;
   word-break: break-word;

@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import z, { ZodNumber } from 'zod';
+import z, { nullable, ZodNumber } from 'zod';
 import { LogLevel } from '../model/eventMessageDto';
 
 export const objectIdSchema = z
@@ -21,4 +21,5 @@ export const eventMessageDtoSchema = z.object({
   bundleId: z.string().trim(),
   deviceId: z.string().trim(),
   timestamp: z.number(),
+  stackTrace: z.string().nullable().optional()
 });

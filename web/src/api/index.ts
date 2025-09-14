@@ -1,10 +1,13 @@
 import axios, { AxiosError } from 'axios';
 import { useUserStore } from '@/stores/user';
-import { jwtDecode, type JwtPayload} from 'jwt-decode';
+import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import { left, right, type Either } from '@sweet-monads/either';
 import { auth } from './auth';
+import { CONFIG } from '@/config';
 
-const baseUrl = 'http://localhost:4000/api';
+
+const baseUrl = `${CONFIG.API_URL}/api`;
+console.log(baseUrl);
 const privateApi = axios.create({
   baseURL: baseUrl,
   headers: {
@@ -80,7 +83,6 @@ privateApi.interceptors.request.use(async (config) => {
       const accessTokenPayload = jwtDecode<JwtPayload>(accessToken);
       const now = Math.floor(Date.now() / 1000);
 
-      // Проверяем, не истёк ли токен
       if (accessTokenPayload.exp == null || accessTokenPayload.exp < now) {
         console.log('Access token expired, trying to refresh...');
         const refreshToken = userStore.token.refreshToken;
@@ -102,11 +104,9 @@ privateApi.interceptors.request.use(async (config) => {
           throw new Error('Session expired');
         }
       } else {
-        // Токен действителен — добавляем его в заголовок
         config.headers.authorization = `Bearer ${accessToken}`;
       }
     } catch (e) {
-      // Некорректный токен — разлогиниваем
       userStore.logout();
       throw e;
     }
@@ -123,7 +123,6 @@ privateApi.interceptors.response.use(
 
     if (error.response?.status === 401) {
       userStore.logout();
-      // например, редирект на /login
     }
 
     return Promise.reject(error);
@@ -137,7 +136,6 @@ publicApi.interceptors.response.use(
 
     if (error.response?.status === 401) {
       userStore.logout();
-      // например, редирект на /login
     }
 
     return Promise.reject(error);
