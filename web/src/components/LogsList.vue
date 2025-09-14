@@ -24,7 +24,6 @@
     </div>
 
     <div class="logs-list" @scroll="handleScroll">
-      <h2>Logs for: {{ filters.applicationId || 'All' }}</h2>
       <ul>
         <li v-for="(log, index) in filteredLogs" :key="index" class="log-card">
           <div class="log-card-header">
@@ -33,7 +32,7 @@
           </div>
 
           <section class="log-main">
-            <p class="log-part-card log-message">{{ log.message }}</p>
+            <p :class="['log-part-card', 'log-message', log.logLevel]">{{ log.message }}</p>
             <div v-if="log.stackTrace" class="log-part-card stack-trace">
               <strong>Stack Trace:</strong>
               <pre>{{ log.stackTrace }}</pre>
@@ -208,12 +207,11 @@ function formatDate(ts: number) {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.5rem;
   font-family: sans-serif;
 }
 
 .logs-list {
-
+  padding: 1.5rem;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -237,7 +235,7 @@ function formatDate(ts: number) {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.5rem;
 }
 
 .log-card-header {
@@ -261,15 +259,31 @@ function formatDate(ts: number) {
   border-radius: 4px;
 }
 
-.log-part-card.log-message {
-  background-color: #0284c714;
-  border-left-color: #0284c733;
+.log-part-card.log-message.info {
+  background-color: rgba(2, 132, 199, 0.078);
+  border-left-color: rgba(2, 132, 199, 0.2);
 }
+
+.log-part-card.log-message.warn {
+  background-color: rgba(199, 146, 2, 0.078);
+  border-left-color: rgba(199, 146, 2, 0.2);
+}
+
+.log-part-card.log-message.error {
+  border-left-color: #ff000033;
+  background-color: #ff000014;
+}
+
+.log-part-card.log-message.debug {
+  border-left-color: rgb(163, 111, 173);
+  background-color: rgba(163, 111, 173, 0.1);
+}
+
 .log-part-card.stack-trace {
   flex-direction: column;
   align-items: start;
-  border-left-color: #ff000033;
-  background-color: #ff000014;
+  border-left-color: rgba(255, 0, 0, 0.2);
+  background-color: rgba(255, 0, 0, 0.078);
 }
 
 .log-part-card pre {
@@ -281,8 +295,9 @@ function formatDate(ts: number) {
 
 .log-details {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 0.4rem 1rem;
+  text-align: start;
   font-size: 0.9rem;
   color: #444;
 }
@@ -311,6 +326,7 @@ function formatDate(ts: number) {
 
 .filters {
   display: flex;
+  padding: 1.5rem;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;

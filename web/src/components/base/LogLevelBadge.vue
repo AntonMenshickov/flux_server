@@ -37,6 +37,6 @@ const levelClass = computed(() => props.level.toLowerCase());
 }
 
 .log-level-badge.debug {
-  background: #6b7280;
+  background: #a36fad;
 }
 </style>
