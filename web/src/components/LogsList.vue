@@ -6,7 +6,8 @@
       <BaseMultiselect v-model="filters.logLevel" :options="Object.values(LogLevel)"
         :label-builder="logLevelLabelBuilder" label="Log level" />
       <BaseInput v-model="filters.platform" type="text" placeholder="Platform" />
-      <BaseInput v-model="tagsValue" type="text" placeholder="Tags delimiter ','" />
+      <BaseInput v-model="tagsValue" type="text" placeholder="Tags (delimiter ',')" />
+      <BaseInput v-model="filters.meta" type="text" placeholder="Meta (key1: value1, key2: value2)" />
       <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
       <label>
@@ -53,11 +54,12 @@
               <strong>Tags:</strong>
               <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" />
             </div>
-            <div v-if="log.meta && log.meta.entries.length > 0" class="meta">
+            <div v-if="log.meta && log.meta.size > 0" class="meta">
               <strong>Meta:</strong>
-              <ul>
-                <li v-for="[key, value] in log.meta" :key="key">{{ key }}: {{ value }}</li>
-              </ul>
+              <div v-for="[key, value] in log.meta" :key="key" class="meta-values">
+                <div>{{ key }}:</div>
+                <div>{{ value }}</div>
+              </div>
             </div>
           </section>
         </li>
@@ -84,6 +86,7 @@ const filters = ref<{
   message: string | null;
   logLevel: LogLevel[] | null;
   tags: string[] | null;
+  meta: string | null,
   platform: string;
   bundleId: string;
   deviceId: string;
@@ -94,6 +97,7 @@ const filters = ref<{
   message: '',
   logLevel: null,
   tags: null,
+  meta: null,
   platform: '',
   bundleId: '',
   deviceId: '',
@@ -141,6 +145,11 @@ async function fetchLogs(clear: boolean = false) {
     message: filters.value.message || null,
     logLevel: filters.value.logLevel ? filters.value.logLevel : null,
     tags: filters.value.tags || null,
+    meta: filters.value.meta ? Object.fromEntries(new Map(filters.value.meta.split(',').map(pair => {
+      const [key, ...rest] = pair.split(':');
+      const value = rest.join(':');
+      return [key.trim(), value.trim()] as [string, string];
+    }))) : null,
     platform: filters.value.platform || null,
     bundleId: filters.value.bundleId || null,
     deviceId: filters.value.deviceId || null,
@@ -176,6 +185,7 @@ function resetFilters() {
     message: '',
     logLevel: null,
     tags: null,
+    meta: null,
     platform: '',
     bundleId: '',
     deviceId: '',
@@ -320,10 +330,12 @@ function formatDate(ts: number) {
 
 .meta {
   font-size: 0.85rem;
+  text-align: start;
 }
 
-.meta ul {
-  padding-left: 1rem;
+.meta .meta-values {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   margin: 0.3rem 0 0;
 }
 

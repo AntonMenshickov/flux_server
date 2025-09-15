@@ -76,7 +76,7 @@ export class EventsRepository {
 
     if (filters?.meta) {
       Object.entries(filters.meta).forEach(([key, value], i) => {
-        conditions.push(`mapContains(meta, {metaKey${i}:String}, {metaValue${i}:String})`);
+        conditions.push(`mapValues(meta)[indexOf(mapKeys(meta), {metaKey${i}:String})] = {metaValue${i}:String}`);
         queryParams[`metaKey${i}`] = key;
         queryParams[`metaValue${i}`] = value;
       });
