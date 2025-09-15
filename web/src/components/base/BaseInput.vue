@@ -29,6 +29,7 @@ const localValue = computed<string>({
 <style scoped>
 .base-input {
   min-height: 40px;
+  max-height: 40px;
   box-sizing: border-box;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
@@ -40,6 +41,6 @@ const localValue = computed<string>({
 .base-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(100, 150, 250, 0.2);
+  box-shadow: var(--box-shadow);
 }
 </style>

@@ -7,9 +7,9 @@
         :label-builder="logLevelLabelBuilder" label="Log level" />
       <BaseInput v-model="filters.platform" type="text" placeholder="Platform" />
       <BaseInput v-model="tagsValue" type="text" placeholder="Tags (delimiter ',')" />
-      <BaseInput v-model="filters.meta" type="text" placeholder="Meta (key1: value1, key2: value2)" />
       <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
+      <BaseKeyValueEditor v-model="filters.meta" />
       <label>
         From:
         <BaseInput v-model="filters.from" type="datetime-local" />
@@ -78,6 +78,7 @@ import { ref, computed, onMounted } from 'vue';
 import BaseButton from './base/BaseButton.vue';
 import BaseInput from './base/BaseInput.vue';
 import BaseMultiselect from './base/BaseMultiselect.vue';
+import BaseKeyValueEditor from './base/BaseKeyValueEditor.vue';
 
 
 const logs = ref<EventMessage[]>([]);
@@ -86,7 +87,7 @@ const filters = ref<{
   message: string | null;
   logLevel: LogLevel[] | null;
   tags: string[] | null;
-  meta: string | null,
+  meta: { key: string, value: string }[] | null,
   platform: string;
   bundleId: string;
   deviceId: string;
@@ -145,11 +146,9 @@ async function fetchLogs(clear: boolean = false) {
     message: filters.value.message || null,
     logLevel: filters.value.logLevel ? filters.value.logLevel : null,
     tags: filters.value.tags || null,
-    meta: filters.value.meta ? Object.fromEntries(new Map(filters.value.meta.split(',').map(pair => {
-      const [key, ...rest] = pair.split(':');
-      const value = rest.join(':');
-      return [key.trim(), value.trim()] as [string, string];
-    }))) : null,
+    meta: filters.value.meta ? Object.fromEntries(filters.value.meta
+      .filter(({ key, value }) => key.trim().length > 0 && value.trim().length > 0)
+      .map(({ key, value }) => [key, value])) : null,
     platform: filters.value.platform || null,
     bundleId: filters.value.bundleId || null,
     deviceId: filters.value.deviceId || null,
@@ -244,7 +243,7 @@ function formatDate(ts: number) {
   border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--box-shadow);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -341,10 +340,11 @@ function formatDate(ts: number) {
 
 .filters {
   display: flex;
+  flex-direction: row;
   padding: 1.5rem;
   flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: center;
+  align-items: start;
 }
 
 .filter-actions {

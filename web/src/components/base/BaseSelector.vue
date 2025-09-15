@@ -91,7 +91,7 @@ const selectOption = (option: Option) => {
 }
 
 .selector-wrapper.opened {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--box-shadow);
 }
 
 .selector-input {
@@ -107,7 +107,7 @@ const selectOption = (option: Option) => {
 .selector-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(100, 150, 250, 0.2);
+  box-shadow: var(--box-shadow);
 }
 
 .selector-input.opened {
@@ -132,7 +132,11 @@ const selectOption = (option: Option) => {
 }
 
 .dropdown li {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
   padding: 0.4rem 0.6rem;
+  box-sizing: border-box;
   cursor: pointer;
 }
 

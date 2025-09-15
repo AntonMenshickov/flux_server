@@ -185,7 +185,7 @@ async function createApplication() {
 }
 
 .applications-list li {
-  background: var(--color-secondary);
+  background: #fff;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 1rem;
@@ -193,7 +193,7 @@ async function createApplication() {
 }
 
 .applications-list li:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--box-shadow);
 }
 
 .list-title {

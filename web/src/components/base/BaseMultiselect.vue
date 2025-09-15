@@ -114,6 +114,7 @@ function toggleSelect(option: T) {
   border: 1px solid var(--color-border);
   background-color: white;
   box-sizing: border-box;
+  box-shadow: var(--box-shadow-strong);
 }
 
 .options .option {

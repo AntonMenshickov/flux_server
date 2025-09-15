@@ -1,9 +1,10 @@
 <template>
   <div class="user-list">
-    <input type="text" v-model="searchQuery" placeholder="Search users..." @input="onSearchInput"
-      class="search-input" />
+    <div class="search-and-create">
+      <BaseInput type="text" v-model="searchQuery" placeholder="Search users..." @input="onSearchInput" />
 
-    <button class="create-btn" @click="openCreateModal">Create User</button>
+      <BaseButton @click="openCreateModal">Create User</BaseButton>
+    </div>
 
     <ul v-if="usersList.length > 0">
       <li v-for="user in usersList" :key="user.id">
@@ -34,6 +35,8 @@ import ModalDialog from '@/components/ModalDialog.vue';
 import { type User, users } from '@/api/users';
 import { debounce } from 'lodash';
 import { onMounted, ref } from 'vue';
+import BaseInput from './base/BaseInput.vue';
+import BaseButton from './base/BaseButton.vue';
 
 
 const usersList = ref<User[]>([]);
@@ -123,27 +126,19 @@ async function createUser() {
 
 
 <style scoped>
-.search-input {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
-  border: 1px solid var(--color-on-primary);
+.search-and-create {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
-.create-btn {
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
-  cursor: pointer;
+.search-and-create input {
+  flex: 1;
 }
 
-.create-btn:hover {
-  opacity: 0.8;
-}
+
 
 .user-list {
   max-width: 400px;
@@ -157,7 +152,7 @@ async function createUser() {
   margin: 0;
   border: 1px solid var(--color-on-primary);
   border-radius: 6px;
-  background-color: var(--color-secondary);
+  background-color: #fff;
 }
 
 .user-list li {
