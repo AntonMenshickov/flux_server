@@ -31,12 +31,14 @@
             <LogLevelBadge :level="log.logLevel" />
           </div>
 
-          <section class="log-main">
-            <p :class="['log-part-card', 'log-message', log.logLevel]">{{ log.message }}</p>
-            <div v-if="log.stackTrace" class="log-part-card stack-trace">
-              <strong>Stack Trace:</strong>
-              <pre>{{ log.stackTrace }}</pre>
-            </div>
+
+          <section :class="['log-part-card', 'log-message', log.logLevel]">
+            <pre>{{ log.message }}</pre>
+          </section>
+
+          <section v-if="log.stackTrace" class="log-part-card stack-trace">
+            <strong>Stack Trace:</strong>
+            <pre>{{ log.stackTrace }}</pre>
           </section>
 
           <section class="log-details">
@@ -291,6 +293,7 @@ function formatDate(ts: number) {
   white-space: pre-wrap;
   word-break: break-word;
   font-size: 0.85rem;
+  text-align: start;
 }
 
 .log-details {
