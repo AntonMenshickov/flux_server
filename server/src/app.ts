@@ -36,9 +36,13 @@ export async function startServer() {
 
   wsApp.ws('/ws', websocket);
   app.use(cors());
+
+  // Serve static if a frontend build exists at ../web/dist
+  const frontendDist = path.join(__dirname, '../../web/dist');
+  app.use(express.static(frontendDist));
   app.use((req, res, next) => {
     const now = new Date();
-    console.info(`${now.toUTCString()} ${[req.method]} ${req.url}`)
+    console.info(`REQUEST ${now.toUTCString()} ${[req.method]} ${req.url}`)
     return next();
   })
   app.use((req, res, next) => {
@@ -50,9 +54,6 @@ export async function startServer() {
   // Simple health route
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-  // Serve static if a frontend build exists at ../web/dist
-  const frontendDist = path.join(__dirname, '../../web/dist');
-  app.use(express.static(frontendDist));
 
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
@@ -62,6 +63,8 @@ export async function startServer() {
   });
 
   const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    const now = new Date();
+    console.info(`ERROR ${now.toUTCString()} ${[req.method]} ${req.url}`)
     console.error(err);
     res.status(500).json({ message: err.message || 'Internal Server Error' });
   };
