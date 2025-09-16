@@ -1,4 +1,5 @@
-import express from 'express';
+import 'express-async-errors';
+import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
@@ -36,6 +37,11 @@ export async function startServer() {
   wsApp.ws('/ws', websocket);
   app.use(cors());
   app.use((req, res, next) => {
+    const now = new Date();
+    console.info(`${now.toUTCString()} ${[req.method]} ${req.url}`)
+    return next();
+  })
+  app.use((req, res, next) => {
     if (req.path === '/api/events/add') return next();
     bodyParser.json()(req, res, next)
   });
@@ -54,6 +60,12 @@ export async function startServer() {
       if (err) next(err);
     });
   });
+
+  const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ message: err.message || 'Internal Server Error' });
+  };
+  app.use(errorHandler);
 
   const port = process.env.PORT ? Number(process.env.PORT) : 4000;
   app.listen(port, () => {

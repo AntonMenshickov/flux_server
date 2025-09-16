@@ -40,7 +40,6 @@ export async function addEvents(req: AppAuthRequest, res: Response, next: NextFu
   await new EventsRepository().insert(events.map(e => eventMessageFromDto(e, application._id.toString())));
 
 
-
   return res.status(204).json({
     success: true,
   });
