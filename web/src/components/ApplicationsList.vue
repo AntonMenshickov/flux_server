@@ -10,10 +10,15 @@
       <li v-for="app in applicationsList" :key="app.id">
         <div class="list-title">
           <span>{{ app.name }}</span>
-          <TrashIcon class="delete-icon" @click="confirmDelete(app)" />
+          <span>
+            <PencilSquareIcon class="action-icon" @click="confirmDelete(app)" />
+            <TrashIcon class="action-icon delete" @click="confirmDelete(app)" />
+          </span>
         </div>
         <div v-if="app.bundles.length > 0" class="application-options">
-          <span><strong>Token: </strong><BaseInput :readonly="true" :initialValue="app.token" /></span>
+          <span><strong>Token: </strong>
+            <BaseInput :readonly="true" :initialValue="app.token" />
+          </span>
           <strong>Bundle Ids:</strong>
           <div v-for="(bundle, index) in app.bundles" :key="index">
             <span>{{ bundle.platform }}: {{ bundle.bundleId }}</span>
@@ -32,32 +37,23 @@
     </ModalDialog>
 
     <ModalDialog :show="showCreateModal" cancelText="Cancel" confirmText="Create" :isDanger="false"
-      @cancel="closeCreateModal" @confirm="createApplication">
-      <p>Create new application</p>
-      <BaseInput type="text" v-model="newLogin" placeholder="Application name" />
-      <ul v-if="newBundleIds && newBundleIds.length > 0">
-        <li v-for="(bundle, index) in newBundleIds" :key="index">
-          <BaseInput type="text" v-model="bundle.platform" placeholder="Platform" />
-          <BaseInput type="text" v-model="bundle.bundleId" placeholder="Bundle id" />
-          <TrashIcon class="delete-icon" @click="deleteBundle(index)" />
-        </li>
-      </ul>
-      <BaseButton class="create-btn" @click="addBundle">Add bundle id</BaseButton>
+      @cancel="closeCreateModal">
+      <EditApplication :id="null" :onSaveApplication="onApplicationSave" />
 
     </ModalDialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { TrashIcon } from '@heroicons/vue/24/outline';
+import { TrashIcon, PencilSquareIcon } from '@heroicons/vue/24/outline';
 import ModalDialog from '@/components/ModalDialog.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import { onMounted, ref } from 'vue';
-import { applications, type Application } from '@/api/applications';
+import { applications, type Application, type Bundle, } from '@/api/applications';
 import { debounce } from 'lodash';
-
-
+import EditApplication from './base/EditApplication.vue';
+import type { User } from '@/api/users';
 
 
 const applicationsList = ref<Application[]>([]);
@@ -66,8 +62,6 @@ const showDeleteModal = ref<boolean>(false);
 const applicationToDelete = ref<Application | null>(null);
 
 const showCreateModal = ref<boolean>(false);
-const newLogin = ref<string>('');
-const newBundleIds = ref<{ platform: string, bundleId: string }[] | null>(null);
 
 
 // let totalApplications: number = 0;
@@ -80,13 +74,6 @@ onMounted(() => {
   fetchApplications(); // Call the function when the component is mounted
 });
 
-function deleteBundle(index: number) {
-  newBundleIds.value = newBundleIds.value?.splice(index, 1) ?? null;
-}
-
-function addBundle() {
-  newBundleIds.value = [...newBundleIds.value ?? [], { platform: '', bundleId: '' }];
-}
 
 async function fetchApplications() {
   const result = await applications.search(searchQuery.value, appsPerPage, 0);
@@ -96,6 +83,19 @@ async function fetchApplications() {
   }
   applicationsList.value = result.value.result.applications;
   // totalApplications = result.value.result.total;
+}
+
+async function onApplicationSave(application: { id: string | null, name: string, bundles: Bundle[], maintainers: User[] }) {
+  const addResult = await applications.addApplication(application.name,
+    application.bundles,
+    application.maintainers.map(e => e.id),
+  );
+  if (addResult.isLeft()) {
+    alert(`Failed to create application: ${addResult.value.message}`);
+  } else {
+    applicationsList.value = [addResult.value.result, ...applicationsList.value];
+    showCreateModal.value = false;
+  }
 }
 
 function onSearchInput() {
@@ -127,8 +127,6 @@ async function deleteApplication() {
 }
 
 function openCreateModal() {
-  newLogin.value = '';
-  newBundleIds.value = [{platform: '', bundleId: ''}];
   showCreateModal.value = true;
 }
 
@@ -136,21 +134,6 @@ function closeCreateModal() {
   showCreateModal.value = false;
 }
 
-async function createApplication() {
-  if (!newLogin.value || !newBundleIds.value) {
-    alert('Enter both name and at least one bundle id');
-    return;
-  }
-
-  const addResult = await applications.addApplication(newLogin.value, newBundleIds.value);
-  if (addResult.isLeft()) {
-    alert(`Failed to create application: ${addResult.value.message}`);
-  } else {
-    applicationsList.value = [addResult.value.result, ...applicationsList.value];
-  }
-
-  closeCreateModal();
-}
 </script>
 
 
@@ -204,16 +187,20 @@ async function createApplication() {
   font-size: 1rem;
 }
 
-.delete-icon {
+.action-icon {
   width: 20px;
   height: 20px;
-  color: var(--color-danger);
+  color: var(--color-accent);
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.2s, transform 0.2s;
 }
 
-.delete-icon:hover {
+.action-icon.delete {
+  color: var(--color-danger);
+}
+
+.action-icon:hover {
   opacity: 1;
   transform: scale(1.1);
 }
@@ -226,33 +213,5 @@ async function createApplication() {
   gap: 0.4em;
   font-size: 0.9rem;
   color: #555;
-}
-
-
-.modal ul {
-  margin-bottom: 0.75rem;
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.modal ul li {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.modal ul li input {
-  flex: 1;
-  margin: 0;
-}
-
-.modal .delete-icon {
-  opacity: 0.7;
-}
-
-.modal .delete-icon:hover {
-  opacity: 1;
 }
 </style>

@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodObject } from 'zod';
+import { UserAuthRequest } from './authorizationRequired';
 
 export function validate(schema: ZodObject) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: UserAuthRequest, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req);
     
     if (!result.success) {

@@ -6,7 +6,7 @@ export const objectIdSchema = z
   .string()
   .refine((val: string) => Types.ObjectId.isValid(val), {
     message: "Invalid ObjectId",
-  });
+  }).transform((val: string) => new Types.ObjectId(val));
 
   export const numberFromStringSchema = z
   .string()

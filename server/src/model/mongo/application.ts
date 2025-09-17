@@ -6,6 +6,7 @@ export interface IApplication extends IBaseSchema {
   name: string;
   bundles: IBundleId[];
   token: string;
+  maintainers: Types.ObjectId[];
   deleted: boolean;
   deletedAt?: Date;
 }
@@ -39,6 +40,14 @@ export const applicationSchema = baseSchema<IApplication>({
     },
   },
   token: {type: String, required: true},
+  maintainers: [
+    {
+      type: Types.ObjectId,
+      ref: 'User',
+      required: true,
+      default: []
+    },
+  ],
   deleted: { type: Boolean, required: true, default: false },
   deletedAt: { type: Date, default: null }
 });

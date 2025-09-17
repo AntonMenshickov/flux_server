@@ -1,62 +1,82 @@
 <template>
-  <div class="base-selector">
-    <div :class="{ 'selector-wrapper': true, 'opened': showDropdown }">
-      <BaseInput v-model="search" @input="onSearch" :placeholder="placeholder"
-        :class="{ 'selector-input': true, 'opened': showDropdown }" />
+  <div :class="{ 'selector-wrapper': true, opened: showDropdown }" ref="dropdown">
+    <BaseInput v-model="search" @input="onSearch" @click="openDropdown" :placeholder="placeholder"
+      :class="{ 'selector-input': true, opened: showDropdown }" />
 
-      <ul v-if="showDropdown" class="dropdown">
-        <li v-for="option in options" :key="option.value" @click="selectOption(option)">
-          {{ option.label }}
-        </li>
-        <li v-if="loading" class="loading">loading...</li>
-        <li v-if="!loading && options.length === 0" class="no-results">No results</li>
-      </ul>
-    </div>
+    <ul v-if="showDropdown" class="dropdown">
+      <li v-for="item in options" :key="valueKey(item as T)" @click="selectOption(item as T)">
+        {{ labelKey(item as T) }}
+      </li>
+      <li v-if="loading" class="loading">loading...</li>
+      <li v-if="!loading && options.length === 0" class="no-results">
+        No results
+      </li>
+    </ul>
   </div>
 </template>
 
-<script setup lang="ts">
-import { debounce } from 'lodash';
-import { ref, watch } from 'vue'
-import BaseInput from './BaseInput.vue';
-
-
-type Option = { label: string; value: string }
-
-
+<script setup lang="ts" generic="T">
+import { debounce } from 'lodash'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import BaseInput from './BaseInput.vue'
 
 const props = defineProps<{
-  modelValue?: string | null
-  fetchOptions: (query: string) => Promise<Option[]>
+  modelValue: T | null
+  fetchOptions: (query: string) => Promise<T[]>
+  labelKey: (item: T) => string
+  valueKey: (item: T) => string
   placeholder?: string
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
+  (e: 'update:modelValue', value: T | null): void
 }>()
 
 const search = ref('')
-const options = ref<Option[]>([])
+const options = ref<T[]>([])
 const loading = ref(false)
 const showDropdown = ref(false)
+const dropdown = ref<HTMLElement | null>(null);
 
 const debouncedSearch = debounce(fetchData, 200);
-
-
 
 watch(
   () => props.modelValue,
   (val) => {
-    const found = options.value.find((o) => o.value === val)
-    if (found) search.value = found.label
+    if (!val) {
+      search.value = '';
+      return;
+    }
+    const found = options.value.find((o) => props.valueKey(o as T) === props.valueKey(val));
+    if (found) search.value = props.labelKey(found as T);
   },
   { immediate: true }
 )
+
+
+function handleClickOutside(event: MouseEvent) {
+  if (!showDropdown.value) return;
+  if (dropdown.value && !dropdown.value.contains(event.target as Node)) {
+    showDropdown.value = false;
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 
 async function fetchData() {
   options.value = await props.fetchOptions(search.value.trim());
 }
 
+const openDropdown = async () => {
+  if (showDropdown.value) return;
+  onSearch();
+}
 
 const onSearch = async () => {
   showDropdown.value = true
@@ -64,30 +84,26 @@ const onSearch = async () => {
   try {
     debouncedSearch();
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-
-const selectOption = (option: Option) => {
-  emit('update:modelValue', option.value)
-  search.value = option.label
-  showDropdown.value = false
+const selectOption = (item: T) => {
+  emit('update:modelValue', item);
+  search.value = props.labelKey(item);
+  showDropdown.value = false;
 }
 </script>
 
 <style scoped>
-.base-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  position: relative;
-  width: 250px;
-}
 
 .selector-wrapper {
   display: flex;
   position: relative;
+}
+
+.selector-wrapper>input {
+  width: 100%;
 }
 
 .selector-wrapper.opened {

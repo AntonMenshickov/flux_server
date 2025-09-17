@@ -1,7 +1,8 @@
 <template>
   <div class="logs-page">
     <div class="filters">
-      <BaseSelector v-model="filters.applicationId" placeholder="Application" :fetch-options="fetchApps" />
+      <BaseSelector v-model="filters.application" :fetch-options="fetchApps" :label-key="(u) => u.name"
+        :value-key="(u) => u.id" placeholder="Select application" />
       <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
       <BaseMultiselect v-model="filters.logLevel" :options="Object.values(LogLevel)"
         :label-builder="logLevelLabelBuilder" label="Log level" />
@@ -9,7 +10,7 @@
       <BaseInput v-model="tagsValue" type="text" placeholder="Tags (delimiter ',')" />
       <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
-      <BaseKeyValueEditor v-model="filters.meta" />
+      <BaseKeyValueEditor v-model="filters.meta" placeholder="meta" />
       <label>
         From:
         <BaseInput v-model="filters.from" type="datetime-local" />
@@ -69,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { applications } from '@/api/applications';
+import { applications, type Application } from '@/api/applications';
 import { events, type EventMessage, type EventFilter, LogLevel } from '@/api/events';
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import TagBadge from '@/components/base/TagBadge.vue';
@@ -83,7 +84,7 @@ import BaseKeyValueEditor from './base/BaseKeyValueEditor.vue';
 
 const logs = ref<EventMessage[]>([]);
 const filters = ref<{
-  applicationId: string | null,
+  application: Application | null,
   message: string | null;
   logLevel: LogLevel[] | null;
   tags: string[] | null;
@@ -94,7 +95,7 @@ const filters = ref<{
   from: string | null;
   to: string | null;
 }>({
-  applicationId: '',
+  application: null,
   message: '',
   logLevel: null,
   tags: null,
@@ -142,7 +143,7 @@ async function fetchLogs(clear: boolean = false) {
     hasMore = true;
   }
   const filter: EventFilter = {
-    applicationId: filters.value.applicationId || null,
+    applicationId: filters.value.application?.id || null,
     message: filters.value.message || null,
     logLevel: filters.value.logLevel ? filters.value.logLevel : null,
     tags: filters.value.tags || null,
@@ -180,7 +181,7 @@ function applyFilters() {
 
 function resetFilters() {
   filters.value = {
-    applicationId: '',
+    application: null,
     message: '',
     logLevel: null,
     tags: null,
@@ -194,13 +195,10 @@ function resetFilters() {
   fetchLogs(true);
 }
 
-async function fetchApps(search: string): Promise<{ label: string; value: string }[]> {
+async function fetchApps(search: string): Promise<Application[]> {
   const searchResult = await applications.search(search, 10, 0);
   if (searchResult.isRight()) {
-    return searchResult.value.result.applications.map((a) => ({
-      label: a.name,
-      value: a.id,
-    }));
+    return searchResult.value.result.applications;
   }
   return [];
 }

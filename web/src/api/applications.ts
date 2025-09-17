@@ -1,8 +1,8 @@
 import { request } from '.';
 
-interface Bundle {
+export interface Bundle {
   platform: string;
-  bundleId: boolean;
+  bundleId: string;
 }
 
 export interface Application {
@@ -23,8 +23,8 @@ export const applications = {
   search,
 }
 
-async function addApplication(name: string, bundles: { platform: string, bundleId: string }[]) {
-  const result = await request<Application>({ authorized: true, 'method': 'post', url: '/applications/add', data: { name, bundles } },);
+async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
+  const result = await request<Application>({ authorized: true, 'method': 'post', url: '/applications/add', data: { name, bundles, maintainers } },);
   return result;
 }
 

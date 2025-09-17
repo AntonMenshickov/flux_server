@@ -4,9 +4,10 @@ import { InsertResult } from '@clickhouse/client';
 import { CLickhouse } from './clickhouse';
 import { LogLevel } from '../model/eventMessageDto';
 import { EventMessageDbView } from '../model/eventMessageDbView';
+import { Types } from 'mongoose';
 
 export interface EventFilter {
-  applicationId?: string | null;
+  applicationId?: Types.ObjectId | null;
   message?: string | null;
   logLevel?: LogLevel[] | null;
   tags?: string[] | null;
@@ -54,7 +55,7 @@ export class EventsRepository {
 
     if (filters?.applicationId) {
       conditions.push(`applicationId = {applicationId:String}`);
-      queryParams.applicationId = filters.applicationId.toLowerCase();
+      queryParams.applicationId = filters.applicationId.toString().toLowerCase();
     }
 
     if (filters?.message) {

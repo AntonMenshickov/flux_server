@@ -1,6 +1,6 @@
 <template>
   <div class="dropdown-wrapper" ref="dropdown">
-    <BaseInput v-model="presentation" placeholder="Meta" readonly @click="openDropdown"></BaseInput>
+    <BaseInput v-model="presentation" :placeholder="placeholder" readonly @click="openDropdown"></BaseInput>
     <div v-if="showDropdown" class="key-value-editor">
       <div v-for="(item, index) in localValue" :key="index" class="item">
         <BaseInput v-model="item.key" placeholder="Key" class="input-key" @input="updateItem" />
@@ -30,6 +30,7 @@ interface KeyValue {
 
 const props = defineProps<{
   modelValue: KeyValue[] | null
+  placeholder?: string | null
 }>();
 
 const dropdown = ref<HTMLElement | null>(null);
@@ -86,6 +87,10 @@ function updateItem() {
 <style scoped>
 .dropdown-wrapper {
   position: relative;
+}
+
+.dropdown-wrapper>input {
+  width: 100%;
 }
 
 .key-value-editor {

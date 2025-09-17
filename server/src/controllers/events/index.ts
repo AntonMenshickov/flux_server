@@ -7,7 +7,7 @@ import bodyParser from 'body-parser';
 
 export default function eventsModule(router: Router) {
   router.get('/events/search', userAuthorizationRequired, validate(searchEventsValidateSchema),  searchEvents);
-  router.post('/events/add', bodyParser.json({limit: '1000mb'}), appAuthorizationRequired, validate(addEventsValidateSchema),  addEvents);
+  router.post('/events/add', bodyParser.json({limit: '10mb'}), appAuthorizationRequired, validate(addEventsValidateSchema),  addEvents);
 
   console.log('Events module loaded');
 }
