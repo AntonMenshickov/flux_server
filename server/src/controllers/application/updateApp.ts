@@ -1,0 +1,56 @@
+import { Response, NextFunction } from 'express';
+import { responseMessages } from '../../strings/responseMessages';
+import { Document } from 'mongoose';
+import { Application, IApplication } from '../../model/mongo/application';
+import z from 'zod';
+import { tokenUtil } from '../../utils/tokenUtil';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
+import { objectIdSchema } from '../../utils/zodUtil';
+
+
+export const updateAppValidateSchema = z.object({
+  body: z.object({
+    id: objectIdSchema,
+    name: z.string().trim().min(1, responseMessages.NAME_IS_REQUIRED),
+    bundles: z.array(z.object({
+      platform: z.string().trim().min(1),
+      bundleId: z.string().trim().min(3)
+    })).nonempty(responseMessages.BUNDLE_ID_IS_REQUIRED),
+    maintainers: z.array(objectIdSchema)
+  })
+});
+
+export async function updateApp(req: UserAuthRequest, res: Response, next: NextFunction) {
+  const { id, name, bundles, maintainers } = updateAppValidateSchema.parse(req).body;
+
+  const app: IApplication & Document | null = await Application.findById(id).exec();
+
+  if (!app) {
+    return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
+  }
+
+  const existApp: IApplication & Document | null = await Application.findOne({ $and: [{ name }, { _id: { $ne: id } }] }).exec();
+  if (existApp) {
+    return res.status(400).json({ error: responseMessages.APP_NAME_ALREADY_TAKEN });
+  }
+
+  const maintainersList = [req.user?._id!, ...maintainers.filter(e => e.toString() != req.user?._id.toString())];
+
+  app.maintainers = maintainersList;
+  app.bundles = bundles;
+  app.name = name;
+  await app.save();
+
+  const populatedMaintainers = await app.populate('maintainers');
+
+  return res.status(200).json({
+    success: true,
+    result: {
+      id: app.id,
+      name: app.name,
+      bundles: bundles,
+      token: app.token,
+      maintainers: populatedMaintainers.maintainers,
+    }
+  });
+}

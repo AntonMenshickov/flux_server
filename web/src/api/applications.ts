@@ -1,4 +1,5 @@
 import { request } from '.';
+import type { User } from './users';
 
 export interface Bundle {
   platform: string;
@@ -10,6 +11,7 @@ export interface Application {
   name: string;
   bundles: Bundle[];
   token: string;
+  maintainers: User[];
 }
 
 interface ApplicationsSearchResponse {
@@ -19,12 +21,18 @@ interface ApplicationsSearchResponse {
 
 export const applications = {
   addApplication,
+  updateApplication,
   deleteApplication,
   search,
 }
 
 async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
   const result = await request<Application>({ authorized: true, 'method': 'post', url: '/applications/add', data: { name, bundles, maintainers } },);
+  return result;
+}
+
+async function updateApplication(id: string, name: string, bundles: Bundle[], maintainers: string[]) {
+  const result = await request<Application>({ authorized: true, 'method': 'put', url: '/applications/update', data: { id, name, bundles, maintainers } },);
   return result;
 }
 

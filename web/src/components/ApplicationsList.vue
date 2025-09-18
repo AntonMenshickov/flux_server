@@ -3,7 +3,7 @@
     <div class="top-bar">
       <BaseInput type="text" v-model="searchQuery" placeholder="Search applications..." @input="onSearchInput" />
 
-      <BaseButton @click="openCreateModal">Add app</BaseButton>
+      <BaseButton @click="openCreateModal(null)">Add app</BaseButton>
     </div>
 
     <ul v-if="applicationsList.length > 0">
@@ -11,7 +11,7 @@
         <div class="list-title">
           <span>{{ app.name }}</span>
           <span>
-            <PencilSquareIcon class="action-icon" @click="confirmDelete(app)" />
+            <PencilSquareIcon class="action-icon" @click="openCreateModal(app)" />
             <TrashIcon class="action-icon delete" @click="confirmDelete(app)" />
           </span>
         </div>
@@ -36,9 +36,9 @@
       <p>Delete application <strong>{{ applicationToDelete?.name }}</strong>?</p>
     </ModalDialog>
 
-    <ModalDialog :show="showCreateModal" cancelText="Cancel" confirmText="Create" :isDanger="false"
+    <ModalDialog :show="showCreateModal" cancelText="Cancel" :confirmText="null" :isDanger="false"
       @cancel="closeCreateModal">
-      <EditApplication :id="null" :onSaveApplication="onApplicationSave" />
+      <EditApplication :application="applicationToEdit" :onSaveApplication="onApplicationSave" />
 
     </ModalDialog>
   </div>
@@ -60,6 +60,7 @@ const applicationsList = ref<Application[]>([]);
 const searchQuery = ref<string>('');
 const showDeleteModal = ref<boolean>(false);
 const applicationToDelete = ref<Application | null>(null);
+const applicationToEdit = ref<Application | null>(null);
 
 const showCreateModal = ref<boolean>(false);
 
@@ -86,14 +87,25 @@ async function fetchApplications() {
 }
 
 async function onApplicationSave(application: { id: string | null, name: string, bundles: Bundle[], maintainers: User[] }) {
-  const addResult = await applications.addApplication(application.name,
+  const addResult = application.id ? await applications.updateApplication(
+    application.id,
+    application.name,
+    application.bundles,
+    application.maintainers.map(e => e.id),
+  ) : await applications.addApplication(
+    application.name,
     application.bundles,
     application.maintainers.map(e => e.id),
   );
   if (addResult.isLeft()) {
     alert(`Failed to create application: ${addResult.value.message}`);
   } else {
-    applicationsList.value = [addResult.value.result, ...applicationsList.value];
+    const indexOfApp = applicationsList.value.findIndex(e => e.id == addResult.value.result.id);
+    if (indexOfApp == -1) {
+      applicationsList.value = [addResult.value.result, ...applicationsList.value];
+    } else {
+      applicationsList.value[indexOfApp] = addResult.value.result;
+    }
     showCreateModal.value = false;
   }
 }
@@ -126,11 +138,13 @@ async function deleteApplication() {
   cancelDelete();
 }
 
-function openCreateModal() {
+function openCreateModal(application: Application | null) {
+  applicationToEdit.value = application;
   showCreateModal.value = true;
 }
 
 function closeCreateModal() {
+  applicationToEdit.value = null;
   showCreateModal.value = false;
 }
 

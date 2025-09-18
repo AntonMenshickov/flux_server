@@ -41,7 +41,7 @@ export async function addApp(req: UserAuthRequest, res: Response, next: NextFunc
     app.token = token;
     await app.save();
 
-    const maintainers = await app.populate('maintainers');
+    const populatedMaintainers = await app.populate('maintainers');
 
     return res.status(200).json({
       success: true,
@@ -50,7 +50,7 @@ export async function addApp(req: UserAuthRequest, res: Response, next: NextFunc
         name: app.name,
         bundles: bundles,
         token,
-        maintainers: maintainers,
+        maintainers: populatedMaintainers.maintainers,
       }
     });
   } catch (e) {

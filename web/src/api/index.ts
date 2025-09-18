@@ -7,7 +7,7 @@ import { CONFIG } from '@/config';
 
 
 const baseUrl = `${CONFIG.API_URL}/api`;
-console.log(baseUrl);
+
 const privateApi = axios.create({
   baseURL: baseUrl,
   headers: {

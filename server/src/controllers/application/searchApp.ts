@@ -14,6 +14,16 @@ export const searchAppsValidateSchema = z.object({
   })
 });
 
+
+// Базовый тип с ObjectId для сырых данных
+export type ApplicationDoc = IApplication & Document;
+
+// Тип после populate
+export type ApplicationPopulatedDoc = Omit<IApplication, 'maintainers'> & {
+  maintainers: IUser[];
+} & Document;
+
+
 export async function searchApps(req: UserAuthRequest, res: Response, next: NextFunction) {
   const search = (req.query.search as string || '').trim();
   const limit = Number(req.query.limit) || 20;
@@ -21,10 +31,11 @@ export async function searchApps(req: UserAuthRequest, res: Response, next: Next
 
   const query = search ? { name: { $regex: search, $options: 'i' }, deleted: false } : { deleted: false };
   const applicationsCount = await Application.countDocuments(query).exec();
-  const applications: (IApplication & Document)[] = await Application.find(query)
+  const applications: ApplicationPopulatedDoc[] = await Application.find(query)
     .sort({ createdAt: -1 })
     .skip(offset)
     .limit(limit)
+    .populate<{ maintainers: IUser[] }>('maintainers')
     .exec();
 
 
@@ -40,6 +51,11 @@ export async function searchApps(req: UserAuthRequest, res: Response, next: Next
           bundleId: bundle.bundleId,
         })),
         token: app.token,
+        maintainers: app.maintainers.map(m => ({
+          id: m._id,
+          login: m.login,
+          isOwner: m.isOwner,
+        })),
       }))
     }
   });

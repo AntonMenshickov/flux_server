@@ -17,8 +17,8 @@ import BaseButton from '@/components/base/BaseButton.vue';
 
 defineProps<{
   show: boolean,
-  cancelText: string,
-  confirmText: string,
+  cancelText: string | null,
+  confirmText: string | null,
   isDanger: boolean,
 }>()
 

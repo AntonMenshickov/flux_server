@@ -1,10 +1,5 @@
 import { request } from '.';
 
-interface ProfileResponse {
-  id: string;
-  login: string;
-  isOwner: boolean;
-}
 
 export interface User {
   id: string;
@@ -35,7 +30,7 @@ async function deleteUser(userId: string) {
 }
 
 async function profile() {
-  const result = await request<ProfileResponse>({ authorized: true, 'method': 'get', url: '/users/profile' });
+  const result = await request<User>({ authorized: true, 'method': 'get', url: '/users/profile' });
   return result;
 }
 

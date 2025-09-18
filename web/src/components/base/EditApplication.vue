@@ -7,7 +7,7 @@
       <strong>Users:</strong>
       <div class="users-list">
         <div v-for="(user, index) in maintainers" :key="index">
-          <div class="user">{{ user.login }} </div>
+          <div class="user">{{ user.login }} <TrashIcon class="action-icon delete" @click="deleteUser(index)" /></div>
         </div>
       </div>
       <div class="add-users-form">
@@ -20,30 +20,39 @@
     <strong>Bundles:</strong>
     <BaseKeyValueEditor v-model="bundles" placeholder="bundle ids" />
     <br />
-    <BaseButton class="create-btn" @click="save">Create application</BaseButton>
+    <BaseButton class="create-btn" @click="save">{{(!props.application) ? 'Create application' : 'Update application'}}</BaseButton>
   </div>
 </template>
 
 <script setup lang="ts">
+import { TrashIcon } from '@heroicons/vue/24/outline';
 import BaseInput from '@/components/base/BaseInput.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import { users, type User } from '@/api/users';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import BaseKeyValueEditor from './BaseKeyValueEditor.vue';
-import { type Bundle } from '@/api/applications';
+import { type Application, type Bundle } from '@/api/applications';
 import BaseSelector from './BaseSelector.vue';
 
 
 const props = defineProps<{
-  id: string | null,
+  application: Application | null,
   onSaveApplication: (application: { id: string | null, name: string, bundles: Bundle[], maintainers: User[] }) => Promise<void>
 }>()
-
 
 const name = ref<string>('');
 const bundles = ref<{ key: string, value: string }[]>([]);
 const maintainers = ref<User[]>([]);
 const userToAdd = ref<User | null>();
+
+onMounted(() => {
+  if (props.application) {
+    name.value = props.application.name;
+    bundles.value = props.application.bundles.map(e => ({key: e.platform, value: e.bundleId}));
+    maintainers.value = props.application.maintainers ?? [];
+  }
+});
+
 
 async function fetchUsers(search: string): Promise<User[]> {
   const result = await users.search(search, 10, 0);
@@ -61,7 +70,10 @@ function addUser() {
     maintainers.value.push(user);
   }
   userToAdd.value = null;
+}
 
+function deleteUser(index: number) {
+  maintainers.value.splice(index, 1);
 }
 
 
@@ -72,7 +84,7 @@ async function save() {
   }
 
   props.onSaveApplication({
-    id: props.id,
+    id: props.application?.id ?? null,
     name: name.value,
     bundles: bundles.value.map(e => ({ platform: e.key, bundleId: e.value })),
     maintainers: maintainers.value,
@@ -115,6 +127,10 @@ async function save() {
 }
 
 .user {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   min-height: 40px;
   max-height: 40px;
   box-sizing: border-box;
