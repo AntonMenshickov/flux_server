@@ -32,11 +32,12 @@
 <script setup lang="ts">
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import ModalDialog from '@/components/ModalDialog.vue';
-import { type User, users } from '@/api/users';
+import { users } from '@/api/users';
 import { debounce } from 'lodash';
 import { onMounted, ref } from 'vue';
 import BaseInput from './base/BaseInput.vue';
 import BaseButton from './base/BaseButton.vue';
+import type { User } from '@/model/user';
 
 
 const usersList = ref<User[]>([]);

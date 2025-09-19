@@ -29,7 +29,8 @@ export async function searchApps(req: UserAuthRequest, res: Response, next: Next
   const limit = Number(req.query.limit) || 20;
   const offset = Number(req.query.offset) || 0;
 
-  const query = search ? { name: { $regex: search, $options: 'i' }, deleted: false } : { deleted: false };
+  const searchQuery = search ? { name: { $regex: search, $options: 'i' }, deleted: false } : { deleted: false };
+  const query = { ...searchQuery, maintainers: req.user._id };
   const applicationsCount = await Application.countDocuments(query).exec();
   const applications: ApplicationPopulatedDoc[] = await Application.find(query)
     .sort({ createdAt: -1 })

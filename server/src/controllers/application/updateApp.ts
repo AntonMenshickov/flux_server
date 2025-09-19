@@ -3,7 +3,6 @@ import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
 import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
-import { tokenUtil } from '../../utils/tokenUtil';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { objectIdSchema } from '../../utils/zodUtil';
 
@@ -22,11 +21,16 @@ export const updateAppValidateSchema = z.object({
 
 export async function updateApp(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { id, name, bundles, maintainers } = updateAppValidateSchema.parse(req).body;
+  const userId = req.user._id;
 
   const app: IApplication & Document | null = await Application.findById(id).exec();
 
   if (!app) {
     return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
+  }
+
+  if (!app.maintainers.find(e => e._id.toString() == userId.toString())) {
+    return res.status(400).json({ error: responseMessages.NOT_ALLOWED_TO_EDIT_APP });
   }
 
   const existApp: IApplication & Document | null = await Application.findOne({ $and: [{ name }, { _id: { $ne: id } }] }).exec();

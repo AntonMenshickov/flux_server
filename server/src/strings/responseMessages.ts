@@ -14,4 +14,5 @@ export const responseMessages = {
   BUNDLE_ID_IS_REQUIRED: 'At least one bundleId is required',
   LOGIN_IS_REQUIRED: 'At least one bundleId is required',
   APPLICATION_NOT_FOUND: 'Application not found',
+  NOT_ALLOWED_TO_EDIT_APP: 'Not allowed to edit this application',
 }

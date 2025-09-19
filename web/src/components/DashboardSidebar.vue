@@ -3,21 +3,17 @@
 
     <nav class="menu">
       <ul>
-        <li v-if="showUsers" :class="{ active: activeItem === 'users' }" @click="setActive('users')">
+        <li v-if="showUsers" :class="{ active: activeItem == SidebarItemEnum.users }" @click="setActive(SidebarItemEnum.users)">
           <UserIcon class="icon" />
           <span>Users</span>
         </li>
-        <li :class="{ active: activeItem === 'apps' }" @click="setActive('apps')">
+        <li :class="{ active: activeItem == SidebarItemEnum.apps }" @click="setActive(SidebarItemEnum.apps)">
           <CommandLineIcon class="icon" />
           <span>Apps</span>
         </li>
-        <li :class="{ active: activeItem === 'logs' }" @click="setActive('logs')">
+        <li :class="{ active: activeItem == SidebarItemEnum.logs }" @click="setActive(SidebarItemEnum.logs)">
           <DocumentTextIcon class="icon" />
           <span>Logs</span>
-        </li>
-        <li :class="{ active: activeItem === 'settings' }" @click="setActive('settings')">
-          <Cog6ToothIcon class="icon" />
-          <span>Settings</span>
         </li>
       </ul>
     </nav>
@@ -25,23 +21,26 @@
 </template>
 
 <script setup lang="ts">
-import { UserIcon, DocumentTextIcon, Cog6ToothIcon, CommandLineIcon } from '@heroicons/vue/24/outline';
-import { useUserStore } from '@/stores/user';
+import { UserIcon, DocumentTextIcon, CommandLineIcon } from '@heroicons/vue/24/outline';
+import { useUserStore } from '@/stores/userStore';
 import { ref } from 'vue';
+import { SidebarItemEnum } from '@/model/sidebarItemEnum';
+import { useAppStateStore } from '@/stores/appStateStore';
 
-type SidebarItem = 'users' | 'logs' | 'apps' | 'settings';
-const activeItem = ref<SidebarItem>('logs')
+const appStateStore = useAppStateStore();
+
+
+const activeItem = ref<SidebarItemEnum>(appStateStore.page ?? SidebarItemEnum.logs)
 const emit = defineEmits(['update:active'])
 const userStore = useUserStore();
-
-
 
 function showUsers(): boolean {
   return userStore.profile?.isOwner || false;
 }
 
-function setActive(item: SidebarItem) {
+function setActive(item: SidebarItemEnum) {
   activeItem.value = item;
+  appStateStore.setPage(item);
   emit('update:active', item);
 }
 </script>

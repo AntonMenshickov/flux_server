@@ -20,7 +20,7 @@ export const appSetBundleIdsValidateSchema = z.object({
 export async function appSetBundleIds(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { id, bundles } = appSetBundleIdsValidateSchema.parse(req).body;
 
-  const existApp: IApplication & Document | null = await Application.findById(id).exec();
+  const existApp: IApplication & Document | null = await Application.findOne({_id: id, maintainers: req.user._id}).exec();
   if (!existApp) {
     return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
   }

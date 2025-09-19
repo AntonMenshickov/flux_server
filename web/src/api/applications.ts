@@ -1,18 +1,7 @@
+import type { Application } from '@/model/application/application';
 import { request } from '.';
-import type { User } from './users';
+import type { Bundle } from '@/model/application/bundle';
 
-export interface Bundle {
-  platform: string;
-  bundleId: string;
-}
-
-export interface Application {
-  id: string;
-  name: string;
-  bundles: Bundle[];
-  token: string;
-  maintainers: User[];
-}
 
 interface ApplicationsSearchResponse {
   applications: Application[];

@@ -15,11 +15,7 @@ export const addEventsValidateSchema = z.object({ body: eventsValidateSchema });
 
 export async function addEvents(req: AppAuthRequest, res: Response, next: NextFunction) {
   const events: EventMessageDto[] = eventsValidateSchema.parse(req.body);
-  const application = req?.application;
-
-  if (!application) {
-    return res.status(401).json({ error: responseMessages.INVALID_TOKEN });
-  }
+  const application = req.application;
 
   const existApp: IApplication & Document | null = await Application.findById(application._id).exec();
   if (!existApp) {

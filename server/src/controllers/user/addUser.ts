@@ -19,7 +19,7 @@ export const addUserValidateSchema = z.object({
 export async function addUser(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { login, password } = req.body;
 
-  if (req.user?.isOwner !== true) {
+  if (req.user.isOwner !== true) {
     return res.status(403).json({ error: responseMessages.FORBIDDEN });
   }
 
@@ -30,7 +30,6 @@ export async function addUser(req: UserAuthRequest, res: Response, next: NextFun
   }
   const user = new User({ login, passwordHash: await bcryptUtil.hash(password) });
   await user.save();
-  console.log('Created new user:', login);
 
 
   return res.status(200).json({

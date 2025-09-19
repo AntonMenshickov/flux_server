@@ -1,8 +1,8 @@
 <template>
   <div class="logs-page">
     <div class="filters">
-      <BaseSelector v-model="filters.application" :fetch-options="fetchApps" :label-key="(u) => u.name"
-        :value-key="(u) => u.id" placeholder="Select application" />
+      <BaseSelector v-model="application" :fetch-options="fetchApps" :label-key="(u) => u.name" :value-key="(u) => u.id"
+        placeholder="Select application" />
       <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
       <BaseMultiselect v-model="filters.logLevel" :options="Object.values(LogLevel)"
         :label-builder="logLevelLabelBuilder" label="Log level" />
@@ -44,10 +44,15 @@
           </section>
 
           <section class="log-details">
-            <div class="detail"><strong>App ID:</strong> {{ log.applicationId }}</div>
-            <div class="detail"><strong>Platform:</strong> {{ log.platform }}</div>
-            <div class="detail"><strong>Bundle:</strong> {{ log.bundleId }}</div>
-            <div class="detail"><strong>Device:</strong> {{ log.deviceId }}</div>
+            <div class="detail"><strong>Platform:</strong>
+              <BaseCopyText>{{ log.platform }}</BaseCopyText>
+            </div>
+            <div class="detail"><strong>Bundle:</strong>
+              <BaseCopyText>{{ log.bundleId }}</BaseCopyText>
+            </div>
+            <div class="detail"><strong>Device:</strong>
+              <BaseCopyText>{{ log.deviceId }}</BaseCopyText>
+            </div>
           </section>
 
           <section class="tags-meta">
@@ -58,8 +63,8 @@
             <div v-if="log.meta && log.meta.size > 0" class="meta">
               <strong>Meta:</strong>
               <div v-for="[key, value] in log.meta" :key="key" class="meta-values">
-                <div>{{ key }}:</div>
-                <div>{{ value }}</div>
+                <div><BaseCopyText>{{ key }}</BaseCopyText>:</div>
+                <div><BaseCopyText>{{ value }}</BaseCopyText></div>
               </div>
             </div>
           </section>
@@ -70,8 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { applications, type Application } from '@/api/applications';
-import { events, type EventMessage, type EventFilter, LogLevel } from '@/api/events';
+import { applications } from '@/api/applications';
+import { events } from '@/api/events';
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
@@ -80,6 +85,11 @@ import BaseButton from './base/BaseButton.vue';
 import BaseInput from './base/BaseInput.vue';
 import BaseMultiselect from './base/BaseMultiselect.vue';
 import BaseKeyValueEditor from './base/BaseKeyValueEditor.vue';
+import type { EventMessage } from '@/model/event/eventMessage';
+import { LogLevel } from '@/model/event/logLevel';
+import type { EventFilter } from '@/model/event/eventFilter';
+import type { Application } from '@/model/application/application';
+import BaseCopyText from './base/BaseCopyText.vue';
 
 
 const logs = ref<EventMessage[]>([]);
@@ -106,6 +116,7 @@ const filters = ref<{
   from: null,
   to: null,
 });
+const application = ref<Application | null>(null);
 const pageSize = 100;
 let offset = 0;
 let isLoading = false;
@@ -142,8 +153,12 @@ async function fetchLogs(clear: boolean = false) {
     offset = 0;
     hasMore = true;
   }
+
+  if (!application.value) {
+    return;
+  }
+
   const filter: EventFilter = {
-    applicationId: filters.value.application?.id || null,
     message: filters.value.message || null,
     logLevel: filters.value.logLevel ? filters.value.logLevel : null,
     tags: filters.value.tags || null,
@@ -157,7 +172,7 @@ async function fetchLogs(clear: boolean = false) {
     to: filters.value.to ? new Date(filters.value.to).getTime() * 1000 : null,
   };
 
-  const eventsResult = await events.search(pageSize, offset, filter);
+  const eventsResult = await events.search(pageSize, offset, application.value.id, filter);
   if (eventsResult.isRight()) {
     const events = eventsResult.value.result.events.map(e => ({
       ...e,
@@ -170,6 +185,8 @@ async function fetchLogs(clear: boolean = false) {
     }
     hasMore = events.length == pageSize;
     offset += events.length;
+  } else {
+    alert(eventsResult.value.message);
   }
 
   isLoading = false;

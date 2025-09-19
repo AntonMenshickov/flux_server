@@ -7,7 +7,6 @@ import { EventMessageDbView } from '../model/eventMessageDbView';
 import { Types } from 'mongoose';
 
 export interface EventFilter {
-  applicationId?: Types.ObjectId | null;
   message?: string | null;
   logLevel?: LogLevel[] | null;
   tags?: string[] | null;
@@ -48,14 +47,15 @@ export class EventsRepository {
   public async find(
     limit: number,
     offset: number,
+    applicationId: Types.ObjectId,
     filters: EventFilter | null = null
   ): Promise<EventMessage[]> {
     const conditions: string[] = [];
     const queryParams: Record<string, any> = { limit, offset };
 
-    if (filters?.applicationId) {
+    if (applicationId) {
       conditions.push(`applicationId = {applicationId:String}`);
-      queryParams.applicationId = filters.applicationId.toString().toLowerCase();
+      queryParams.applicationId = applicationId.toString().toLowerCase();
     }
 
     if (filters?.message) {

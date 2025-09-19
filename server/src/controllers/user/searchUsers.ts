@@ -18,10 +18,6 @@ export async function searchUsers(req: UserAuthRequest, res: Response, next: Nex
   const limit = Number(req.query.limit) || 20;
   const offset = Number(req.query.offset) || 0;
 
-  if (req.user?.isOwner !== true) {
-    return res.status(403).json({ error: responseMessages.FORBIDDEN });
-  }
-
   const query = search ? { login: { $regex: search, $options: 'i' } } : {};
   const usersCount = await User.countDocuments(query).exec();
   const users: (IUser & Document)[] = await User.find(query)

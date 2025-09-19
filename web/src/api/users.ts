@@ -1,11 +1,6 @@
+import type { User } from '@/model/user';
 import { request } from '.';
 
-
-export interface User {
-  id: string;
-  login: string;
-  isOwner: boolean;
-}
 
 interface UsersSearchResponse {
   users: User[];

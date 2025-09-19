@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/userStore';
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import { left, right, type Either } from '@sweet-monads/either';
 import { auth } from './auth';

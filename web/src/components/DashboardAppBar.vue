@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { ArrowLeftEndOnRectangleIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/userStore';
 import router from '@/router';
 
 const userStore = useUserStore();

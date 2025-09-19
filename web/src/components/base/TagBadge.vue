@@ -1,8 +1,12 @@
 <template>
-  <span class="tag-badge">{{ label }}</span>
+  <BaseCopyText :decorated="false">
+    <span class="tag-badge">{{ label }}</span>
+  </BaseCopyText>
 </template>
 
 <script setup lang="ts">
+import BaseCopyText from './BaseCopyText.vue';
+
 defineProps<{
   label: string
 }>();

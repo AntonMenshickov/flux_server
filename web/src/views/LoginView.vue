@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/userStore';
 import FluxLogo from '@/components/FluxLogo.vue';
 import router from '@/router';
 import { users } from '@/api/users';

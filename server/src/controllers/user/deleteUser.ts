@@ -5,6 +5,7 @@ import { Document } from 'mongoose';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { objectIdSchema } from '../../utils/zodUtil';
+import { Application } from '../../model/mongo/application';
 
 
 export const deleteUserValidateSchema = z.object({
@@ -17,7 +18,7 @@ export const deleteUserValidateSchema = z.object({
 export async function deleteUser(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { userId } = req.query;
 
-  if (req.user?.isOwner !== true) {
+  if (req.user.isOwner !== true) {
     return res.status(403).json({ error: responseMessages.FORBIDDEN });
   }
 
@@ -30,8 +31,11 @@ export async function deleteUser(req: UserAuthRequest, res: Response, next: Next
   if (!user) {
     return res.status(404).json({ error: responseMessages.USER_NOT_FOUND });
   }
+  await Application.updateMany(
+    { maintainers: user._id },
+    { $pull: { maintainers: user._id } }
+  );
   await user.deleteOne().exec();
-  console.log('Deleted user:', userId);
 
 
   return res.status(200).json({

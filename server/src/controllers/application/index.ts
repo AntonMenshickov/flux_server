@@ -9,12 +9,12 @@ import { userAuthorizationRequired } from '../../middleware/authorizationRequire
 import { updateApp, updateAppValidateSchema } from './updateApp';
 
 export default function applicationsModule(router: Router) {
-  router.post('/applications/add', userAuthorizationRequired, validate(addAppValidateSchema), addApp);
-  router.put('/applications/update', userAuthorizationRequired, validate(updateAppValidateSchema), updateApp);
-  router.put('/applications/set-bundles', userAuthorizationRequired, validate(appSetBundleIdsValidateSchema), appSetBundleIds);
-  router.put('/applications/set-maintainers', userAuthorizationRequired, validate(appSetMaintainersValidateSchema), appSetMaintainers);
-  router.delete('/applications/delete', userAuthorizationRequired, validate(deleteAppValidateSchema), deleteApp);
-  router.get('/applications/search', userAuthorizationRequired, validate(searchAppsValidateSchema), searchApps);
+  router.post('/applications/add',  validate(addAppValidateSchema), userAuthorizationRequired(addApp));
+  router.put('/applications/update', validate(updateAppValidateSchema), userAuthorizationRequired(updateApp));
+  router.put('/applications/set-bundles', validate(appSetBundleIdsValidateSchema), userAuthorizationRequired(appSetBundleIds));
+  router.put('/applications/set-maintainers', validate(appSetMaintainersValidateSchema), userAuthorizationRequired(appSetMaintainers));
+  router.delete('/applications/delete', validate(deleteAppValidateSchema), userAuthorizationRequired(deleteApp));
+  router.get('/applications/search', validate(searchAppsValidateSchema), userAuthorizationRequired(searchApps))
 
   console.log('Application module loaded');
 }

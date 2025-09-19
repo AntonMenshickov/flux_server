@@ -107,6 +107,7 @@ function updateItem() {
   flex-direction: column;
   gap: 10px;
   box-shadow: var(--box-shadow-strong);
+  z-index: 1000;
 }
 
 .item {

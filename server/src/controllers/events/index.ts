@@ -6,8 +6,8 @@ import { appAuthorizationRequired, userAuthorizationRequired } from '../../middl
 import bodyParser from 'body-parser';
 
 export default function eventsModule(router: Router) {
-  router.get('/events/search', userAuthorizationRequired, validate(searchEventsValidateSchema),  searchEvents);
-  router.post('/events/add', bodyParser.json({limit: '10mb'}), appAuthorizationRequired, validate(addEventsValidateSchema),  addEvents);
+  router.get('/events/search', validate(searchEventsValidateSchema,), userAuthorizationRequired(searchEvents));
+  router.post('/events/add', bodyParser.json({ limit: '10mb' }), validate(addEventsValidateSchema), appAuthorizationRequired(addEvents));
 
   console.log('Events module loaded');
 }

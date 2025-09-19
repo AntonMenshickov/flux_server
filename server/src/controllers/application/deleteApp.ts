@@ -4,6 +4,7 @@ import { Document } from 'mongoose';
 import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
 import { objectIdSchema } from '../../utils/zodUtil';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
 
 
 export const deleteAppValidateSchema = z.object({
@@ -12,10 +13,10 @@ export const deleteAppValidateSchema = z.object({
   })
 });
 
-export async function deleteApp(req: Request, res: Response, next: NextFunction) {
+export async function deleteApp(req: UserAuthRequest, res: Response, next: NextFunction) {
   const applicationId: string = (req.query.applicationId as string).trim();
 
-  const application: IApplication & Document | null = await Application.findById(applicationId).exec();
+  const application: IApplication & Document | null = await Application.findOne({_id: applicationId, maintainers: req.user._id}).exec();
   if (!application) {
     return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
   }
