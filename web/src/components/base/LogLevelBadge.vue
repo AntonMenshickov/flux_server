@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LogLevel } from '@/api/events';
+import type { LogLevel } from '@/model/event/logLevel';
 import { computed } from 'vue';
 
 const props = defineProps<{

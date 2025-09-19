@@ -28,11 +28,13 @@
 import { TrashIcon } from '@heroicons/vue/24/outline';
 import BaseInput from '@/components/base/BaseInput.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
-import { users, type User } from '@/api/users';
+import { users } from '@/api/users';
 import { onMounted, ref } from 'vue';
 import BaseKeyValueEditor from './BaseKeyValueEditor.vue';
-import { type Application, type Bundle } from '@/api/applications';
 import BaseSelector from './BaseSelector.vue';
+import type { Application } from '@/model/application/application';
+import type { User } from '@/model/user';
+import type { Bundle } from '@/model/application/bundle';
 
 
 const props = defineProps<{

@@ -50,10 +50,12 @@ import ModalDialog from '@/components/ModalDialog.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import { onMounted, ref } from 'vue';
-import { applications, type Application, type Bundle, } from '@/api/applications';
+import { applications } from '@/api/applications';
 import { debounce } from 'lodash';
 import EditApplication from './base/EditApplication.vue';
-import type { User } from '@/api/users';
+import type { Application } from '@/model/application/application';
+import type { Bundle } from '@/model/application/bundle';
+import type { User } from '@/model/user';
 
 
 const applicationsList = ref<Application[]>([]);
