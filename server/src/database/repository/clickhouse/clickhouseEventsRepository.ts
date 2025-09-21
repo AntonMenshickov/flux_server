@@ -1,34 +1,39 @@
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
-import { EventMessage, eventMessageFromDatabase } from '../model/eventMessage';
 import { InsertResult } from '@clickhouse/client';
-import { CLickhouse } from './clickhouse';
-import { LogLevel } from '../model/eventMessageDto';
-import { EventMessageDbView } from '../model/eventMessageDbView';
 import { Types } from 'mongoose';
+import { CLickhouse } from '../../clickhouse/clickhouse';
+import { EventMessage } from '../../../model/eventMessage';
+import { EventFilter } from '../eventsFilter';
+import { DateTime } from 'luxon';
+import { EventsRepository } from '../eventsRepository';
+import { LogLevel } from '../../../model/eventMessageDto';
 
-export interface EventFilter {
-  message?: string | null;
-  logLevel?: LogLevel[] | null;
+interface EventMessageDbView {
+  id: string;
+  applicationId: string;
+  timestamp: string;
+  logLevel: LogLevel;
+  platform: string;
+  bundleId: string;
+  deviceId: string;
+  message: string;
   tags?: string[] | null;
   meta?: Record<string, string> | null;
-  platform?: string | null;
-  bundleId?: string | null;
-  deviceId?: string | null;
-  from?: number | null;
-  to?: number | null;
+  stackTrace?: string | null;
 }
 
-export class EventsRepository {
+export class ClickhouseEventsRepository extends EventsRepository {
   private client: NodeClickHouseClient;
   private table: string;
 
-  constructor() {
-    this.client = CLickhouse.instance.client;
-    this.table = `${CLickhouse.instance.database}.${CLickhouse.instance.table}`;
+  constructor(clickhouse: CLickhouse) {
+    super();
+    this.client = clickhouse.client;
+    this.table = `${clickhouse.database}.${clickhouse.table}`;
   }
 
-  public async insert(events: EventMessage[]): Promise<InsertResult> {
-    return this.client.insert<EventMessage>({
+  public async insert(events: EventMessage[]): Promise<void> {
+    await this.client.insert<EventMessage>({
       table: this.table,
       values: events,
       format: 'JSONEachRow',
@@ -124,7 +129,15 @@ export class EventsRepository {
     });
     const result = await resultSet.json<EventMessageDbView>();
 
-    return result.data.map(eventMessageFromDatabase);
+    return result.data.map(this.eventMessageFromDatabase);
+  }
+
+  private eventMessageFromDatabase(databaseEntry: EventMessageDbView): EventMessage {
+    const dt = DateTime.fromFormat(databaseEntry['timestamp'].slice(0, 23), 'yyyy-MM-dd HH:mm:ss.SSS', { zone: 'utc' });
+    return {
+      ...databaseEntry,
+      timestamp: dt.toMillis() * 1000
+    }
   }
 
 }

@@ -1,7 +1,8 @@
 import { createClient } from '@clickhouse/client';
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
+import { Database } from '../database';
 
-export class CLickhouse {
+export class CLickhouse extends Database {
   private static _instance: CLickhouse;
   private static _client: NodeClickHouseClient;
   private username: string;
@@ -12,6 +13,7 @@ export class CLickhouse {
   public table: string;
 
   constructor() {
+    super();
     this.username = process.env.CLICKHOUSE_USERNAME as string;
     this.password = process.env.CLICKHOUSE_PASSWORD as string;
     this.host = process.env.CLICKHOUSE_HOST as string;
@@ -20,12 +22,6 @@ export class CLickhouse {
     this.table = process.env.CLICKHOUSE_EVENTS_TABLE as string;
   }
 
-  static get instance(): CLickhouse {
-    if (!CLickhouse._instance) {
-      CLickhouse._instance = new CLickhouse();
-    }
-    return CLickhouse._instance;
-  }
 
   get client(): NodeClickHouseClient {
     if (!CLickhouse._client) {
@@ -39,6 +35,15 @@ export class CLickhouse {
     }
     return CLickhouse._client;
   };
+
+  public connect(): Promise<void> {
+    const client = this.client;
+    if (client) {
+      return Promise.resolve();
+    } else {
+      return Promise.resolve();
+    }
+  }
 
   public async databaseExists(): Promise<boolean> {
     const dbName = process.env.CLICKHOUSE_DATABASE;
@@ -88,30 +93,27 @@ export class CLickhouse {
         query: `
           CREATE TABLE ${this.database}.${this.table}
           (
-              id String,  -- уникальный идентификатор (UUID или что-то своё)
-
-              timestamp DateTime64(6, 'UTC'),  -- время события
-
+              id String,
+              timestamp DateTime64(6, 'UTC'),
               logLevel Enum8(
                   'info'  = 1,
                   'warn'  = 2,
                   'error' = 3,
                   'debug' = 4
               ),
-
-              applicationId String,   -- ID приложения
-              platform String,        -- OS / device
-              bundleId String,        -- идентификатор сборки
-              deviceId String,        -- идентификатор устройства
-              message String,         -- текст сообщения
-              tags Array(String),     -- список тегов
-              meta Map(String, String), -- дополнительные поля в формате ключ-значение
-              stackTrace Nullable(String) -- стек вызова (может отсутствовать)
+              applicationId String,
+              platform String,
+              bundleId String,
+              deviceId String,
+              message String,
+              tags Array(String),
+              meta Map(String, String),
+              stackTrace Nullable(String)
           )
           ENGINE = MergeTree
-          PARTITION BY toYYYYMM(timestamp)         -- логично хранить по месяцам
-          ORDER BY (applicationId, timestamp, id) -- оптимизация поиска
-          TTL timestamp + INTERVAL 90 DAY          -- автоудаление старше 90 дней
+          PARTITION BY toYYYYMM(timestamp)
+          ORDER BY (applicationId, timestamp, id)
+          TTL timestamp + INTERVAL 90 DAY
           SETTINGS index_granularity = 8192;
       `,
       });

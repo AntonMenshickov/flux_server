@@ -7,7 +7,6 @@ export enum LogLevel {
 }
 
 export interface EventMessageDto {
-  ///timestamp in microseconds
   timestamp: number;
   logLevel: LogLevel;
   platform: string;

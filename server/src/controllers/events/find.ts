@@ -1,10 +1,11 @@
 import { Response, NextFunction, application } from 'express';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
-import { EventFilter, EventsRepository } from '../../clickhouse/eventsRepository';
+import { EventsRepository } from '../../database/repository/eventsRepository';
 import { EventMessage } from '../../model/eventMessage';
 import { numberFromStringSchema, objectIdSchema } from '../../utils/zodUtil';
 import { LogLevel } from '../../model/eventMessageDto';
+import { DatabaseResolver } from '../../database/databaseResolver';
 
 const filtersValidateSchema = z.object({
   message: z.string().trim().nullable().optional(),
@@ -30,7 +31,7 @@ export const searchEventsValidateSchema = z.object({
 export async function searchEvents(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { limit, offset, applicationId, filter } = searchEventsValidateSchema.parse(req).query;
 
-  const eventsRepository: EventsRepository = new EventsRepository();
+  const eventsRepository: EventsRepository = DatabaseResolver.instance.eventsRepository;
   const events: EventMessage[] = await eventsRepository.find(limit, offset, applicationId, filter);
 
 

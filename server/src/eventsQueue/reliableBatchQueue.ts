@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
-import { EventsRepository } from '../clickhouse/eventsRepository';
+import { EventsRepository } from '../database/repository/eventsRepository';
 import { EventMessage } from '../model/eventMessage';
+import { DatabaseResolver } from '../database/databaseResolver';
 
 export class ReliableBatchQueue {
   private static _instance: ReliableBatchQueue;
@@ -17,14 +18,24 @@ export class ReliableBatchQueue {
     private batchSize = 5,
     private flushIntervalMs = 10000,
   ) {
-    const redisUrl = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
-    this.redis = new Redis(redisUrl);
-
+    this.redis = new Redis({
+      host: process.env.REDIS_HOST as string,
+      port: Number(process.env.REDIS_PORT),
+      connectTimeout: 10000,
+      retryStrategy(times) {
+        const delay = Math.min(times * 200, 2000);
+        console.log(`Redis reconnect attempt #${times}, next try in ${delay}ms`);
+        return delay;
+      },
+    });
+    this.redis.on('error', async (err) => {
+      console.error('Redis error:', err);
+    });
   }
 
   static get instance(): ReliableBatchQueue {
     if (!ReliableBatchQueue._instance) {
-      ReliableBatchQueue._instance = new ReliableBatchQueue(new EventsRepository(),
+      ReliableBatchQueue._instance = new ReliableBatchQueue(DatabaseResolver.instance.eventsRepository,
         'queue',
         'processing',
         Number(process.env.EVENTS_BATCH_SIZE),
@@ -35,7 +46,6 @@ export class ReliableBatchQueue {
   }
 
   async init() {
-    // await this.clearQueue();
     await this.restoreProcessing();
     if (!this.flushTimer) {
       this.flushTimer = setInterval(() => this.flush().catch(console.error), this.flushIntervalMs);
