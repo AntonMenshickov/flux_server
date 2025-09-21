@@ -18,7 +18,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
   const usersCount = await User.countDocuments().exec();
   let user: IUser & Document | null;
   if (usersCount === 0) {
-    user = new User({ login, passwordHash: await bcryptUtil.hash(password) });
+    user = new User({ login, passwordHash: await bcryptUtil.hash(password), isOwner: true });
     await user.save();
     console.log('Created initial user:', login);
   } else {
