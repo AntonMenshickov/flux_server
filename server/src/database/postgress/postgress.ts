@@ -111,11 +111,11 @@ export class Postgres extends Database {
           meta JSONB,
           stackTrace TEXT
         );
-        CREATE INDEX idx_events_timestamp ON events(timestamp DESC);
-        CREATE INDEX idx_events_app ON events(applicationId);
-        CREATE INDEX idx_events_loglevel_ts ON events(loglevel, timestamp DESC);
-        CREATE INDEX idx_events_meta ON events USING gin(meta);
-        CREATE INDEX idx_events_tags ON events USING gin(tags);
+        CREATE INDEX idx_${this.table}_timestamp ON ${this.table}(timestamp DESC);
+        CREATE INDEX idx_${this.table}_app ON ${this.table}(applicationId);
+        CREATE INDEX idx_${this.table}_loglevel_ts ON ${this.table}(loglevel, timestamp DESC);
+        CREATE INDEX idx_${this.table}_meta ON ${this.table} USING gin(meta);
+        CREATE INDEX idx_${this.table}_tags ON ${this.table} USING gin(tags);
       `);
       console.log(`Postgres table ${this.table} created`);
     } else {
