@@ -78,10 +78,19 @@ export class Postgres extends Database {
   }
 
   public async tableExists(): Promise<boolean> {
+    const adminClient = new Client({
+      user: this.username,
+      password: this.password,
+      host: this.host,
+      port: this.port,
+      database: 'postgres',
+    });
+    await adminClient.connect();
     const res = await this.client.query(
       `SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1`,
       [this.table]
     );
+    await adminClient.end();
     return (res.rowCount != null) && (res.rowCount > 0);
   }
 
