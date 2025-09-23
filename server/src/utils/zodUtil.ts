@@ -17,6 +17,16 @@ export const eventMessageDtoSchema = z.object({
   logLevel: z.enum(LogLevel),
   tags: z.array(z.string().trim().nonempty()).nullable().optional(),
   meta: z.record(z.string(), z.string()).nullable().optional(),
+  timestamp: z.number(),
+  stackTrace: z.string().nullable().optional()
+});
+
+
+export const wsEventMessageDtoSchema = z.object({
+  message: z.string().trim(),
+  logLevel: z.enum(LogLevel),
+  tags: z.array(z.string().trim().nonempty()).nullable().optional(),
+  meta: z.record(z.string(), z.string()).nullable().optional(),
   platform: z.string().trim(),
   bundleId: z.string().trim(),
   deviceId: z.string().trim(),

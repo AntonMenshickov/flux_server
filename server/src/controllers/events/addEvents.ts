@@ -11,10 +11,17 @@ import { DatabaseResolver } from '../../database/databaseResolver';
 
 const eventsValidateSchema = z.array(eventMessageDtoSchema);
 
-export const addEventsValidateSchema = z.object({ body: eventsValidateSchema });
+export const addEventsValidateSchema = z.object({
+  body: z.object({
+    platform: z.string().trim().nonempty(),
+    bundleId: z.string().trim().nonempty(),
+    deviceId: z.string().trim().nonempty(),
+    events: eventsValidateSchema,
+  })
+});
 
 export async function addEvents(req: AppAuthRequest, res: Response, next: NextFunction) {
-  const events: EventMessageDto[] = eventsValidateSchema.parse(req.body);
+  const { platform, bundleId, deviceId, events } = addEventsValidateSchema.parse(req).body;
   const application = req.application;
 
   const existApp: IApplication & Document | null = await Application.findById(application._id).exec();
@@ -22,18 +29,16 @@ export async function addEvents(req: AppAuthRequest, res: Response, next: NextFu
     return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
   }
 
-  for (let message of events) {
-    if (!application.bundles.find(b => b.platform == message.platform && b.bundleId == message.bundleId)) {
-      return res.status(400).json({
-        success: false,
-        result: {
-          message: `App with platform '${message.platform}' and bundle id '${message.bundleId}' not registered`
-        }
-      });
-    }
+  if (!application.bundles.find(b => b.platform == platform && b.bundleId == bundleId)) {
+    return res.status(400).json({
+      success: false,
+      result: {
+        message: `App with platform '${platform}' and bundle id '${bundleId}' not registered`
+      }
+    });
   }
 
-  await DatabaseResolver.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString())));
+  await DatabaseResolver.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId)));
 
 
   return res.status(204).json({

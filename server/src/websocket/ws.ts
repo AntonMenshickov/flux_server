@@ -7,9 +7,8 @@ import { tokenUtil } from '../utils/tokenUtil';
 import { JwtPayload } from 'jsonwebtoken';
 import { Application, IApplication } from '../model/mongo/application';
 import { Document } from 'mongoose';
-import { EventMessageDto } from '../model/eventMessageDto';
-import { eventMessageDtoSchema } from '../utils/zodUtil';
-import { eventMessageFromDto } from '../model/eventMessage';
+import { wsEventMessageDtoSchema } from '../utils/zodUtil';
+import { eventMessageFromWs, WsEventMessage } from '../model/eventMessage';
 
 export async function websocket(ws: WebSocket, req: Request, next: NextFunction): Promise<void> {
   const token = req.query.token as string;
@@ -30,11 +29,11 @@ export async function websocket(ws: WebSocket, req: Request, next: NextFunction)
     return;
   }
   ws.onmessage = (event) => {
-    const logMessage: EventMessageDto = eventMessageDtoSchema.parse(JSON.parse(event.data as string));
+    const logMessage: WsEventMessage = wsEventMessageDtoSchema.parse(JSON.parse(event.data as string));
     if (!application.bundles.find(b => b.platform == logMessage.platform && b.bundleId == logMessage.bundleId)) {
       return;
     }
-    const eventData = eventMessageFromDto(logMessage, application._id.toString());
+    const eventData = eventMessageFromWs(logMessage, application._id.toString());
     ReliableBatchQueue.instance.enqueue(eventData);
     ws.send(`Echo: ${event.data}`);
   }

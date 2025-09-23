@@ -9,9 +9,6 @@ export enum LogLevel {
 export interface EventMessageDto {
   timestamp: number;
   logLevel: LogLevel;
-  platform: string;
-  bundleId: string;
-  deviceId: string;
   message: string;
   tags?: string[] | null;
   meta?: Record<string, string> | null;
