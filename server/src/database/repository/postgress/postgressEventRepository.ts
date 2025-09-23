@@ -141,12 +141,12 @@ export class PostgresEventsRepository extends EventsRepository {
 
     if (filters?.from) {
       conditions.push(`timestamp >= $${idx++}`);
-      values.push(filters.from);
+      values.push(new Date(filters.from / 1000).toISOString());
     }
 
     if (filters?.to) {
       conditions.push(`timestamp <= $${idx++}`);
-      values.push(filters.to);
+      values.push(new Date(filters.to / 1000).toISOString());
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
