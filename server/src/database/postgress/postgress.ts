@@ -1,5 +1,5 @@
-// postgres.ts
 import { Client } from 'pg';
+import { schedule } from 'node-cron';
 import { Database } from '../database';
 
 export class Postgres extends Database {
@@ -11,6 +11,7 @@ export class Postgres extends Database {
   private port: number;
   public database: string;
   public table: string;
+  private logsMaxAgeInDays: number;
 
   constructor() {
     super();
@@ -20,6 +21,9 @@ export class Postgres extends Database {
     this.port = Number(process.env.POSTGRES_PORT);
     this.database = process.env.POSTGRES_DATABASE as string;
     this.table = process.env.POSTGRES_EVENTS_TABLE as string;
+    this.logsMaxAgeInDays = Number(process.env.DB_LOGS_MAX_AGE_DAYS);
+    console.info(`Postgres cron delete rows older than ${this.logsMaxAgeInDays} days scheduled for every hour`);
+    schedule('0 * * * *', () => this.deleteOldRows());
   }
 
   get client(): Client {
@@ -36,41 +40,22 @@ export class Postgres extends Database {
   }
 
   public async connect(): Promise<void> {
-    if (!Postgres._client) {
-      await this.client.connect();
-    }
+    const client = this.client;
+    await client.connect();
   }
 
   public async databaseExists(): Promise<boolean> {
-    const adminClient = new Client({
-      user: this.username,
-      password: this.password,
-      host: this.host,
-      port: this.port,
-      database: 'postgres',
-    });
-    await adminClient.connect();
-    const res = await adminClient.query(
+    const res = await this.client.query(
       `SELECT 1 FROM pg_database WHERE datname = $1`,
       [this.database]
     );
-    await adminClient.end();
     return (res.rowCount != null) && (res.rowCount > 0);
   }
 
   public async ensureDatabase(): Promise<void> {
     const exists = await this.databaseExists();
     if (!exists) {
-      const adminClient = new Client({
-        user: this.username,
-        password: this.password,
-        host: this.host,
-        port: this.port,
-        database: 'postgres',
-      });
-      await adminClient.connect();
-      await adminClient.query(`CREATE DATABASE ${this.database}`);
-      await adminClient.end();
+      await this.client.query(`CREATE DATABASE ${this.database}`);
       console.log(`Postgres database ${this.database} created`);
     } else {
       console.log(`Postgres database ${this.database} exists`);
@@ -78,19 +63,10 @@ export class Postgres extends Database {
   }
 
   public async tableExists(): Promise<boolean> {
-    const adminClient = new Client({
-      user: this.username,
-      password: this.password,
-      host: this.host,
-      port: this.port,
-      database: 'postgres',
-    });
-    await adminClient.connect();
     const res = await this.client.query(
       `SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = $1`,
       [this.table]
     );
-    await adminClient.end();
     return (res.rowCount != null) && (res.rowCount > 0);
   }
 
@@ -129,5 +105,14 @@ export class Postgres extends Database {
 
   public async dropTable(): Promise<void> {
     await this.client.query(`DROP TABLE IF EXISTS ${this.table};`);
+  }
+
+  private async deleteOldRows() {
+    console.info(`Postgres deleting rows older than ${this.logsMaxAgeInDays} days`);
+    const result = await this.client.query(`
+      DELETE FROM ${this.table}
+      WHERE timestamp < NOW() - INTERVAL '${this.logsMaxAgeInDays} days';
+      `);
+    console.info(`Postgres deleted ${result.rowCount} old rows`);
   }
 }

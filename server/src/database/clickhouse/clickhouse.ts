@@ -11,6 +11,7 @@ export class CLickhouse extends Database {
   private port: number;
   public database: string;
   public table: string;
+  private logsMaxAgeInDays: number;
 
   constructor() {
     super();
@@ -20,6 +21,7 @@ export class CLickhouse extends Database {
     this.port = Number(process.env.CLICKHOUSE_PORT);
     this.database = process.env.CLICKHOUSE_DATABASE as string;
     this.table = process.env.CLICKHOUSE_EVENTS_TABLE as string;
+    this.logsMaxAgeInDays = Number(process.env.DB_LOGS_MAX_AGE_DAYS);
   }
 
 
@@ -113,7 +115,7 @@ export class CLickhouse extends Database {
           ENGINE = MergeTree
           PARTITION BY toYYYYMM(timestamp)
           ORDER BY (applicationId, timestamp, id)
-          TTL timestamp + INTERVAL 90 DAY
+          TTL timestamp + INTERVAL ${this.logsMaxAgeInDays} DAY
           SETTINGS index_granularity = 8192;
       `,
       });

@@ -1,5 +1,4 @@
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client';
-import { InsertResult } from '@clickhouse/client';
 import { Types } from 'mongoose';
 import { CLickhouse } from '../../clickhouse/clickhouse';
 import { EventMessage } from '../../../model/eventMessage';
