@@ -74,6 +74,8 @@ export class PostgresEventsRepository extends EventsRepository {
     } catch (err) {
       await client.query('ROLLBACK'); // откат при ошибке
       throw err;
+    } finally {
+      client.release();
     }
   }
 
