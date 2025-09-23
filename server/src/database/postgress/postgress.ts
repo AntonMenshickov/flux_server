@@ -14,12 +14,12 @@ export class Postgres extends Database {
 
   constructor() {
     super();
-    this.username = process.env.POSTGRESS_USERNAME as string;
-    this.password = process.env.POSTGRESS_PASSWORD as string;
-    this.host = process.env.POSTGRESS_HOST as string;
-    this.port = Number(process.env.POSTGRESS_PORT);
-    this.database = process.env.POSTGRESS_DATABASE as string;
-    this.table = process.env.POSTGRESS_EVENTS_TABLE as string;
+    this.username = process.env.POSTGRES_USERNAME as string;
+    this.password = process.env.POSTGRES_PASSWORD as string;
+    this.host = process.env.POSTGRES_HOST as string;
+    this.port = Number(process.env.POSTGRES_PORT);
+    this.database = process.env.POSTGRES_DATABASE as string;
+    this.table = process.env.POSTGRES_EVENTS_TABLE as string;
   }
 
   get client(): Client {

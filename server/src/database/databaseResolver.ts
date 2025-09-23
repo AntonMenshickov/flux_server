@@ -22,7 +22,7 @@ export class DatabaseResolver {
 
   static async resolveDatabase(): Promise<DatabaseResolver> {
     if (!DatabaseResolver._instance) {
-      const postgressHost = process.env.POSTGRESS_HOST as string;
+      const postgressHost = process.env.POSTGRES_HOST as string;
       const clickhouseHost = process.env.CLICKHOUSE_HOST as string;
       let database;
       let eventsRepository;
