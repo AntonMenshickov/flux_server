@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
-import { Client } from 'pg';
 import { EventMessage } from '../../../model/eventMessage';
 import { EventFilter } from '../eventsFilter';
 import { EventsRepository } from '../eventsRepository';
 import { LogLevel } from '../../../model/eventMessageDto';
 import { Postgres } from '../../postgress/postgress';
+import { Pool } from 'pg';
 
 interface EventMessageDbView {
   id: string;
@@ -21,7 +21,7 @@ interface EventMessageDbView {
 }
 
 export class PostgresEventsRepository extends EventsRepository {
-  private client: Client;
+  private client: Pool;
   private table: string;
 
   constructor(postgress: Postgres) {
@@ -32,7 +32,8 @@ export class PostgresEventsRepository extends EventsRepository {
 
   public async insert(events: EventMessage[]): Promise<void> {
     const chunkSize = 500;
-    await this.client.query('BEGIN');
+    const client = await this.client.connect();
+    await client.query('BEGIN');
 
     try {
       for (let i = 0; i < events.length; i += chunkSize) {
@@ -66,12 +67,12 @@ export class PostgresEventsRepository extends EventsRepository {
           VALUES ${placeholders};
         `;
 
-        await this.client.query(query, values);
+        await client.query(query, values);
       }
 
-      await this.client.query('COMMIT'); // фиксируем транзакцию
+      await client.query('COMMIT'); // фиксируем транзакцию
     } catch (err) {
-      await this.client.query('ROLLBACK'); // откат при ошибке
+      await client.query('ROLLBACK'); // откат при ошибке
       throw err;
     }
   }

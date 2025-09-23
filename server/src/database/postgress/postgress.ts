@@ -1,9 +1,9 @@
-import { Client } from 'pg';
+import { Client, Pool } from 'pg';
 import { schedule } from 'node-cron';
 import { Database } from '../database';
 
 export class Postgres extends Database {
-  private static _client: Client;
+  private static _pool: Pool;
 
   private username: string;
   private password: string;
@@ -26,22 +26,23 @@ export class Postgres extends Database {
     schedule('0 * * * *', () => this.deleteOldRows());
   }
 
-  get client(): Client {
-    if (!Postgres._client) {
-      Postgres._client = new Client({
+  get client(): Pool {
+    if (!Postgres._pool) {
+      Postgres._pool = new Pool({
         user: this.username,
         password: this.password,
         host: this.host,
         port: this.port,
         database: this.database,
+        max: 10, // максимум 10 соединений
       });
+
     }
-    return Postgres._client;
+    return Postgres._pool;
   }
 
   public async connect(): Promise<void> {
-    const client = this.client;
-    await client.connect();
+    return Promise.resolve();
   }
 
   public async databaseExists(): Promise<boolean> {
