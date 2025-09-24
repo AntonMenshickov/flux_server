@@ -13,12 +13,7 @@ export const searchAppsValidateSchema = z.object({
   })
 });
 
-
-// Базовый тип с ObjectId для сырых данных
-export type ApplicationDoc = IApplication & Document;
-
-// Тип после populate
-export type ApplicationPopulatedDoc = Omit<IApplication, 'maintainers'> & {
+type ApplicationPopulatedDoc = Omit<IApplication, 'maintainers'> & {
   maintainers: IUser[];
 } & Document;
 
