@@ -1,6 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { IUser, User } from '../../model/mongo/user';
-import { responseMessages } from '../../strings/responseMessages';
+import { IUser } from '../../model/mongo/user';
 import { Document } from 'mongoose';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
