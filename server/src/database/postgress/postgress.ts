@@ -83,6 +83,8 @@ export class Postgres extends Database {
           platform TEXT,
           bundleId TEXT,
           deviceId TEXT,
+          deviceName TEXT,
+          osName TEXT,
           message TEXT,
           tags TEXT[],
           meta JSONB,

@@ -15,6 +15,8 @@ const filtersValidateSchema = z.object({
   platform: z.string().trim().nullable().optional(),
   bundleId: z.string().trim().nullable().optional(),
   deviceId: z.string().trim().nullable().optional(),
+  deviceName: z.string().trim().nullable().optional(),
+  osName: z.string().trim().nullable().optional(),
   from: numberFromStringSchema.nullable().optional(),
   to: numberFromStringSchema.nullable().optional(),
 });

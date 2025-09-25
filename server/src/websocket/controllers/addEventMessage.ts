@@ -8,6 +8,14 @@ import { ReliableBatchQueue } from '../../eventsQueue/reliableBatchQueue';
 export async function addEventMessage(ws: WebSocket, client: WsClient, payload: any) {
   const logMessage: EventMessageDto = eventMessageDtoSchema.parse(payload);
 
-  const eventData = eventMessageFromDto(logMessage, client.applicationId, client.platform, client.bundleId, client.deviceId);
+  const eventData = eventMessageFromDto(
+    logMessage,
+    client.applicationId,
+    client.platform,
+    client.bundleId,
+    client.deviceId,
+    client.deviceName,
+    client.osName,
+  );
   ReliableBatchQueue.instance.enqueue(eventData);
 }

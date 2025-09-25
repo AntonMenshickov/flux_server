@@ -7,6 +7,8 @@ export interface EventMessage extends EventMessageDto {
   platform: string;
   bundleId: string;
   deviceId: string;
+  deviceName: string;
+  osName: string;
 }
 
 export function eventMessageFromDto(
@@ -15,6 +17,8 @@ export function eventMessageFromDto(
   platform: string,
   bundleId: string,
   deviceId: string,
+  deviceName: string,
+  osName: string,
 ): EventMessage {
   return {
     ...dto,
@@ -23,5 +27,7 @@ export function eventMessageFromDto(
     platform,
     bundleId,
     deviceId,
+    deviceName,
+    osName,
   }
 }

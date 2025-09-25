@@ -14,6 +14,8 @@ interface EventMessageDbView {
   platform: string;
   bundleid: string;
   deviceid: string;
+  devicename: string;
+  osname: string;
   message: string;
   tags?: string[] | null;
   meta?: Record<string, any> | null;
@@ -42,7 +44,7 @@ export class PostgresEventsRepository extends EventsRepository {
         const values: any[] = [];
         const placeholders = chunk
           .map((e, idx) => {
-            const base = idx * 11;
+            const base = idx * 13;
             values.push(
               e.id,
               new Date(e.timestamp / 1000),
@@ -51,19 +53,22 @@ export class PostgresEventsRepository extends EventsRepository {
               e.platform,
               e.bundleId,
               e.deviceId,
+              e.deviceName,
+              e.osName,
               e.message,
               e.tags ?? null,
               e.meta ? JSON.stringify(e.meta) : null,
-              e.stackTrace ?? null
+              e.stackTrace ?? null,
             );
             return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5},
-                     $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10}, $${base + 11})`;
+                     $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9}, $${base + 10},
+                     $${base + 11}, $${base + 12}, $${base + 13})`;
           })
           .join(', ');
 
         const query = `
           INSERT INTO ${this.table}
-          (id, timestamp, logLevel, applicationId, platform, bundleId, deviceId, message, tags, meta, stackTrace)
+          (id, timestamp, logLevel, applicationId, platform, bundleId, deviceId, deviceName, osName, message, tags, meta, stackTrace)
           VALUES ${placeholders};
         `;
 
@@ -142,6 +147,16 @@ export class PostgresEventsRepository extends EventsRepository {
       values.push(filters.deviceId);
     }
 
+    if (filters?.deviceName) {
+      conditions.push(`deviceName = $${idx++}`);
+      values.push(filters.deviceName);
+    }
+
+    if (filters?.osName) {
+      conditions.push(`osName = $${idx++}`);
+      values.push(filters.osName);
+    }
+
     if (filters?.from) {
       conditions.push(`timestamp >= $${idx++}`);
       values.push(new Date(filters.from / 1000).toISOString());
@@ -180,6 +195,8 @@ export class PostgresEventsRepository extends EventsRepository {
       tags: dbEntry.tags ?? undefined,
       meta: dbEntry.meta ?? undefined,
       stackTrace: dbEntry.stacktrace ?? undefined,
+      deviceName: dbEntry.devicename,
+      osName: dbEntry.osname,
     };
   }
 }

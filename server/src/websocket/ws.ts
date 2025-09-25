@@ -11,11 +11,13 @@ import { addEventMessage } from './controllers/addEventMessage';
 import { WsClientMessage } from './model/wsCLientMessage';
 
 export const wsConnectValidateSchema = z.object({
-  query: z.object({
+  headers: z.object({
     token: z.string().trim().nonempty(),
     platform: z.string().trim().nonempty(),
-    bundleId: z.string().trim().nonempty(),
-    deviceId: z.string().trim().nonempty(),
+    bundleid: z.string().trim().nonempty(),
+    deviceid: z.string().trim().nonempty(),
+    devicename: z.string().trim().nonempty(),
+    osname: z.string().trim().nonempty(),
   })
 });
 
@@ -29,12 +31,16 @@ export class WsClient {
   readonly platform: string;
   readonly bundleId: string;
   readonly deviceId: string;
+  readonly deviceName: string;
+  readonly osName: string;
 
-  constructor(applicationId: string, platform: string, bundleId: string, deviceId: string) {
+  constructor(applicationId: string, platform: string, bundleId: string, deviceId: string, deviceName: string, osName: string) {
     this.applicationId = applicationId;
     this.platform = platform;
     this.bundleId = bundleId;
     this.deviceId = deviceId;
+    this.deviceName = deviceName;
+    this.osName = osName;
   }
 }
 
@@ -43,11 +49,11 @@ const clients: Map<WebSocket, WsClient> = new Map();
 export async function websocket(ws: WebSocket, req: Request, next: NextFunction): Promise<void> {
   const parseResult = wsConnectValidateSchema.safeParse(req);
   if (!parseResult.success) {
-    ws.close(4001, parseResult.error.message);
+    ws.close(4001, responseMessages.DEVICE_INFO_VALIDATION_FAILED);
     return;
   }
   try {
-    const { platform, bundleId, deviceId, token } = parseResult.data.query;
+    const { platform, bundleid, deviceid, devicename, osname, token } = parseResult.data.headers;
     const payload = tokenUtil.verify(token) as JwtPayload;
     const applicationId = payload.applicationId;
     if (!applicationId) {
@@ -59,7 +65,7 @@ export async function websocket(ws: WebSocket, req: Request, next: NextFunction)
       ws.close(4000, responseMessages.APPLICATION_NOT_FOUND);
       return;
     }
-    if (!application.bundles.find(b => b.platform == platform && b.bundleId == bundleId)) {
+    if (!application.bundles.find(b => b.platform == platform && b.bundleId == bundleid)) {
       ws.close(4000, responseMessages.WRONG_BUNDLE_ID_OR_PLATFORM);
       return;
     }
@@ -67,12 +73,22 @@ export async function websocket(ws: WebSocket, req: Request, next: NextFunction)
       ws.close(4002, responseMessages.WS_ALREADY_CONNECTED);
       return;
     }
-    clients.set(ws, new WsClient(applicationId, platform, bundleId, deviceId));
+    clients.set(
+      ws,
+      new WsClient(
+        applicationId,
+        platform,
+        bundleid,
+        deviceid,
+        devicename,
+        osname,
+      ),
+    );
   } catch (err) {
     ws.close(4001, responseMessages.INVALID_TOKEN);
     return;
   }
-  
+
   ws.onmessage = (event: MessageEvent) => {
     const client = clients.get(ws);
     if (!client) {

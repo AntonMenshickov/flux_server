@@ -15,6 +15,8 @@ interface EventMessageDbView {
   platform: string;
   bundleId: string;
   deviceId: string;
+  deviceName: string;
+  osName: string;
   message: string;
   tags?: string[] | null;
   meta?: Record<string, string> | null;
@@ -100,6 +102,16 @@ export class ClickhouseEventsRepository extends EventsRepository {
     if (filters?.deviceId) {
       conditions.push(`deviceId = {deviceId:String}`);
       queryParams.deviceId = filters.deviceId;
+    }
+
+    if (filters?.deviceName) {
+      conditions.push(`deviceName = {deviceName:String}`);
+      queryParams.deviceName = filters.deviceName;
+    }
+
+    if (filters?.osName) {
+      conditions.push(`osName = {osName:String}`);
+      queryParams.osName = filters.deviceName;
     }
 
     if (filters?.from) {

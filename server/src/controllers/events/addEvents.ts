@@ -16,12 +16,14 @@ export const addEventsValidateSchema = z.object({
     platform: z.string().trim().nonempty(),
     bundleId: z.string().trim().nonempty(),
     deviceId: z.string().trim().nonempty(),
+    deviceName: z.string().trim().nonempty(),
+    osName: z.string().trim().nonempty(),
     events: eventsValidateSchema,
   })
 });
 
 export async function addEvents(req: AppAuthRequest, res: Response, next: NextFunction) {
-  const { platform, bundleId, deviceId, events } = addEventsValidateSchema.parse(req).body;
+  const { platform, bundleId, deviceId, deviceName, osName, events } = addEventsValidateSchema.parse(req).body;
   const application = req.application;
 
   const existApp: IApplication & Document | null = await Application.findById(application._id).exec();
@@ -38,7 +40,7 @@ export async function addEvents(req: AppAuthRequest, res: Response, next: NextFu
     });
   }
 
-  await DatabaseResolver.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId)));
+  await DatabaseResolver.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId, deviceName, osName)));
 
 
   return res.status(204).json({

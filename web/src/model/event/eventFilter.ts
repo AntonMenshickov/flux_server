@@ -8,6 +8,8 @@ export interface EventFilter {
   platform?: string | null;
   bundleId?: string | null;
   deviceId?: string | null;
+  deviceName?: string | null;
+  osName?: string | null;
   from?: number | null;
   to?: number | null;
 }

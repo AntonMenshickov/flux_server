@@ -10,6 +10,8 @@
       <BaseInput v-model="tagsValue" type="text" placeholder="Tags (delimiter ',')" />
       <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
+      <BaseInput v-model="filters.deviceName" type="text" placeholder="Device Name" />
+      <BaseInput v-model="filters.osName" type="text" placeholder="Operating system name" />
       <BaseKeyValueEditor v-model="filters.meta" placeholder="meta" />
       <label>
         From:
@@ -52,6 +54,12 @@
             </div>
             <div class="detail"><strong>Device:</strong>
               <BaseCopyText>{{ log.deviceId }}</BaseCopyText>
+            </div>
+            <div class="detail"><strong>Device name:</strong>
+              <BaseCopyText>{{ log.deviceName }}</BaseCopyText>
+            </div>
+            <div class="detail"><strong>OS name:</strong>
+              <BaseCopyText>{{ log.osName }}</BaseCopyText>
             </div>
           </section>
 
@@ -102,6 +110,8 @@ const filters = ref<{
   platform: string;
   bundleId: string;
   deviceId: string;
+  deviceName: string;
+  osName: string;
   from: string | null;
   to: string | null;
 }>({
@@ -113,6 +123,8 @@ const filters = ref<{
   platform: '',
   bundleId: '',
   deviceId: '',
+  deviceName: '',
+  osName: '',
   from: null,
   to: null,
 });
@@ -168,6 +180,8 @@ async function fetchLogs(clear: boolean = false) {
     platform: filters.value.platform || null,
     bundleId: filters.value.bundleId || null,
     deviceId: filters.value.deviceId || null,
+    deviceName: filters.value.deviceName || null,
+    osName: filters.value.osName || null,
     from: filters.value.from ? new Date(filters.value.from).getTime() * 1000 : null,
     to: filters.value.to ? new Date(filters.value.to).getTime() * 1000 : null,
   };
@@ -206,6 +220,8 @@ function resetFilters() {
     platform: '',
     bundleId: '',
     deviceId: '',
+    deviceName: '',
+    osName: '',
     from: null,
     to: null,
   };

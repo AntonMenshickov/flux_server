@@ -107,6 +107,8 @@ export class CLickhouse extends Database {
               platform String,
               bundleId String,
               deviceId String,
+              deviceName String,
+              osName String,
               message String,
               tags Array(String),
               meta Map(String, String),

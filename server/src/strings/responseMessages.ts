@@ -19,4 +19,5 @@ export const responseMessages = {
   WRONG_BUNDLE_ID_OR_PLATFORM: 'Wrong bundle id or platform',
   WS_CLIENT_NOT_FOUND: 'WebSocket client not found',
   WS_UNKNOWN_MESSAGE_TYPE: 'Unknown WebSocket message type',
+  DEVICE_INFO_VALIDATION_FAILED: 'Device info validation failed',
 }
