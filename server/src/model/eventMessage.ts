@@ -25,20 +25,3 @@ export function eventMessageFromDto(
     deviceId,
   }
 }
-
-export interface WsEventMessage extends EventMessageDto {
-  platform: string;
-  bundleId: string;
-  deviceId: string;
-}
-
-export function eventMessageFromWs(
-  dto: WsEventMessage,
-  applicationId: string,
-): EventMessage {
-  return {
-    ...dto,
-    id: uuidv4(),
-    applicationId,
-  }
-}

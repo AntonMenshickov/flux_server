@@ -15,4 +15,8 @@ export const responseMessages = {
   LOGIN_IS_REQUIRED: 'At least one bundleId is required',
   APPLICATION_NOT_FOUND: 'Application not found',
   NOT_ALLOWED_TO_EDIT_APP: 'Not allowed to edit this application',
+  WS_ALREADY_CONNECTED: 'WebSocket is already connected',
+  WRONG_BUNDLE_ID_OR_PLATFORM: 'Wrong bundle id or platform',
+  WS_CLIENT_NOT_FOUND: 'WebSocket client not found',
+  WS_UNKNOWN_MESSAGE_TYPE: 'Unknown WebSocket message type',
 }
