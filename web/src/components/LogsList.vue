@@ -28,56 +28,7 @@
     </div>
 
     <div class="logs-list" @scroll="handleScroll">
-      <ul>
-        <li v-for="(log, index) in filteredLogs" :key="index" class="log-card">
-          <div class="log-card-header">
-            <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
-            <LogLevelBadge :level="log.logLevel" />
-          </div>
-
-
-          <section :class="['log-part-card', 'log-message', log.logLevel]">
-            <pre>{{ log.message }}</pre>
-          </section>
-
-          <section v-if="log.stackTrace" class="log-part-card stack-trace">
-            <strong>Stack Trace:</strong>
-            <pre>{{ log.stackTrace }}</pre>
-          </section>
-
-          <section class="log-details">
-            <div class="detail"><strong>Platform:</strong>
-              <BaseCopyText>{{ log.platform }}</BaseCopyText>
-            </div>
-            <div class="detail"><strong>Bundle:</strong>
-              <BaseCopyText>{{ log.bundleId }}</BaseCopyText>
-            </div>
-            <div class="detail"><strong>Device:</strong>
-              <BaseCopyText>{{ log.deviceId }}</BaseCopyText>
-            </div>
-            <div class="detail"><strong>Device name:</strong>
-              <BaseCopyText>{{ log.deviceName }}</BaseCopyText>
-            </div>
-            <div class="detail"><strong>OS name:</strong>
-              <BaseCopyText>{{ log.osName }}</BaseCopyText>
-            </div>
-          </section>
-
-          <section class="tags-meta">
-            <div v-if="log.tags && log.tags.length > 0" class="tags">
-              <strong>Tags:</strong>
-              <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" />
-            </div>
-            <div v-if="log.meta && log.meta.size > 0" class="meta">
-              <strong>Meta:</strong>
-              <div v-for="[key, value] in log.meta" :key="key" class="meta-values">
-                <div><BaseCopyText>{{ key }}</BaseCopyText>:</div>
-                <div><BaseCopyText>{{ value }}</BaseCopyText></div>
-              </div>
-            </div>
-          </section>
-        </li>
-      </ul>
+      <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" />
     </div>
   </div>
 </template>
@@ -86,8 +37,6 @@
 import { applications } from '@/api/applications';
 import { events } from '@/api/events';
 import BaseSelector from '@/components/base/BaseSelector.vue';
-import TagBadge from '@/components/base/TagBadge.vue';
-import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
 import { ref, computed, onMounted } from 'vue';
 import BaseButton from './base/BaseButton.vue';
 import BaseInput from './base/BaseInput.vue';
@@ -97,7 +46,7 @@ import type { EventMessage } from '@/model/event/eventMessage';
 import { LogLevel } from '@/model/event/logLevel';
 import type { EventFilter } from '@/model/event/eventFilter';
 import type { Application } from '@/model/application/application';
-import BaseCopyText from './base/BaseCopyText.vue';
+import LogCard from './base/LogCard.vue';
 
 
 const logs = ref<EventMessage[]>([]);
@@ -236,10 +185,6 @@ async function fetchApps(search: string): Promise<Application[]> {
   return [];
 }
 
-function formatDate(ts: number) {
-  return new Date(ts / 1000).toLocaleString();
-}
-
 </script>
 
 <style scoped>
@@ -256,117 +201,6 @@ function formatDate(ts: number) {
   padding: 1.5rem;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.logs-list h2 {
-  margin-bottom: 1rem;
-}
-
-.logs-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.log-card {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--box-shadow);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.log-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.timestamp {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.log-part-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f9f9f9;
-  border-left: 3px solid #ccc;
-  padding: 0.5rem;
-  border-radius: 4px;
-}
-
-.log-part-card.log-message.info {
-  background-color: rgba(2, 132, 199, 0.078);
-  border-left-color: rgba(2, 132, 199, 0.2);
-}
-
-.log-part-card.log-message.warn {
-  background-color: rgba(199, 146, 2, 0.078);
-  border-left-color: rgba(199, 146, 2, 0.2);
-}
-
-.log-part-card.log-message.error {
-  border-left-color: #ff000033;
-  background-color: #ff000014;
-}
-
-.log-part-card.log-message.debug {
-  border-left-color: rgb(163, 111, 173);
-  background-color: rgba(163, 111, 173, 0.1);
-}
-
-.log-part-card.stack-trace {
-  flex-direction: column;
-  align-items: start;
-  border-left-color: rgba(255, 0, 0, 0.2);
-  background-color: rgba(255, 0, 0, 0.078);
-}
-
-.log-part-card pre {
-  margin: 0.2rem 0 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-size: 0.85rem;
-  text-align: start;
-}
-
-.log-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 0.4rem 1rem;
-  text-align: start;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.tags-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.meta {
-  font-size: 0.85rem;
-  text-align: start;
-}
-
-.meta .meta-values {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  margin: 0.3rem 0 0;
 }
 
 .filters {
