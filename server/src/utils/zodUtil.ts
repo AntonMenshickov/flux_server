@@ -15,8 +15,8 @@ export const objectIdSchema = z
 export const eventMessageDtoSchema = z.object({
   message: z.string().trim(),
   logLevel: z.enum(LogLevel),
-  tags: z.array(z.string().trim().nonempty()).nullable().optional(),
-  meta: z.record(z.string(), z.string()).nullable().optional(),
+  tags: z.array(z.string().trim().nonempty()).optional(),
+  meta: z.record(z.string(), z.string()).optional(),
   timestamp: z.number(),
-  stackTrace: z.string().nullable().optional()
+  stackTrace: z.string().optional()
 });

@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
-import { EventsRepository } from '../database/repository/eventsRepository';
-import { EventMessage } from '../model/eventMessage';
-import { DatabaseResolver } from '../database/databaseResolver';
+import { EventMessageView } from '../model/eventMessageView';
+import { PostgresEventsRepository } from '../database/repository/postgresEventRepository';
+import { Database } from '../database/database';
 
 export class ReliableBatchQueue {
   private static _instance: ReliableBatchQueue;
@@ -12,7 +12,7 @@ export class ReliableBatchQueue {
   private flushTimer?: NodeJS.Timeout;
 
   private constructor(
-    private eventsRepo: EventsRepository,
+    private eventsRepo: PostgresEventsRepository,
     private queueName = 'queue',
     private processingName = 'processing',
     private batchSize = 5,
@@ -35,7 +35,7 @@ export class ReliableBatchQueue {
 
   static get instance(): ReliableBatchQueue {
     if (!ReliableBatchQueue._instance) {
-      ReliableBatchQueue._instance = new ReliableBatchQueue(DatabaseResolver.instance.eventsRepository,
+      ReliableBatchQueue._instance = new ReliableBatchQueue(Database.instance.eventsRepository,
         'queue',
         'processing',
         Number(process.env.EVENTS_BATCH_SIZE),
@@ -75,7 +75,7 @@ export class ReliableBatchQueue {
   }
 
 
-  async enqueue(event: EventMessage) {
+  async enqueue(event: EventMessageView) {
     const serialized = JSON.stringify(event);
     await this.redis.lpush(this.queueName, serialized);
     this.queueLen++;
@@ -83,7 +83,7 @@ export class ReliableBatchQueue {
   }
 
 
-  private async prepareBatch(): Promise<EventMessage[]> {
+  private async prepareBatch(): Promise<EventMessageView[]> {
     const script = `
       local src = KEYS[1]
       local dest = KEYS[2]
@@ -109,7 +109,7 @@ export class ReliableBatchQueue {
     }
     // this.listQueue(this.queueName);
     // this.listQueue(this.processingName);
-    return events.map(e => JSON.parse(e)) as EventMessage[];
+    return events.map(e => JSON.parse(e)) as EventMessageView[];
   }
 
   private async processQueue() {

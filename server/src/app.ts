@@ -2,29 +2,28 @@ import 'express-async-errors';
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import path from 'path';
 import apiRouter from './routes';
 import { websocket } from './websocket/ws';
 import expressWs from 'express-ws';
-import dotenv from 'dotenv';
 import { connect } from 'mongoose';
 import { ReliableBatchQueue } from './eventsQueue/reliableBatchQueue';
-import { DatabaseResolver } from './database/databaseResolver';
+import { Database } from './database/database';
+import path from 'path';
 
-const environmentConfig = path.join(__dirname, '/config.env');
-dotenv.config({ path: environmentConfig })
 
 export async function startServer() {
   console.log('Connecting to MongoDB...');
   await connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`);
   console.log('Connected to MongoDB');
 
-  const databaseResolver = await DatabaseResolver.resolveDatabase();
+  const database = Database.instance;
+  const postgres = database.postgres;
+  await postgres.ensureInitialized();
 
-  await databaseResolver.database.ensureDatabase();
-  // await databaseResolver.database.clearTable();
-  // await databaseResolver.database.dropTable();
-  await databaseResolver.database.ensureTable();
+  await postgres.ensureDatabase();
+  // await postgres.clearTable();
+  // await postgres.dropTable();
+  await postgres.ensureTable();
 
   ReliableBatchQueue.instance.init();
 

@@ -1,11 +1,10 @@
 import { Response, NextFunction, application } from 'express';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
-import { EventsRepository } from '../../database/repository/eventsRepository';
-import { EventMessage } from '../../model/eventMessage';
+import { EventMessageView } from '../../model/eventMessageView';
 import { numberFromStringSchema, objectIdSchema } from '../../utils/zodUtil';
 import { LogLevel } from '../../model/eventMessageDto';
-import { DatabaseResolver } from '../../database/databaseResolver';
+import { Database } from '../../database/database';
 
 const filtersValidateSchema = z.object({
   message: z.string().trim().nullable().optional(),
@@ -33,8 +32,8 @@ export const searchEventsValidateSchema = z.object({
 export async function searchEvents(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { limit, offset, applicationId, filter } = searchEventsValidateSchema.parse(req).query;
 
-  const eventsRepository: EventsRepository = DatabaseResolver.instance.eventsRepository;
-  const events: EventMessage[] = await eventsRepository.find(limit, offset, applicationId, filter);
+  
+  const events: EventMessageView[] = await Database.instance.eventsRepository.find(limit, offset, applicationId.toString(), filter);
 
 
   return res.status(200).json({

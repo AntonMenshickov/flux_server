@@ -1,7 +1,7 @@
 import { EventMessageDto } from './eventMessageDto';
 import { v4 as uuidv4 } from 'uuid';
 
-export interface EventMessage extends EventMessageDto {
+export interface EventMessageView extends EventMessageDto {
   id: string;
   applicationId: string;
   platform: string;
@@ -19,9 +19,14 @@ export function eventMessageFromDto(
   deviceId: string,
   deviceName: string,
   osName: string,
-): EventMessage {
+): EventMessageView {
   return {
-    ...dto,
+    timestamp: dto.timestamp,
+    logLevel: dto.logLevel,
+    message: dto.message,
+    tags: dto.tags ?? undefined,
+    meta: dto.meta ?? undefined,
+    stackTrace: dto.stackTrace ?? undefined,
     id: uuidv4(),
     applicationId,
     platform,

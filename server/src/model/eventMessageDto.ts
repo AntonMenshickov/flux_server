@@ -10,7 +10,7 @@ export interface EventMessageDto {
   timestamp: number;
   logLevel: LogLevel;
   message: string;
-  tags?: string[] | null;
-  meta?: Record<string, string> | null;
-  stackTrace?: string | null;
+  tags?: string[];
+  meta?: Record<string, string>;
+  stackTrace?: string;
 }

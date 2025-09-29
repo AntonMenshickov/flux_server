@@ -4,10 +4,10 @@ import { Document } from 'mongoose';
 import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
 import { eventMessageDtoSchema } from '../../utils/zodUtil';
-import { EventMessageDto } from '../../model/eventMessageDto';
 import { AppAuthRequest } from '../../middleware/authorizationRequired';
-import { eventMessageFromDto } from '../../model/eventMessage';
-import { DatabaseResolver } from '../../database/databaseResolver';
+import { eventMessageFromDto } from '../../model/eventMessageView';
+import { EventMessage } from '../../model/postgres/eventMessageDbView';
+import { Database } from '../../database/database';
 
 const eventsValidateSchema = z.array(eventMessageDtoSchema);
 
@@ -39,8 +39,7 @@ export async function addEvents(req: AppAuthRequest, res: Response, next: NextFu
       }
     });
   }
-
-  await DatabaseResolver.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId, deviceName, osName)));
+  await Database.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId, deviceName, osName)));
 
 
   return res.status(204).json({
