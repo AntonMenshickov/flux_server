@@ -100,7 +100,7 @@ export class Postgres {
     if (!exists) {
       await this._dataSource.query(`
         CREATE TABLE IF NOT EXISTS ${this.table} (
-            id UUID PRIMARY KEY,
+            id UUID NOT NULL,
             timestamp TIMESTAMPTZ NOT NULL,
             "logLevel" TEXT NOT NULL CHECK ("logLevel" IN ('info','warn','error','debug')),
             "applicationId" TEXT NOT NULL,
@@ -112,8 +112,9 @@ export class Postgres {
             message TEXT NOT NULL,
             tags TEXT[],
             meta JSONB,
-            "stackTrace" TEXT
-        );
+            "stackTrace" TEXT,
+            PRIMARY KEY (id, "applicationId")
+        ) PARTITION BY LIST ("applicationId");
 
         -- Индексы
         CREATE INDEX IF NOT EXISTS idx_${this.table}_timestamp ON ${this.table}(timestamp DESC);

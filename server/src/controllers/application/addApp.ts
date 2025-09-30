@@ -6,6 +6,8 @@ import z from 'zod';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { objectIdSchema } from '../../utils/zodUtil';
+import { Database } from '../../database/database';
+import { Postgres } from '../../database/postgres';
 
 
 export const addAppValidateSchema = z.object({
@@ -18,6 +20,16 @@ export const addAppValidateSchema = z.object({
     maintainers: z.array(objectIdSchema)
   })
 });
+
+export async function createAppPartition(applicationId: string) {
+  const database: Postgres = Database.instance.postgres;
+  const partitionName = `events_app_${applicationId}`;
+  await database.dataSource.query(`
+    CREATE TABLE IF NOT EXISTS ${partitionName}
+    PARTITION OF ${database.table}
+    FOR VALUES IN ('${applicationId}');
+  `);
+}
 
 export async function addApp(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { name, bundles, maintainers } = addAppValidateSchema.parse(req).body;
@@ -42,6 +54,7 @@ export async function addApp(req: UserAuthRequest, res: Response, next: NextFunc
     await app.save();
 
     const populatedMaintainers = await app.populate('maintainers');
+    await createAppPartition(app._id.toString());
 
     return res.status(200).json({
       success: true,
