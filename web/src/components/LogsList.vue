@@ -47,46 +47,46 @@ import { LogLevel } from '@/model/event/logLevel';
 import type { EventFilter } from '@/model/event/eventFilter';
 import type { Application } from '@/model/application/application';
 import LogCard from './base/LogCard.vue';
-import SmartSearch from './base/smartSearch/SmartSearch.vue';
-import { Operator, SearchCriterion, type FieldOption } from './base/smartSearch/types';
+// import SmartSearch from './base/smartSearch/SmartSearch.vue';
+// import { Operator, SearchCriterion, type FieldOption } from './base/smartSearch/types';
 import BaseKeyValueInput from './base/BaseKeyValueInput.vue';
 
 
-const fieldOptions: FieldOption[] = [
-  {
-    key: 'dateFrom',
-    operators: [Operator.Equals],
-    valueType: 'date',
-  },
-  {
-    key: 'dateTo',
-    operators: [Operator.Equals],
-    valueType: 'date',
-  },
-  {
-    key: 'meta',
-    operators: [Operator.Equals, Operator.NotEquals],
-    valueType: 'keyValue',
-  },
-  {
-    key: 'message',
-    operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
-    valueType: 'string',
-    fetchValues: async (filter = '') => {
-      const all = ['USA', 'Russia', 'Japan', 'Germany'];
-      return all.filter(v => v.toLowerCase().includes(filter.toLowerCase()));
-    }
-  }
-];
+// const fieldOptions: FieldOption[] = [
+//   {
+//     key: 'dateFrom',
+//     operators: [Operator.Equals],
+//     valueType: 'date',
+//   },
+//   {
+//     key: 'dateTo',
+//     operators: [Operator.Equals],
+//     valueType: 'date',
+//   },
+//   {
+//     key: 'meta',
+//     operators: [Operator.Equals, Operator.NotEquals],
+//     valueType: 'keyValue',
+//   },
+//   {
+//     key: 'message',
+//     operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
+//     valueType: 'string',
+//     fetchValues: async (filter = '') => {
+//       const all = ['USA', 'Russia', 'Japan', 'Germany'];
+//       return all.filter(v => v.toLowerCase().includes(filter.toLowerCase()));
+//     }
+//   }
+// ];
 
-const criteria: SearchCriterion[] = [];
+// const criteria: SearchCriterion[] = [];
 
-const onCriteriaUpdate = (arr: SearchCriterion[]) => {
-  // тут получаем массив экземпляров SearchCriterion
-  // (в компоненте они добавляются как new SearchCriterion(...))
-  // можно глубоко копировать, если нужно
-  criteria.splice(0, criteria.length, ...arr);
-};
+// const onCriteriaUpdate = (arr: SearchCriterion[]) => {
+//   // тут получаем массив экземпляров SearchCriterion
+//   // (в компоненте они добавляются как new SearchCriterion(...))
+//   // можно глубоко копировать, если нужно
+//   criteria.splice(0, criteria.length, ...arr);
+// };
 
 const logs = ref<EventMessage[]>([]);
 const filters = ref<{
