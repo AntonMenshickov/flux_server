@@ -1,0 +1,385 @@
+<template>
+  <div class="smart-search-wrapper" ref="wrapperRef">
+    <div class="smart-search-field">
+      <div class="tags-container">
+        <!-- Тэги завершённых критериев -->
+        <span class="tag" v-for="(c, i) in criteria" :key="'c' + i">
+          {{ c.field }} {{ c.operator }} {{ c.value }}
+          <button @click="removeCriterion(i)">×</button>
+        </span>
+
+        <!-- Тэги текущего набора (field/operator/value по мере выбора) -->
+        <span class="tag" v-for="(t, i) in currentTags" :key="'t' + i">{{ t }}</span>
+
+        <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
+          @keydown.arrow-up.prevent="moveSelection(-1)" @keydown.enter.prevent="onEnter"
+          @keydown.backspace="onBackspace" placeholder="Type criteria..." aria-autocomplete="list" />
+      </div>
+
+      <ul
+        v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && selectedField?.valueType === 'date')"
+        class="suggestions-list" role="listbox">
+        <li v-for="(s, index) in suggestions" :key="s + index" :class="{ selected: index === selectedIndex }"
+          @mousedown.prevent="selectIndex(index)" role="option" :aria-selected="index === selectedIndex">
+          {{ s }}
+        </li>
+      </ul>
+
+      <!-- date picker вместо списка -->
+      <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'date'"
+        class="suggestions-list">
+        <input type="datetime-local" v-model="inputText" @change="applyDate" />
+      </div>
+      <!-- date picker вместо списка -->
+      <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'keyValue'"
+        class="suggestions-list">
+        <BaseKeyValueEditor v-model="keyValueInput" @submit="onEnter" placeholder="meta" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
+import { Operator, SearchCriterion, type FieldOption } from './types';
+import BaseKeyValueEditor from '../BaseKeyValueEditor.vue';
+
+
+/** props: options - список полей */
+const props = defineProps<{
+  options: FieldOption[];
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:criteria', value: SearchCriterion[]): void
+}>();
+
+// state
+const criteria = reactive<SearchCriterion[]>([]);
+const inputText = ref('');
+const suggestions = ref<string[]>([]);
+const selectedIndex = ref(0);
+const suggestionsVisible = ref(false);
+
+const currentCriterion = reactive(new SearchCriterion()); // использует твой класс
+const currentTags = reactive<string[]>([]);
+const currentStage = ref<'field' | 'operator' | 'value'>('field');
+
+const wrapperRef = ref<HTMLElement | null>(null);
+
+
+const selectedField = computed(() =>
+  props.options.find(o => o.key === currentCriterion.field) ?? null
+);
+
+const keyValueInput = computed({
+  get: () => {
+    if (inputText.value.trim() === '') return [{ key: '', value: '' }];
+    return JSON.parse(inputText.value);
+  },
+  set: (val: { key: string; value: string }[]) => {
+    inputText.value = JSON.stringify(val);
+  }
+});
+
+// *************************
+// UX / suggestions logic
+// *************************
+
+const onFocus = () => {
+  suggestionsVisible.value = true;
+  if (currentStage.value === 'field') showFieldSuggestions();
+};
+
+const onInput = async () => {
+  suggestionsVisible.value = true;
+  const text = inputText.value ?? '';
+  if (currentStage.value === 'field') showFieldSuggestions(text);
+  else if (currentStage.value === 'operator') showOperatorSuggestions(text);
+  else if (currentStage.value === 'value') await showValueSuggestions(text);
+};
+
+const selectIndex = (index: number) => {
+  const len = suggestions.value.length;
+  if (!len) return;
+  selectedIndex.value = index;
+  inputText.value = suggestions.value[selectedIndex.value];
+};
+
+const moveSelection = (delta: number) => {
+  const len = suggestions.value.length;
+  if (!len) return;
+  selectedIndex.value = (selectedIndex.value + delta + len) % len;
+  inputText.value = suggestions.value[selectedIndex.value];
+};
+
+const showFieldSuggestions = (filter = '') => {
+  const f = filter.toLowerCase();
+  suggestions.value = props.options
+    .filter(opt => opt.key.toLowerCase().includes(f) || String(opt.key).toLowerCase().includes(f))
+    .map(opt => opt.key);
+  selectedIndex.value = 0;
+};
+
+const showOperatorSuggestions = (filter = '') => {
+  const opt = props.options.find(o => o.key === currentCriterion.field);
+  if (!opt) {
+    suggestions.value = [];
+    return;
+  }
+  const f = filter.toLowerCase();
+  suggestions.value = opt.operators
+    .map(o => String(o))                     // Operator values are strings (e.g. "=","~")
+    .filter(op => op.toLowerCase().includes(f));
+  selectedIndex.value = 0;
+};
+
+const showValueSuggestions = async (filter = '') => {
+  const opt = props.options.find(o => o.key === currentCriterion.field);
+  if (!opt) {
+    suggestions.value = [];
+    return;
+  }
+
+  if (opt.valueType === 'async' && typeof opt.fetchValues === 'function') {
+    suggestions.value = await opt.fetchValues(filter);
+  } else {
+    // для простоты — показываем пустой список, можно добавить статические варианты
+    suggestions.value = [];
+  }
+  selectedIndex.value = 0;
+  suggestionsVisible.value = true;
+};
+
+const onBackspace = () => {
+  if (inputText.value === '') {
+    if (currentStage.value === 'value') {
+      currentCriterion.value = null;
+      currentStage.value = 'operator';
+      currentTags.pop();
+      inputText.value = '';
+      showOperatorSuggestions();
+    } else if (currentStage.value === 'operator') {
+      currentCriterion.operator = null;
+      currentStage.value = 'field';
+      currentTags.pop();
+      inputText.value = '';
+      showFieldSuggestions();
+    } else if (currentStage.value === 'field') {
+      if (currentTags.length > 0) {
+        currentTags.pop();
+        inputText.value = '';
+        showFieldSuggestions();
+        return;
+      }
+      if (criteria.length != 0) {
+        const last = criteria.pop();
+        if (last) {
+          currentCriterion.field = last.field;
+          currentCriterion.operator = last.operator;
+          currentCriterion.value = last.value;
+          currentStage.value = 'value';
+          currentTags.push(last.field ?? '', last.operator ?? '');
+          inputText.value = '';
+          showValueSuggestions();
+        }
+      }
+    }
+  }
+};
+
+const onEnter = async () => {
+  if (suggestions.value.length > 0) {
+    inputText.value = suggestions.value[selectedIndex.value] ?? '';
+    console.log('selected suggestion', inputText.value);
+  }
+  parseAndApplyExpression();
+};
+
+
+const parseAndApplyExpression = () => {
+  const input = [...currentTags, inputText.value.trim()].join('');
+  if (!input) return false;
+  // 1. Найти поле
+  const fieldOption = props.options.find(opt =>
+    input.toLowerCase().startsWith(opt.key.toLowerCase())
+  );
+  if (!fieldOption) return false;
+
+  const field = fieldOption.key;
+
+  // 2. Найти оператор
+  const op = fieldOption.operators.find(op =>
+    input.includes(op)
+  );
+  if (!op) {
+    currentTags.splice(0, currentTags.length, field);
+    inputText.value = '';
+    currentStage.value = 'operator';
+    currentCriterion.field = field;
+    currentCriterion.operator = null;
+    currentCriterion.value = null;
+    showOperatorSuggestions();
+    return true;
+  }
+
+  // 3. Разделить строку на [field, operator, value]
+  const parts = input.split(op).filter(p => p.trim().length > 0).map(p => p.trim());
+  console.log('parts', parts);
+  if (parts.length < 2) {
+    currentTags.splice(0, currentTags.length, field, String(op));
+    inputText.value = '';
+    currentStage.value = 'value';
+    currentCriterion.field = field;
+    currentCriterion.operator = op as Operator;
+    currentCriterion.value = null;
+    showValueSuggestions();
+    return true;
+  }
+
+  const valueRaw = parts.slice(1).join(op).trim();
+  console.log('full value');
+
+  // 5. Создать критерий
+  const criterion = new SearchCriterion(field, op as Operator, valueRaw);
+  criteria.push(criterion);
+  emit('update:criteria', criteria);
+
+  // 6. Сброс состояния
+  currentCriterion.field = null;
+  currentCriterion.operator = null;
+  currentCriterion.value = null;
+  currentStage.value = 'field';
+  currentTags.splice(0, currentTags.length);
+  inputText.value = '';
+  suggestionsVisible.value = false;
+
+  return true;
+};
+
+// удаление критерия
+const removeCriterion = (index: number) => {
+  criteria.splice(index, 1);
+  emit('update:criteria', criteria);
+};
+
+// Закрытие при клике вне
+const handleClickOutside = (event: MouseEvent) => {
+  if (wrapperRef.value && !wrapperRef.value.contains(event.target as Node)) {
+    suggestionsVisible.value = false;
+  }
+};
+
+const applyDate = () => {
+  if (!inputText.value) return;
+  currentCriterion.value = inputText.value;
+  currentTags.push(inputText.value);
+  criteria.push(new SearchCriterion(currentCriterion.field, currentCriterion.operator, currentCriterion.value));
+  emit('update:criteria', criteria);
+
+  // reset
+  currentCriterion.field = null;
+  currentCriterion.operator = null;
+  currentCriterion.value = null;
+  currentStage.value = 'field';
+  currentTags.splice(0, currentTags.length);
+  inputText.value = '';
+  suggestionsVisible.value = false;
+};
+
+onMounted(() => document.addEventListener('click', handleClickOutside));
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
+
+
+</script>
+
+<style scoped>
+.smart-search-wrapper {
+  width: 520px;
+  position: relative;
+  /* для абсолютного dropdown */
+}
+
+.smart-search-field {
+  display: flex;
+  flex-direction: column;
+  min-height: 40px;
+  padding: 0.35rem 0.6rem;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, #d0d0d0);
+  font-size: 0.95rem;
+  background: white;
+}
+
+/* подсветка при фокусе внутри */
+.smart-search-field:focus-within {
+  border-color: var(--color-primary, #2b7cff);
+  box-shadow: 0 4px 12px rgba(43, 124, 255, 0.12);
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 6px;
+  row-gap: 6px;
+  align-items: center;
+}
+
+.tag {
+  background-color: #eef2ff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  text-align: start;
+}
+
+.tag button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+}
+
+input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 160px;
+  padding: 6px 4px;
+  font-size: 0.95rem;
+}
+
+/* dropdown — абсолютный, не меняет размер родителя */
+.suggestions-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 320px;
+  max-width: 100%;
+  padding: 0.3rem;
+  border-radius: 8px;
+  margin: 0;
+  border: 1px solid var(--color-border, #d0d0d0);
+  background-color: #fff;
+  box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  z-index: 1200;
+  list-style: none;
+}
+
+.suggestions-list li {
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.suggestions-list li.selected {
+  background-color: var(--color-primary, #2b7cff);
+  color: white;
+}
+</style>

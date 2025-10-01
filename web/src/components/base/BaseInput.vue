@@ -30,6 +30,7 @@ const localValue = computed<string>({
 .base-input {
   min-height: 40px;
   max-height: 40px;
+  min-width: 200px;
   box-sizing: border-box;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;

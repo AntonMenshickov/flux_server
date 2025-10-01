@@ -18,7 +18,7 @@
     </div>
     <br />
     <strong>Bundles:</strong>
-    <BaseKeyValueEditor v-model="bundles" placeholder="bundle ids" />
+    <BaseKeyValueInput v-model="bundles" placeholder="bundle ids" />
     <br />
     <BaseButton class="create-btn" @click="save">{{(!props.application) ? 'Create application' : 'Update application'}}</BaseButton>
   </div>
@@ -30,11 +30,11 @@ import BaseInput from '@/components/base/BaseInput.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import { users } from '@/api/users';
 import { onMounted, ref } from 'vue';
-import BaseKeyValueEditor from './BaseKeyValueEditor.vue';
 import BaseSelector from './BaseSelector.vue';
 import type { Application } from '@/model/application/application';
 import type { User } from '@/model/user';
 import type { Bundle } from '@/model/application/bundle';
+import BaseKeyValueInput from './BaseKeyValueInput.vue';
 
 
 const props = defineProps<{

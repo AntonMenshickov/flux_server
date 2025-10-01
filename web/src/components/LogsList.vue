@@ -1,6 +1,7 @@
 <template>
   <div class="logs-page">
     <div class="filters">
+      <!-- <SmartSearch :options="fieldOptions" @update:criteria="onCriteriaUpdate" /> -->
       <BaseSelector v-model="application" :fetch-options="fetchApps" :label-key="(u) => u.name" :value-key="(u) => u.id"
         placeholder="Select application" />
       <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
@@ -12,7 +13,7 @@
       <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
       <BaseInput v-model="filters.deviceName" type="text" placeholder="Device Name" />
       <BaseInput v-model="filters.osName" type="text" placeholder="Operating system name" />
-      <BaseKeyValueEditor v-model="filters.meta" placeholder="meta" />
+      <BaseKeyValueInput v-model="filters.meta" placeholder="meta" />
       <label>
         From:
         <BaseInput v-model="filters.from" type="datetime-local" />
@@ -41,13 +42,51 @@ import { ref, computed, onMounted } from 'vue';
 import BaseButton from './base/BaseButton.vue';
 import BaseInput from './base/BaseInput.vue';
 import BaseMultiselect from './base/BaseMultiselect.vue';
-import BaseKeyValueEditor from './base/BaseKeyValueEditor.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { LogLevel } from '@/model/event/logLevel';
 import type { EventFilter } from '@/model/event/eventFilter';
 import type { Application } from '@/model/application/application';
 import LogCard from './base/LogCard.vue';
+import SmartSearch from './base/smartSearch/SmartSearch.vue';
+import { Operator, SearchCriterion, type FieldOption } from './base/smartSearch/types';
+import BaseKeyValueInput from './base/BaseKeyValueInput.vue';
 
+
+const fieldOptions: FieldOption[] = [
+  {
+    key: 'dateFrom',
+    operators: [Operator.Equals],
+    valueType: 'date',
+  },
+  {
+    key: 'dateTo',
+    operators: [Operator.Equals],
+    valueType: 'date',
+  },
+  {
+    key: 'meta',
+    operators: [Operator.Equals, Operator.NotEquals],
+    valueType: 'keyValue',
+  },
+  {
+    key: 'message',
+    operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
+    valueType: 'string',
+    fetchValues: async (filter = '') => {
+      const all = ['USA', 'Russia', 'Japan', 'Germany'];
+      return all.filter(v => v.toLowerCase().includes(filter.toLowerCase()));
+    }
+  }
+];
+
+const criteria: SearchCriterion[] = [];
+
+const onCriteriaUpdate = (arr: SearchCriterion[]) => {
+  // тут получаем массив экземпляров SearchCriterion
+  // (в компоненте они добавляются как new SearchCriterion(...))
+  // можно глубоко копировать, если нужно
+  criteria.splice(0, criteria.length, ...arr);
+};
 
 const logs = ref<EventMessage[]>([]);
 const filters = ref<{
