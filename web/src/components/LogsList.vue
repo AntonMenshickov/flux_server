@@ -1,7 +1,10 @@
 <template>
   <div class="logs-page">
+    <div class="smart-search">
+      <SmartSearch :options="fieldOptions" @update:criteria="onCriteriaUpdate" />
+    </div>
     <div class="filters">
-      <!-- <SmartSearch :options="fieldOptions" @update:criteria="onCriteriaUpdate" /> -->
+
       <BaseSelector v-model="application" :fetch-options="fetchApps" :label-key="(u) => u.name" :value-key="(u) => u.id"
         placeholder="Select application" />
       <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
@@ -47,46 +50,51 @@ import { LogLevel } from '@/model/event/logLevel';
 import type { EventFilter } from '@/model/event/eventFilter';
 import type { Application } from '@/model/application/application';
 import LogCard from './base/LogCard.vue';
-// import SmartSearch from './base/smartSearch/SmartSearch.vue';
-// import { Operator, SearchCriterion, type FieldOption } from './base/smartSearch/types';
+import SmartSearch from './base/smartSearch/SmartSearch.vue';
+import { Operator, SearchCriterion, type FieldOption } from './base/smartSearch/types';
 import BaseKeyValueInput from './base/BaseKeyValueInput.vue';
 
 
-// const fieldOptions: FieldOption[] = [
-//   {
-//     key: 'dateFrom',
-//     operators: [Operator.Equals],
-//     valueType: 'date',
-//   },
-//   {
-//     key: 'dateTo',
-//     operators: [Operator.Equals],
-//     valueType: 'date',
-//   },
-//   {
-//     key: 'meta',
-//     operators: [Operator.Equals, Operator.NotEquals],
-//     valueType: 'keyValue',
-//   },
-//   {
-//     key: 'message',
-//     operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
-//     valueType: 'string',
-//     fetchValues: async (filter = '') => {
-//       const all = ['USA', 'Russia', 'Japan', 'Germany'];
-//       return all.filter(v => v.toLowerCase().includes(filter.toLowerCase()));
-//     }
-//   }
-// ];
+const fieldOptions: FieldOption[] = [
+  {
+    key: 'dateFrom',
+    operators: [Operator.Equals],
+    valueType: 'date',
+  },
+  {
+    key: 'dateTo',
+    operators: [Operator.Equals],
+    valueType: 'date',
+  },
+  {
+    key: 'meta',
+    operators: [Operator.Equals, Operator.NotEquals],
+    valueType: 'keyValue',
+  },
+  {
+    key: 'message',
+    operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
+    valueType: 'string',
+  },
+  {
+    key: 'application',
+    operators: [Operator.Equals],
+    valueType: 'async',
+    fetchValues: async (filter = '') => {
+      const apps = await fetchApps(filter);
+      return apps.map(a => a.name);
+    }
+  }
+];
 
-// const criteria: SearchCriterion[] = [];
+const criteria: SearchCriterion[] = [];
 
-// const onCriteriaUpdate = (arr: SearchCriterion[]) => {
-//   // тут получаем массив экземпляров SearchCriterion
-//   // (в компоненте они добавляются как new SearchCriterion(...))
-//   // можно глубоко копировать, если нужно
-//   criteria.splice(0, criteria.length, ...arr);
-// };
+const onCriteriaUpdate = (arr: SearchCriterion[]) => {
+  // тут получаем массив экземпляров SearchCriterion
+  // (в компоненте они добавляются как new SearchCriterion(...))
+  // можно глубоко копировать, если нужно
+  criteria.splice(0, criteria.length, ...arr);
+};
 
 const logs = ref<EventMessage[]>([]);
 const filters = ref<{
@@ -255,5 +263,14 @@ async function fetchApps(search: string): Promise<Application[]> {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+}
+
+.smart-search {
+  padding: 1.5rem;
+}
+
+.smart-search.smart-search-field {
+
+  flex: 1;
 }
 </style>

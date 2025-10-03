@@ -1,39 +1,37 @@
 <template>
-  <div class="smart-search-wrapper" ref="wrapperRef">
-    <div class="smart-search-field">
-      <div class="tags-container">
-        <!-- Тэги завершённых критериев -->
-        <span class="tag" v-for="(c, i) in criteria" :key="'c' + i">
-          {{ c.field }} {{ c.operator }} {{ c.value }}
-          <button @click="removeCriterion(i)">×</button>
-        </span>
+  <div class="smart-search-field" ref="wrapperRef">
+    <div class="tags-container">
+      <!-- Тэги завершённых критериев -->
+      <span class="tag" v-for="(c, i) in criteria" :key="'c' + i">
+        {{ c.field }} {{ c.operator }} {{ c.value }}
+        <button @click="removeCriterion(i)">×</button>
+      </span>
 
-        <!-- Тэги текущего набора (field/operator/value по мере выбора) -->
-        <span class="tag" v-for="(t, i) in currentTags" :key="'t' + i">{{ t }}</span>
-
+      <!-- Тэги текущего набора (field/operator/value по мере выбора) -->
+      <span class="tag" v-for="(t, i) in currentTags" :key="'t' + i">{{ t }}</span>
+      <div class="input-container">
         <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
           @keydown.arrow-up.prevent="moveSelection(-1)" @keydown.enter.prevent="onEnter"
           @keydown.backspace="onBackspace" placeholder="Type criteria..." aria-autocomplete="list" />
-      </div>
+        <ul
+          v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && selectedField?.valueType === 'date')"
+          class="suggestions-list" role="listbox">
+          <li v-for="(s, index) in suggestions" :key="s + index" :class="{ selected: index === selectedIndex }"
+            @mousedown.prevent="selectIndex(index)" role="option" :aria-selected="index === selectedIndex">
+            {{ s }}
+          </li>
+        </ul>
 
-      <ul
-        v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && selectedField?.valueType === 'date')"
-        class="suggestions-list" role="listbox">
-        <li v-for="(s, index) in suggestions" :key="s + index" :class="{ selected: index === selectedIndex }"
-          @mousedown.prevent="selectIndex(index)" role="option" :aria-selected="index === selectedIndex">
-          {{ s }}
-        </li>
-      </ul>
-
-      <!-- date picker вместо списка -->
-      <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'date'"
-        class="suggestions-list">
-        <input type="datetime-local" v-model="inputText" @change="applyDate" />
-      </div>
-      <!-- date picker вместо списка -->
-      <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'keyValue'"
-        class="suggestions-list">
-        <BaseKeyValueEditor v-model="keyValueInput" @submit="onEnter" placeholder="meta" />
+        <!-- date picker вместо списка -->
+        <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'date'"
+          class="suggestions-list">
+          <input type="datetime-local" v-model="inputText" @change="applyDate" />
+        </div>
+        <!-- date picker вместо списка -->
+        <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'keyValue'"
+          class="suggestions-list">
+          <BaseKeyValueEditor v-model="keyValueInput" @submit="onEnter" placeholder="meta" />
+        </div>
       </div>
     </div>
   </div>
@@ -88,7 +86,8 @@ const keyValueInput = computed({
 
 const onFocus = () => {
   suggestionsVisible.value = true;
-  if (currentStage.value === 'field') showFieldSuggestions();
+  const text = inputText.value ?? '';
+  if (currentStage.value === 'field') showFieldSuggestions(text);
 };
 
 const onInput = async () => {
@@ -104,6 +103,7 @@ const selectIndex = (index: number) => {
   if (!len) return;
   selectedIndex.value = index;
   inputText.value = suggestions.value[selectedIndex.value];
+  parseAndApplyExpression();
 };
 
 const moveSelection = (delta: number) => {
@@ -191,7 +191,6 @@ const onBackspace = () => {
 const onEnter = async () => {
   if (suggestions.value.length > 0) {
     inputText.value = suggestions.value[selectedIndex.value] ?? '';
-    console.log('selected suggestion', inputText.value);
   }
   parseAndApplyExpression();
 };
@@ -225,7 +224,6 @@ const parseAndApplyExpression = () => {
 
   // 3. Разделить строку на [field, operator, value]
   const parts = input.split(op).filter(p => p.trim().length > 0).map(p => p.trim());
-  console.log('parts', parts);
   if (parts.length < 2) {
     currentTags.splice(0, currentTags.length, field, String(op));
     inputText.value = '';
@@ -238,7 +236,6 @@ const parseAndApplyExpression = () => {
   }
 
   const valueRaw = parts.slice(1).join(op).trim();
-  console.log('full value');
 
   // 5. Создать критерий
   const criterion = new SearchCriterion(field, op as Operator, valueRaw);
@@ -294,12 +291,6 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <style scoped>
-.smart-search-wrapper {
-  width: 520px;
-  position: relative;
-  /* для абсолютного dropdown */
-}
-
 .smart-search-field {
   display: flex;
   flex-direction: column;
@@ -316,6 +307,13 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .smart-search-field:focus-within {
   border-color: var(--color-primary, #2b7cff);
   box-shadow: 0 4px 12px rgba(43, 124, 255, 0.12);
+}
+
+.input-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .tags-container {
@@ -359,7 +357,6 @@ input {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  min-width: 320px;
   max-width: 100%;
   padding: 0.3rem;
   border-radius: 8px;
