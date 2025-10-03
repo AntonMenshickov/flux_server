@@ -12,7 +12,9 @@
       <div class="input-container">
         <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
           @keydown.arrow-up.prevent="moveSelection(-1)" @keydown.enter.prevent="onEnter"
-          @keydown.backspace="onBackspace" placeholder="Type criteria..." aria-autocomplete="list" />
+          @keydown.backspace="onBackspace" placeholder="Type criteria..." aria-autocomplete="list"
+          :readonly="isReadonly"
+          :type="inputType"/>
         <ul
           v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && selectedField?.valueType === 'date')"
           class="suggestions-list" role="listbox">
@@ -59,7 +61,7 @@ const suggestions = ref<string[]>([]);
 const selectedIndex = ref(0);
 const suggestionsVisible = ref(false);
 
-const currentCriterion = reactive(new SearchCriterion()); // использует твой класс
+const currentCriterion = reactive(new SearchCriterion());
 const currentTags = reactive<string[]>([]);
 const currentStage = ref<'field' | 'operator' | 'value'>('field');
 
@@ -70,13 +72,30 @@ const selectedField = computed(() =>
   props.options.find(o => o.key === currentCriterion.field) ?? null
 );
 
+const isReadonly = computed(() => selectedField.value?.valueType === 'keyValue');
+const inputType = computed(() => {
+  switch (selectedField.value?.valueType) {
+    case 'date':
+      return 'datetime-local';
+    case 'keyValue':
+      return 'text';
+      case 'number':
+      return 'number';
+    default:
+      return 'text';
+  }
+});
+
 const keyValueInput = computed({
   get: () => {
     if (inputText.value.trim() === '') return [{ key: '', value: '' }];
-    return JSON.parse(inputText.value);
+    return JSON.parse(inputText.value).map((e: Record<string, string>) => {
+      const key = Object.keys(e)[0];
+      return { key: key, value: e[key] };
+    });
   },
   set: (val: { key: string; value: string }[]) => {
-    inputText.value = JSON.stringify(val);
+    inputText.value = JSON.stringify(val.map(e => {return {[e.key]: e.value}}));
   }
 });
 

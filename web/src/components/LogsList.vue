@@ -77,12 +77,25 @@ const fieldOptions: FieldOption[] = [
     valueType: 'string',
   },
   {
+    key: 'number',
+    operators: [Operator.Equals, Operator.GreaterThan, Operator.LessThan],
+    valueType: 'number',
+  },
+  {
     key: 'application',
     operators: [Operator.Equals],
     valueType: 'async',
     fetchValues: async (filter = '') => {
       const apps = await fetchApps(filter);
       return apps.map(a => a.name);
+    }
+  },
+  {
+    key: 'logLevel',
+    operators: [Operator.Equals],
+    valueType: 'async',
+    fetchValues: async (filter = '') => {
+      return Object.values(LogLevel).filter(l => l.toString().toLowerCase().includes(filter.toLowerCase())).map(l => l.toString());
     }
   }
 ];
