@@ -60,26 +60,25 @@ const fieldOptions: FieldOption[] = [
     key: 'dateFrom',
     operators: [Operator.Equals],
     valueType: 'date',
+    placeholder: 'From date',
   },
   {
     key: 'dateTo',
     operators: [Operator.Equals],
     valueType: 'date',
+    placeholder: 'To date',
   },
   {
     key: 'meta',
     operators: [Operator.Equals, Operator.NotEquals],
     valueType: 'keyValue',
+    placeholder: 'Meta key-value',
   },
   {
     key: 'message',
     operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
     valueType: 'string',
-  },
-  {
-    key: 'number',
-    operators: [Operator.Equals, Operator.GreaterThan, Operator.LessThan],
-    valueType: 'number',
+    placeholder: 'Log message',
   },
   {
     key: 'application',
@@ -88,16 +87,54 @@ const fieldOptions: FieldOption[] = [
     fetchValues: async (filter = '') => {
       const apps = await fetchApps(filter);
       return apps.map(a => a.name);
-    }
+    },
+    placeholder: 'Select application',
   },
   {
     key: 'logLevel',
-    operators: [Operator.Equals],
-    valueType: 'async',
+    operators: [Operator.Equals, Operator.In, Operator.NotIn],
+    valueType: 'multiselect',
     fetchValues: async (filter = '') => {
       return Object.values(LogLevel).filter(l => l.toString().toLowerCase().includes(filter.toLowerCase())).map(l => l.toString());
-    }
-  }
+    },
+    placeholder: 'Select log levels',
+  },
+  {
+    key: 'tags',
+    operators: [Operator.Equals, Operator.In, Operator.NotIn],
+    valueType: 'string',
+    placeholder: 'Comma separated tags',
+  },
+  {
+    key: 'platform',
+    operators: [Operator.Equals, Operator.Similar],
+    valueType: 'string',
+    placeholder: 'Platform name',
+  },
+  {
+    key: 'bundleId',
+    operators: [Operator.Equals, Operator.Similar],
+    valueType: 'string',
+    placeholder: 'Bundle ID',
+  },
+  {
+    key: 'deviceId',
+    operators: [Operator.Equals, Operator.Similar],
+    valueType: 'string',
+    placeholder: 'Device ID',
+  },
+  {
+    key: 'deviceName',
+    operators: [Operator.Equals, Operator.Similar],
+    valueType: 'string',
+    placeholder: 'Device Name',
+  },
+  {
+    key: 'osName',
+    operators: [Operator.Equals, Operator.Similar],
+    valueType: 'string',
+    placeholder: 'Operating System Name',
+  },
 ];
 
 const criteria: SearchCriterion[] = [];

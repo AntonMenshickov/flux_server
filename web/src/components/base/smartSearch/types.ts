@@ -1,8 +1,9 @@
 export interface FieldOption {
   key: string;
   operators: Operator[];
-  valueType?: 'string' | 'number' | 'date' | 'async' | 'keyValue';
+  valueType?: 'string' | 'number' | 'date' | 'async' | 'keyValue' | 'multiselect';
   fetchValues?: (filter: string) => Promise<string[]>;
+  placeholder?: string;
 }
 
 export enum Operator {
@@ -11,7 +12,8 @@ export enum Operator {
   Similar = '~',
   GreaterThan = '>',
   LessThan = '<',
-  
+  In = 'in',
+  NotIn = 'not in',
 }
 
 export class SearchCriterion {

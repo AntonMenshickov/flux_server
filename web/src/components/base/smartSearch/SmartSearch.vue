@@ -9,10 +9,10 @@
       <div class="input-container">
         <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
           @keydown.arrow-up.prevent="moveSelection(-1)" @keydown.enter.prevent="onEnter"
-          @keydown.backspace="onBackspace" placeholder="Type criteria..." aria-autocomplete="list"
+          @keydown.backspace="onBackspace" :placeholder="selectedField?.placeholder ?? 'Type criterion'" aria-autocomplete="list"
           :readonly="isReadonly" :type="inputType" />
         <ul
-          v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && selectedField?.valueType === 'date')"
+          v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && (selectedField?.valueType === 'date' || selectedField?.valueType === 'multiselect'))"
           class="suggestions-list" role="listbox">
           <li v-for="(s, index) in suggestions" :key="s + index" :class="{ selected: index === selectedIndex }"
             @mousedown.prevent="selectIndex(index)" role="option" :aria-selected="index === selectedIndex">
@@ -27,6 +27,17 @@
           class="suggestions-list">
           <BaseKeyValueEditor v-model="keyValueInput" @submit="onEnter" placeholder="meta" />
         </div>
+        <ul v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'multiselect'"
+          class="suggestions-list">
+          <li v-for="(s, index) in suggestions" :key="s + index" :class="{ selected: index === selectedIndex }">
+            <label class="multiselect-option">
+              <input type="checkbox" :value="s" v-model="multiselectInput" />
+              <span>
+                {{ s }}
+              </span>
+            </label>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
@@ -65,11 +76,15 @@ const selectedField = computed(() =>
   props.options.find(o => o.key === currentCriterion.field) ?? null
 );
 
-const isReadonly = computed(() => selectedField.value?.valueType === 'keyValue');
+const isReadonly = computed(() => currentStage.value === 'value' &&
+  (
+    selectedField.value?.valueType === 'keyValue'
+    || selectedField.value?.valueType === 'multiselect'
+    || selectedField.value?.valueType === 'date'
+  )
+);
 const inputType = computed(() => {
   switch (selectedField.value?.valueType) {
-    case 'date':
-      return 'datetime-local';
     case 'keyValue':
       return 'text';
     case 'number':
@@ -89,9 +104,18 @@ const keyValueInput = computed({
   },
   set: (val: { key: string; value: string }[]) => {
     inputText.value = JSON.stringify(val
-      .filter(e => e.key.trim().length > 0 && e.value.trim().length > 0)
       .map(e => { return { [e.key]: e.value } }),
     );
+  }
+});
+
+const multiselectInput = computed({
+  get: () => {
+    if (inputText.value.trim() === '') return [];
+    return JSON.parse(inputText.value);
+  },
+  set: (val: string[]) => {
+    inputText.value = JSON.stringify(val.filter(e => e.trim().length > 0));
   }
 });
 
@@ -122,7 +146,11 @@ const moveSelection = (delta: number) => {
   const len = suggestions.value.length;
   if (!len) return;
   selectedIndex.value = (selectedIndex.value + delta + len) % len;
-  inputText.value = suggestions.value[selectedIndex.value];
+  if (selectedField.value?.valueType === 'multiselect' && currentStage.value === 'value') {
+    multiselectInput.value = [suggestions.value[selectedIndex.value]];
+  } else {
+    inputText.value = suggestions.value[selectedIndex.value];
+  }
 };
 
 const showFieldSuggestions = (filter = '') => {
@@ -153,7 +181,7 @@ const showValueSuggestions = async (filter = '') => {
     return;
   }
 
-  if (opt.valueType === 'async' && typeof opt.fetchValues === 'function') {
+  if ((opt.valueType === 'async' || opt.valueType === 'multiselect') && typeof opt.fetchValues === 'function') {
     suggestions.value = await opt.fetchValues(filter);
   } else {
     suggestions.value = [];
@@ -201,7 +229,11 @@ const onBackspace = () => {
 
 const onEnter = async () => {
   if (suggestions.value.length > 0) {
-    inputText.value = suggestions.value[selectedIndex.value] ?? '';
+    if (selectedField.value?.valueType === 'multiselect' && currentStage.value === 'value') {
+      inputText.value = JSON.stringify(multiselectInput.value.length == 0 ? [suggestions.value[selectedIndex.value]] : multiselectInput.value);
+    } else {
+      inputText.value = suggestions.value[selectedIndex.value] ?? '';
+    }
   }
   parseAndApplyExpression();
 };
@@ -379,5 +411,20 @@ input {
 .suggestions-list li.selected {
   background-color: var(--color-primary, #2b7cff);
   color: white;
+}
+
+.multiselect-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.multiselect-option input {
+  min-width: auto;
+  flex: 0;
+}
+
+.multiselect-option span {
+  flex: 1;
 }
 </style>
