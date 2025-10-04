@@ -1,13 +1,10 @@
 <template>
   <div class="smart-search-field" ref="wrapperRef">
     <div class="tags-container">
-      <!-- Тэги завершённых критериев -->
       <span class="tag" v-for="(c, i) in criteria" :key="'c' + i">
         {{ c.field }} {{ c.operator }} {{ c.value }}
         <button @click="removeCriterion(i)">×</button>
       </span>
-
-      <!-- Тэги текущего набора (field/operator/value по мере выбора) -->
       <span class="tag" v-for="(t, i) in currentTags" :key="'t' + i">{{ t }}</span>
       <div class="input-container">
         <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
@@ -22,13 +19,10 @@
             {{ s }}
           </li>
         </ul>
-
-        <!-- date picker вместо списка -->
         <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'date'"
           class="suggestions-list">
           <input type="datetime-local" v-model="inputText" @change="applyDate" />
         </div>
-        <!-- date picker вместо списка -->
         <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'keyValue'"
           class="suggestions-list">
           <BaseKeyValueEditor v-model="keyValueInput" @submit="onEnter" placeholder="meta" />
