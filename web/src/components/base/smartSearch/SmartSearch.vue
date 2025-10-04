@@ -13,8 +13,7 @@
         <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
           @keydown.arrow-up.prevent="moveSelection(-1)" @keydown.enter.prevent="onEnter"
           @keydown.backspace="onBackspace" placeholder="Type criteria..." aria-autocomplete="list"
-          :readonly="isReadonly"
-          :type="inputType"/>
+          :readonly="isReadonly" :type="inputType" />
         <ul
           v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && selectedField?.valueType === 'date')"
           class="suggestions-list" role="listbox">
@@ -79,7 +78,7 @@ const inputType = computed(() => {
       return 'datetime-local';
     case 'keyValue':
       return 'text';
-      case 'number':
+    case 'number':
       return 'number';
     default:
       return 'text';
@@ -95,13 +94,13 @@ const keyValueInput = computed({
     });
   },
   set: (val: { key: string; value: string }[]) => {
-    inputText.value = JSON.stringify(val.map(e => {return {[e.key]: e.value}}));
+    inputText.value = JSON.stringify(val
+      .filter(e => e.key.trim().length > 0 && e.value.trim().length > 0)
+      .map(e => { return { [e.key]: e.value } }),
+    );
   }
 });
 
-// *************************
-// UX / suggestions logic
-// *************************
 
 const onFocus = () => {
   suggestionsVisible.value = true;
@@ -148,7 +147,7 @@ const showOperatorSuggestions = (filter = '') => {
   }
   const f = filter.toLowerCase();
   suggestions.value = opt.operators
-    .map(o => String(o))                     // Operator values are strings (e.g. "=","~")
+    .map(o => String(o))
     .filter(op => op.toLowerCase().includes(f));
   selectedIndex.value = 0;
 };
@@ -163,7 +162,6 @@ const showValueSuggestions = async (filter = '') => {
   if (opt.valueType === 'async' && typeof opt.fetchValues === 'function') {
     suggestions.value = await opt.fetchValues(filter);
   } else {
-    // для простоты — показываем пустой список, можно добавить статические варианты
     suggestions.value = [];
   }
   selectedIndex.value = 0;
@@ -218,7 +216,6 @@ const onEnter = async () => {
 const parseAndApplyExpression = () => {
   const input = [...currentTags, inputText.value.trim()].join('');
   if (!input) return false;
-  // 1. Найти поле
   const fieldOption = props.options.find(opt =>
     input.toLowerCase().startsWith(opt.key.toLowerCase())
   );
@@ -226,7 +223,6 @@ const parseAndApplyExpression = () => {
 
   const field = fieldOption.key;
 
-  // 2. Найти оператор
   const op = fieldOption.operators.find(op =>
     input.includes(op)
   );
@@ -241,7 +237,6 @@ const parseAndApplyExpression = () => {
     return true;
   }
 
-  // 3. Разделить строку на [field, operator, value]
   const parts = input.split(op).filter(p => p.trim().length > 0).map(p => p.trim());
   if (parts.length < 2) {
     currentTags.splice(0, currentTags.length, field, String(op));
@@ -256,30 +251,20 @@ const parseAndApplyExpression = () => {
 
   const valueRaw = parts.slice(1).join(op).trim();
 
-  // 5. Создать критерий
   const criterion = new SearchCriterion(field, op as Operator, valueRaw);
   criteria.push(criterion);
   emit('update:criteria', criteria);
 
-  // 6. Сброс состояния
-  currentCriterion.field = null;
-  currentCriterion.operator = null;
-  currentCriterion.value = null;
-  currentStage.value = 'field';
-  currentTags.splice(0, currentTags.length);
-  inputText.value = '';
-  suggestionsVisible.value = false;
+  resetState();
 
   return true;
 };
 
-// удаление критерия
 const removeCriterion = (index: number) => {
   criteria.splice(index, 1);
   emit('update:criteria', criteria);
 };
 
-// Закрытие при клике вне
 const handleClickOutside = (event: MouseEvent) => {
   if (wrapperRef.value && !wrapperRef.value.contains(event.target as Node)) {
     suggestionsVisible.value = false;
@@ -293,7 +278,10 @@ const applyDate = () => {
   criteria.push(new SearchCriterion(currentCriterion.field, currentCriterion.operator, currentCriterion.value));
   emit('update:criteria', criteria);
 
-  // reset
+  resetState();
+};
+
+const resetState = () => {
   currentCriterion.field = null;
   currentCriterion.operator = null;
   currentCriterion.value = null;
