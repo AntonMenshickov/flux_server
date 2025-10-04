@@ -70,7 +70,7 @@ const fieldOptions: FieldOption[] = [
   },
   {
     key: 'meta',
-    operators: [Operator.Equals, Operator.NotEquals],
+    operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
     valueType: 'keyValue',
     placeholder: 'Meta key-value',
   },
