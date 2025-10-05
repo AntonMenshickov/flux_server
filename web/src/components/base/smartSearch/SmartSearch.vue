@@ -45,11 +45,10 @@
 
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
-import { Operator, SearchCriterion, type FieldOption } from './types';
+import { Operator, SearchCriterion, ValueType, type FieldOption } from './types';
 import BaseKeyValueEditor from '../BaseKeyValueEditor.vue';
 
 
-/** props: options - список полей */
 const props = defineProps<{
   options: FieldOption[];
 }>();
@@ -78,9 +77,9 @@ const selectedField = computed(() =>
 
 const isReadonly = computed(() => currentStage.value === 'value' &&
   (
-    selectedField.value?.valueType === 'keyValue'
-    || selectedField.value?.valueType === 'multiselect'
-    || selectedField.value?.valueType === 'date'
+    selectedField.value?.valueType === ValueType.KeyValue
+    || selectedField.value?.valueType === ValueType.MultiSelect
+    || selectedField.value?.valueType === ValueType.Date
   )
 );
 const inputType = computed(() => {
@@ -146,7 +145,7 @@ const moveSelection = (delta: number) => {
   const len = suggestions.value.length;
   if (!len) return;
   selectedIndex.value = (selectedIndex.value + delta + len) % len;
-  if (selectedField.value?.valueType === 'multiselect' && currentStage.value === 'value') {
+  if (selectedField.value?.valueType === ValueType.MultiSelect && currentStage.value === 'value') {
     multiselectInput.value = [suggestions.value[selectedIndex.value]];
   } else {
     inputText.value = suggestions.value[selectedIndex.value];
@@ -159,6 +158,7 @@ const showFieldSuggestions = (filter = '') => {
     .filter(opt => opt.key.toLowerCase().includes(f) || String(opt.key).toLowerCase().includes(f))
     .map(opt => opt.key);
   selectedIndex.value = 0;
+  suggestionsVisible.value = true;
 };
 
 const showOperatorSuggestions = (filter = '') => {
@@ -172,6 +172,7 @@ const showOperatorSuggestions = (filter = '') => {
     .map(o => String(o))
     .filter(op => op.toLowerCase().includes(f));
   selectedIndex.value = 0;
+  suggestionsVisible.value = true;
 };
 
 const showValueSuggestions = async (filter = '') => {
@@ -181,7 +182,7 @@ const showValueSuggestions = async (filter = '') => {
     return;
   }
 
-  if ((opt.valueType === 'async' || opt.valueType === 'multiselect') && typeof opt.fetchValues === 'function') {
+  if ((opt.valueType === ValueType.Async || opt.valueType === ValueType.MultiSelect) && typeof opt.fetchValues === 'function') {
     suggestions.value = await opt.fetchValues(filter);
   } else {
     suggestions.value = [];
@@ -229,7 +230,7 @@ const onBackspace = () => {
 
 const onEnter = async () => {
   if (suggestions.value.length > 0) {
-    if (selectedField.value?.valueType === 'multiselect' && currentStage.value === 'value') {
+    if (selectedField.value?.valueType === ValueType.MultiSelect && currentStage.value === 'value') {
       inputText.value = JSON.stringify(multiselectInput.value.length == 0 ? [suggestions.value[selectedIndex.value]] : multiselectInput.value);
     } else {
       inputText.value = suggestions.value[selectedIndex.value] ?? '';
@@ -276,12 +277,59 @@ const parseAndApplyExpression = () => {
   }
 
   const valueRaw = parts.slice(1).join(op).trim();
+  let value;
+  switch (fieldOption.valueType) {
+    case ValueType.Number:
+      if (isNaN(Number(valueRaw))) return false;
+      value = Number(valueRaw);
+      break;
+    case ValueType.KeyValue:
+      try {
+        const parsed = JSON.parse(valueRaw);
+        if (!Array.isArray(parsed)) return false;
+        for (const item of parsed) {
+          if (typeof item !== 'object' || Array.isArray(item) || Object.keys(item).length !== 1) {
+            return false;
+          }
+          const key = Object.keys(item)[0];
+          if (typeof key !== 'string' || typeof item[key] !== 'string') {
+            return false;
+          }
+        }
+        value = parsed;
+      } catch {
+        return false;
+      }
+      break;
+    case ValueType.MultiSelect:
+      try {
+        const parsed = JSON.parse(valueRaw);
+        if (!Array.isArray(parsed)) return false;
+        for (const item of parsed) {
+          if (typeof item !== 'string') {
+            return false;
+          }
+        }
+        value = parsed;
+      } catch {
+        return false;
+      }
+      break;
+    case ValueType.Date:
+      if (isNaN(Date.parse(valueRaw))) return false;
+      value = valueRaw;
+      break;
+    default:
+      value = valueRaw;
+  }
 
-  const criterion = new SearchCriterion(field, op as Operator, valueRaw);
+  const criterion = new SearchCriterion(field, op as Operator, value);
   criteria.push(criterion);
   emit('update:criteria', criteria);
 
   resetState();
+  console.log(criteria);
+  showFieldSuggestions();
 
   return true;
 };

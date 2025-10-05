@@ -1,30 +1,9 @@
 <template>
   <div class="logs-page">
     <div class="smart-search">
-      <SmartSearch :options="fieldOptions" @update:criteria="onCriteriaUpdate" />
-    </div>
-    <div class="filters">
-
       <BaseSelector v-model="application" :fetch-options="fetchApps" :label-key="(u) => u.name" :value-key="(u) => u.id"
         placeholder="Select application" />
-      <BaseInput v-model="filters.message" type="text" placeholder="Message contains..." />
-      <BaseMultiselect v-model="filters.logLevel" :options="Object.values(LogLevel)"
-        :label-builder="logLevelLabelBuilder" label="Log level" />
-      <BaseInput v-model="filters.platform" type="text" placeholder="Platform" />
-      <BaseInput v-model="tagsValue" type="text" placeholder="Tags (delimiter ',')" />
-      <BaseInput v-model="filters.bundleId" type="text" placeholder="Bundle ID" />
-      <BaseInput v-model="filters.deviceId" type="text" placeholder="Device ID" />
-      <BaseInput v-model="filters.deviceName" type="text" placeholder="Device Name" />
-      <BaseInput v-model="filters.osName" type="text" placeholder="Operating system name" />
-      <BaseKeyValueInput v-model="filters.meta" placeholder="meta" />
-      <label>
-        From:
-        <BaseInput v-model="filters.from" type="datetime-local" />
-      </label>
-      <label>
-        To:
-        <BaseInput v-model="filters.to" type="datetime-local" />
-      </label>
+      <SmartSearch :options="fieldOptions" @update:criteria="onCriteriaUpdate" class="smart-search-field" />
       <div class="filter-actions">
         <BaseButton @click="applyFilters" class="primary">Apply</BaseButton>
         <BaseButton @click="resetFilters">Reset</BaseButton>
@@ -43,57 +22,43 @@ import { events } from '@/api/events';
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import { ref, computed, onMounted } from 'vue';
 import BaseButton from './base/BaseButton.vue';
-import BaseInput from './base/BaseInput.vue';
-import BaseMultiselect from './base/BaseMultiselect.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { LogLevel } from '@/model/event/logLevel';
-import type { EventFilter } from '@/model/event/eventFilter';
 import type { Application } from '@/model/application/application';
 import LogCard from './base/LogCard.vue';
 import SmartSearch from './base/smartSearch/SmartSearch.vue';
-import { Operator, SearchCriterion, type FieldOption } from './base/smartSearch/types';
-import BaseKeyValueInput from './base/BaseKeyValueInput.vue';
+import { Operator, SearchCriterion, ValueType, type FieldOption } from './base/smartSearch/types';
 
 
 const fieldOptions: FieldOption[] = [
   {
     key: 'dateFrom',
     operators: [Operator.Equals],
-    valueType: 'date',
+    valueType: ValueType.Date,
     placeholder: 'From date',
   },
   {
     key: 'dateTo',
     operators: [Operator.Equals],
-    valueType: 'date',
+    valueType: ValueType.Date,
     placeholder: 'To date',
   },
   {
     key: 'meta',
     operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
-    valueType: 'keyValue',
+    valueType: ValueType.KeyValue,
     placeholder: 'Meta key-value',
   },
   {
     key: 'message',
     operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Log message',
   },
   {
-    key: 'application',
-    operators: [Operator.Equals],
-    valueType: 'async',
-    fetchValues: async (filter = '') => {
-      const apps = await fetchApps(filter);
-      return apps.map(a => a.name);
-    },
-    placeholder: 'Select application',
-  },
-  {
     key: 'logLevel',
-    operators: [Operator.Equals, Operator.In, Operator.NotIn],
-    valueType: 'multiselect',
+    operators: [Operator.In, Operator.NotIn],
+    valueType: ValueType.MultiSelect,
     fetchValues: async (filter = '') => {
       return Object.values(LogLevel).filter(l => l.toString().toLowerCase().includes(filter.toLowerCase())).map(l => l.toString());
     },
@@ -102,37 +67,37 @@ const fieldOptions: FieldOption[] = [
   {
     key: 'tags',
     operators: [Operator.Equals, Operator.In, Operator.NotIn],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Comma separated tags',
   },
   {
     key: 'platform',
     operators: [Operator.Equals, Operator.Similar],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Platform name',
   },
   {
     key: 'bundleId',
     operators: [Operator.Equals, Operator.Similar],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Bundle ID',
   },
   {
     key: 'deviceId',
     operators: [Operator.Equals, Operator.Similar],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Device ID',
   },
   {
     key: 'deviceName',
     operators: [Operator.Equals, Operator.Similar],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Device Name',
   },
   {
     key: 'osName',
     operators: [Operator.Equals, Operator.Similar],
-    valueType: 'string',
+    valueType: ValueType.String,
     placeholder: 'Operating System Name',
   },
 ];
@@ -140,40 +105,10 @@ const fieldOptions: FieldOption[] = [
 const criteria: SearchCriterion[] = [];
 
 const onCriteriaUpdate = (arr: SearchCriterion[]) => {
-  // тут получаем массив экземпляров SearchCriterion
-  // (в компоненте они добавляются как new SearchCriterion(...))
-  // можно глубоко копировать, если нужно
   criteria.splice(0, criteria.length, ...arr);
 };
 
 const logs = ref<EventMessage[]>([]);
-const filters = ref<{
-  application: Application | null,
-  message: string | null;
-  logLevel: LogLevel[] | null;
-  tags: string[] | null;
-  meta: { key: string, value: string }[] | null,
-  platform: string;
-  bundleId: string;
-  deviceId: string;
-  deviceName: string;
-  osName: string;
-  from: string | null;
-  to: string | null;
-}>({
-  application: null,
-  message: '',
-  logLevel: null,
-  tags: null,
-  meta: null,
-  platform: '',
-  bundleId: '',
-  deviceId: '',
-  deviceName: '',
-  osName: '',
-  from: null,
-  to: null,
-});
 const application = ref<Application | null>(null);
 const pageSize = 100;
 let offset = 0;
@@ -183,18 +118,10 @@ let hasMore = true;
 
 const filteredLogs = computed(() => logs.value);
 
-const tagsValue = computed({
-  get: () => filters.value.tags?.join(', '),
-  set: (val: string) => filters.value.tags = val.split(',').map(e => e.trim()).filter(e => e.length > 0),
-})
 
 onMounted(() => {
   fetchLogs(true);
 });
-
-function logLevelLabelBuilder(logLevel: LogLevel): string {
-  return logLevel.toString();
-}
 
 
 function handleScroll(event: Event) {
@@ -216,23 +143,7 @@ async function fetchLogs(clear: boolean = false) {
     return;
   }
 
-  const filter: EventFilter = {
-    message: filters.value.message || null,
-    logLevel: filters.value.logLevel ? filters.value.logLevel : null,
-    tags: filters.value.tags || null,
-    meta: filters.value.meta ? Object.fromEntries(filters.value.meta
-      .filter(({ key, value }) => key.trim().length > 0 && value.trim().length > 0)
-      .map(({ key, value }) => [key, value])) : null,
-    platform: filters.value.platform || null,
-    bundleId: filters.value.bundleId || null,
-    deviceId: filters.value.deviceId || null,
-    deviceName: filters.value.deviceName || null,
-    osName: filters.value.osName || null,
-    from: filters.value.from ? new Date(filters.value.from).getTime() * 1000 : null,
-    to: filters.value.to ? new Date(filters.value.to).getTime() * 1000 : null,
-  };
-
-  const eventsResult = await events.search(pageSize, offset, application.value.id, filter);
+  const eventsResult = await events.search(pageSize, offset, application.value.id, criteria);
   if (eventsResult.isRight()) {
     const events = eventsResult.value.result.events.map(e => ({
       ...e,
@@ -257,20 +168,7 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  filters.value = {
-    application: null,
-    message: '',
-    logLevel: null,
-    tags: null,
-    meta: null,
-    platform: '',
-    bundleId: '',
-    deviceId: '',
-    deviceName: '',
-    osName: '',
-    from: null,
-    to: null,
-  };
+  criteria.splice(0, criteria.length);
   fetchLogs(true);
 }
 
@@ -300,15 +198,6 @@ async function fetchApps(search: string): Promise<Application[]> {
   overflow-x: hidden;
 }
 
-.filters {
-  display: flex;
-  flex-direction: row;
-  padding: 1.5rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: start;
-}
-
 .filter-actions {
   display: flex;
   flex-direction: row;
@@ -316,11 +205,15 @@ async function fetchApps(search: string): Promise<Application[]> {
 }
 
 .smart-search {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  gap: 1rem;
   padding: 1.5rem;
 }
 
-.smart-search.smart-search-field {
-
+.smart-search .smart-search-field {
   flex: 1;
 }
+
 </style>

@@ -1,6 +1,6 @@
 import type { EventMessage } from '@/model/event/eventMessage';
 import { request } from '.';
-import type { EventFilter } from '@/model/event/eventFilter';
+import type { SearchCriterion } from '@/components/base/smartSearch/types';
 
 
 interface EventsSearchResponse {
@@ -11,8 +11,8 @@ export const events = {
   search,
 }
 
-async function search(limit: number, offset: number, applicationId: string, filter: EventFilter | null = null) {
-  const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'get', url: '/events/search', params: { limit, offset, applicationId, filter } },);
+async function search(limit: number, offset: number, applicationId: string, filter: SearchCriterion[] | null = null) {
+  const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'post', url: '/events/search', data: { limit, offset, applicationId, filter } },);
   return result.mapRight((r) => ({
     ...r,
     result: {

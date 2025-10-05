@@ -139,6 +139,7 @@ function formatDate(ts: number) {
   margin: 0 1rem;
   font-size: 1rem;
   text-align: start;
+  font-family: 'Courier New', Courier, monospace
 }
 
 .log-text.expanded {

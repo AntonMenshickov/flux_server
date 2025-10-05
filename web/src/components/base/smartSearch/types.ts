@@ -1,7 +1,16 @@
+export enum ValueType {
+  String = 'string',
+  Number = 'number',
+  Date = 'date',
+  Async = 'async',
+  KeyValue = 'keyValue',
+  MultiSelect = 'multiselect',
+}
+
 export interface FieldOption {
   key: string;
   operators: Operator[];
-  valueType?: 'string' | 'number' | 'date' | 'async' | 'keyValue' | 'multiselect';
+  valueType: ValueType;
   fetchValues?: (filter: string) => Promise<string[]>;
   placeholder?: string;
 }
@@ -20,6 +29,6 @@ export class SearchCriterion {
   constructor(
     public field: string | null = null,
     public operator: Operator | null = null,
-    public value: string | null = null
-  ) {}
+    public value: string | number | Date | Record<string, string>[] | string[] | null = null
+  ) { }
 }

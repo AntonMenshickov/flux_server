@@ -2,6 +2,8 @@ import { EventMessageView } from '../../model/eventMessageView';
 import { EventFilter } from './eventsFilter';
 import { EventMessage } from '../../model/postgres/eventMessageDbView';
 import { Postgres } from '../postgres';
+import { Operator, SearchCriterion } from '../../model/searchCriterion';
+import { SelectQueryBuilder } from 'typeorm';
 
 
 export class PostgresEventsRepository {
@@ -17,7 +19,7 @@ export class PostgresEventsRepository {
     await this.postgres.dataSource.transaction(async (manager) => {
       for (let i = 0; i < events.length; i += chunkSize) {
         const chunk = events.slice(i, i + chunkSize);
-        
+
         const records: Partial<EventMessage>[] = chunk.map((e) => ({
           id: e.id,
           timestamp: new Date(e.timestamp / 1000),
@@ -55,64 +57,151 @@ export class PostgresEventsRepository {
     limit: number,
     offset: number,
     applicationId: string,
-    filters: EventFilter | null = null
+    filters: SearchCriterion[] = [],
   ): Promise<EventMessageView[]> {
-    const qb = EventMessage.createQueryBuilder("event");
+    const qb: SelectQueryBuilder<EventMessage> =
+      EventMessage.createQueryBuilder("event");
+
+    qb.andWhere(`LOWER(event."applicationId") = LOWER(:applicationId)`, {
+      applicationId,
+    });
+
+    filters.forEach((criterion, index) => {
+      const paramKey = `param_${index}`;
+      const field = `"event"."${criterion.field}"`;
+      let value: any = criterion.value;
+
+      if (criterion.field === "dateFrom" || criterion.field === "dateTo") {
+        value = new Date(value);
+        if (criterion.field === "dateFrom") {
+          qb.andWhere(`event.timestamp >= :${paramKey}`, { [paramKey]: value });
+        } else {
+          qb.andWhere(`event.timestamp <= :${paramKey}`, { [paramKey]: value });
+        }
+        return;
+      }
+
+      // --- logLevel (всегда массив строк) ---
+      if (criterion.field === "logLevel" && Array.isArray(value)) {
+        switch (criterion.operator) {
+          case Operator.In:
+            qb.andWhere(`${field} IN (:...${paramKey})`, {
+              [paramKey]: value,
+            });
+            break;
+          case Operator.NotIn:
+            qb.andWhere(`${field} NOT IN (:...${paramKey})`, {
+              [paramKey]: value,
+            });
+            break;
+          default:
+            throw new Error(`Unsupported operator for logLevel: ${criterion.operator}`);
+        }
+        return;
+      }
 
 
-    if (applicationId) {
-      qb.andWhere('LOWER(event.applicationId) = LOWER(:applicationId)', { applicationId });
-    }
+      if (criterion.field === "meta" && Array.isArray(value)) {
+        const metaFilters = value as Record<string, string>[];
 
+        switch (criterion.operator) {
+          case Operator.Equals: {
+            const obj = Object.fromEntries(
+              metaFilters.map((kv) => [Object.keys(kv)[0], Object.values(kv)[0]])
+            );
+            qb.andWhere(`${field} @> :${paramKey}`, {
+              [paramKey]: JSON.stringify(obj),
+            });
+            break;
+          }
 
-    if (filters?.message) {
-      qb.andWhere('LOWER(event.message) LIKE :message', { message: `%${filters.message.toLowerCase()}%` });
-    }
+          case Operator.NotEquals: {
+            metaFilters.forEach((kv, kvIndex) => {
+              const k = Object.keys(kv)[0];
+              const v = Object.values(kv)[0];
+              const metaParam = `${paramKey}_${kvIndex}`;
+              qb.andWhere(`NOT (${field} @> :${metaParam})`, {
+                [metaParam]: JSON.stringify({ [k]: v }),
+              });
+            });
+            break;
+          }
 
+          case Operator.Similar: {
+            metaFilters.forEach((kv, kvIndex) => {
+              const k = Object.keys(kv)[0];
+              const v = Object.values(kv)[0];
+              const metaParam = `${paramKey}_${kvIndex}`;
+              qb.andWhere(`${field}->>:key_${metaParam} ILIKE :${metaParam}`, {
+                [`key_${metaParam}`]: k,
+                [metaParam]: `%${v}%`,
+              });
+            });
+            break;
+          }
 
-    if (filters?.logLevel && filters.logLevel.length > 0) {
-      qb.andWhere('event.logLevel = ANY(:logLevels)', { logLevels: filters.logLevel });
-    }
+          default:
+            throw new Error(`Unsupported operator for meta: ${criterion.operator}`);
+        }
+        return;
+      }
 
+      // --- tags ---
+      if (criterion.field === "tags" && typeof value === "string") {
+        const tagsArray = value.split(",").map((t) => t.trim());
+        qb.andWhere(`${field} && :${paramKey}`, { [paramKey]: tagsArray });
+        return;
+      }
 
-    if (filters?.tags && filters.tags.length > 0) {
-      filters.tags.forEach((tag, idx) => {
-        qb.andWhere(`:tag${idx} = ANY(event.tags)`, { [`tag${idx}`]: tag });
-      });
-    }
+      // --- Общие случаи ---
+      switch (criterion.operator) {
+        case Operator.Equals:
+          qb.andWhere(`${field} = :${paramKey}`, { [paramKey]: value });
+          break;
 
+        case Operator.NotEquals:
+          qb.andWhere(`${field} != :${paramKey}`, { [paramKey]: value });
+          break;
 
-    if (filters?.meta) {
-      Object.entries(filters.meta).forEach(([key, value], idx) => {
-        qb.andWhere(`event.meta ->> :metaKey${idx} = :metaValue${idx}`, {
-          [`metaKey${idx}`]: key,
-          [`metaValue${idx}`]: value,
-        });
-      });
-    }
+        case Operator.Similar:
+          qb.andWhere(`CAST(${field} AS TEXT) ILIKE :${paramKey}`, {
+            [paramKey]: `%${value}%`,
+          });
+          break;
 
+        case Operator.GreaterThan:
+          qb.andWhere(`${field} > :${paramKey}`, { [paramKey]: value });
+          break;
 
-    if (filters?.platform) qb.andWhere('event.platform = :platform', { platform: filters.platform });
-    if (filters?.bundleId) qb.andWhere('event.bundleId = :bundleId', { bundleId: filters.bundleId });
-    if (filters?.deviceId) qb.andWhere('event.deviceId = :deviceId', { deviceId: filters.deviceId });
-    if (filters?.deviceName) qb.andWhere('event.deviceName = :deviceName', { deviceName: filters.deviceName });
-    if (filters?.osName) qb.andWhere('event.osName = :osName', { osName: filters.osName });
+        case Operator.LessThan:
+          qb.andWhere(`${field} < :${paramKey}`, { [paramKey]: value });
+          break;
 
+        case Operator.In:
+          qb.andWhere(`${field} IN (:...${paramKey})`, {
+            [paramKey]: value,
+          });
+          break;
 
-    if (filters?.from) qb.andWhere('event.timestamp >= :from', { from: new Date(filters.from) });
-    if (filters?.to) qb.andWhere('event.timestamp <= :to', { to: new Date(filters.to) });
+        case Operator.NotIn:
+          qb.andWhere(`${field} NOT IN (:...${paramKey})`, {
+            [paramKey]: value,
+          });
+          break;
 
+        default:
+          throw new Error(`Unsupported operator: ${criterion.operator}`);
+      }
+    });
 
-    qb.orderBy('event.timestamp', 'DESC')
+    qb.orderBy("event.timestamp", "DESC")
       .take(limit)
       .skip(offset);
 
-
     const rows = await qb.getMany();
-
-
-    return rows.map(r => this.eventMessageFromDatabase(r));
+    return rows.map((r) => this.eventMessageFromDatabase(r));
   }
+
 
   private eventMessageFromDatabase(dbEntry: EventMessage): EventMessageView {
     return {
