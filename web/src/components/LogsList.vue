@@ -1,13 +1,9 @@
 <template>
   <div class="logs-page">
     <div class="smart-search">
-      <BaseSelector v-model="application" :fetch-options="fetchApps" :label-key="(u) => u.name" :value-key="(u) => u.id"
+      <BaseSelector v-model="application" :fetch-options="fetchApps" @update:modelValue="applyFilters" :label-key="(u) => u.name" :value-key="(u) => u.id"
         placeholder="Select application" />
-      <SmartSearch :options="fieldOptions" @update:criteria="onCriteriaUpdate" class="smart-search-field" />
-      <div class="filter-actions">
-        <BaseButton @click="applyFilters" class="primary">Apply</BaseButton>
-        <BaseButton @click="resetFilters">Reset</BaseButton>
-      </div>
+      <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters" class="smart-search-field" />
     </div>
 
     <div class="logs-list" @scroll="handleScroll">
@@ -21,7 +17,6 @@ import { applications } from '@/api/applications';
 import { events } from '@/api/events';
 import BaseSelector from '@/components/base/BaseSelector.vue';
 import { ref, computed, onMounted } from 'vue';
-import BaseButton from './base/BaseButton.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { LogLevel } from '@/model/event/logLevel';
 import type { Application } from '@/model/application/application';
@@ -102,14 +97,9 @@ const fieldOptions: FieldOption[] = [
   },
 ];
 
-const criteria: SearchCriterion[] = [];
-
-const onCriteriaUpdate = (arr: SearchCriterion[]) => {
-  criteria.splice(0, criteria.length, ...arr);
-};
-
 const logs = ref<EventMessage[]>([]);
 const application = ref<Application | null>(null);
+const criteria = ref<SearchCriterion[]>([]);
 const pageSize = 100;
 let offset = 0;
 let isLoading = false;
@@ -117,7 +107,6 @@ let hasMore = true;
 
 
 const filteredLogs = computed(() => logs.value);
-
 
 onMounted(() => {
   fetchLogs(true);
@@ -132,6 +121,10 @@ function handleScroll(event: Event) {
   }
 }
 
+function applyFilters() {
+  fetchLogs(true);
+}
+
 async function fetchLogs(clear: boolean = false) {
   isLoading = true;
   if (clear) {
@@ -143,7 +136,7 @@ async function fetchLogs(clear: boolean = false) {
     return;
   }
 
-  const eventsResult = await events.search(pageSize, offset, application.value.id, criteria);
+  const eventsResult = await events.search(pageSize, offset, application.value.id, criteria.value);
   if (eventsResult.isRight()) {
     const events = eventsResult.value.result.events.map(e => ({
       ...e,
@@ -161,15 +154,6 @@ async function fetchLogs(clear: boolean = false) {
   }
 
   isLoading = false;
-}
-
-function applyFilters() {
-  fetchLogs(true);
-}
-
-function resetFilters() {
-  criteria.splice(0, criteria.length);
-  fetchLogs(true);
 }
 
 async function fetchApps(search: string): Promise<Application[]> {
@@ -196,12 +180,6 @@ async function fetchApps(search: string): Promise<Application[]> {
   padding: 1.5rem;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-.filter-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
 }
 
 .smart-search {

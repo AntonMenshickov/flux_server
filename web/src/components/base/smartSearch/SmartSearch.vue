@@ -1,7 +1,7 @@
 <template>
   <div class="smart-search-field" ref="wrapperRef">
     <div class="tags-container">
-      <span class="tag" v-for="(c, i) in criteria" :key="'c' + i">
+      <span class="tag" v-for="(c, i) in modelValue" :key="'c' + i">
         {{ c.field }} {{ c.operator }} {{ c.value }}
         <button @click="removeCriterion(i)">×</button>
       </span>
@@ -9,8 +9,8 @@
       <div class="input-container">
         <input v-model="inputText" @focus="onFocus" @input="onInput" @keydown.arrow-down.prevent="moveSelection(1)"
           @keydown.arrow-up.prevent="moveSelection(-1)" @keydown.enter.prevent="onEnter"
-          @keydown.backspace="onBackspace" :placeholder="selectedField?.placeholder ?? 'Type criterion'" aria-autocomplete="list"
-          :readonly="isReadonly" :type="inputType" />
+          @keydown.backspace="onBackspace" :placeholder="selectedField?.placeholder ?? 'Type criterion'"
+          aria-autocomplete="list" :readonly="isReadonly" :type="inputType" />
         <ul
           v-if="suggestionsVisible && suggestions.length && !(currentStage === 'value' && (selectedField?.valueType === 'date' || selectedField?.valueType === 'multiselect'))"
           class="suggestions-list" role="listbox">
@@ -51,14 +51,18 @@ import BaseKeyValueEditor from '../BaseKeyValueEditor.vue';
 
 const props = defineProps<{
   options: FieldOption[];
+  modelValue?: SearchCriterion[];
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:criteria', value: SearchCriterion[]): void
+  (e: 'update:modelValue', value: SearchCriterion[]): void
 }>();
 
 // state
-const criteria = reactive<SearchCriterion[]>([]);
+const criteria = computed<SearchCriterion[]>({
+  get: () => props.modelValue ?? [],
+  set: (val: SearchCriterion[]) => emit('update:modelValue', val),
+})
 const inputText = ref('');
 const suggestions = ref<string[]>([]);
 const selectedIndex = ref(0);
@@ -212,8 +216,10 @@ const onBackspace = () => {
         showFieldSuggestions();
         return;
       }
-      if (criteria.length != 0) {
-        const last = criteria.pop();
+      if (criteria.value.length != 0) {
+        const newCriteria = [...criteria.value];
+        const last = newCriteria.pop();
+        criteria.value = newCriteria;
         if (last) {
           currentCriterion.field = last.field;
           currentCriterion.operator = last.operator;
@@ -324,19 +330,16 @@ const parseAndApplyExpression = () => {
   }
 
   const criterion = new SearchCriterion(field, op as Operator, value);
-  criteria.push(criterion);
-  emit('update:criteria', criteria);
+  criteria.value = [...criteria.value, criterion];
 
   resetState();
-  console.log(criteria);
   showFieldSuggestions();
 
   return true;
 };
 
 const removeCriterion = (index: number) => {
-  criteria.splice(index, 1);
-  emit('update:criteria', criteria);
+  criteria.value = [...criteria.value.slice(0, index), ...criteria.value.slice(index + 1)];
 };
 
 const handleClickOutside = (event: MouseEvent) => {
@@ -349,8 +352,7 @@ const applyDate = () => {
   if (!inputText.value) return;
   currentCriterion.value = inputText.value;
   currentTags.push(inputText.value);
-  criteria.push(new SearchCriterion(currentCriterion.field, currentCriterion.operator, currentCriterion.value));
-  emit('update:criteria', criteria);
+  criteria.value = [...criteria.value, new SearchCriterion(currentCriterion.field, currentCriterion.operator, currentCriterion.value)];
 
   resetState();
 };

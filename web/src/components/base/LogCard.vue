@@ -10,46 +10,72 @@
 
     <transition name="expand">
       <section v-if="expanded" class="logs-extra-info">
-        <section v-if="log.stackTrace" class="stack-trace">
-          <strong>Stack Trace:</strong>
-          <pre>{{ log.stackTrace }}</pre>
-        </section>
+        <section v-if="log.stackTrace" class="extra-info-block">
+          <div class="extra-info-header">
+            <CodeBracketIcon /> StackTrace
+          </div>
+          <div class="extra-info-body">
+            <pre class="stack-trace">{{ log.stackTrace }}</pre>
 
-        <section class="log-details">
-          <div class="detail"><strong>Platform:</strong>
-            <BaseCopyText>{{ log.platform }}</BaseCopyText>
-          </div>
-          <div class="detail"><strong>Bundle:</strong>
-            <BaseCopyText>{{ log.bundleId }}</BaseCopyText>
-          </div>
-          <div class="detail"><strong>Device:</strong>
-            <BaseCopyText>{{ log.deviceId }}</BaseCopyText>
-          </div>
-          <div class="detail"><strong>Device name:</strong>
-            <BaseCopyText>{{ log.deviceName }}</BaseCopyText>
-          </div>
-          <div class="detail"><strong>OS name:</strong>
-            <BaseCopyText>{{ log.osName }}</BaseCopyText>
           </div>
         </section>
 
-        <section class="tags-meta">
-          <div v-if="log.tags && log.tags.length > 0" class="tags">
-            <strong>Tags:</strong>
-            <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" />
-          </div>
-          <div v-if="log.meta && log.meta.size > 0" class="meta">
-            <strong>Meta:</strong>
-            <div v-for="[key, value] in log.meta" :key="key" class="meta-values">
-              <div>
-                <BaseCopyText>{{ key }}</BaseCopyText>:
+        <div class="row">
+          <section class="extra-info-block">
+            <div class="extra-info-header">
+              <DevicePhoneMobileIcon /> Device information
+            </div>
+            <div class="extra-info-body">
+              <div class="detail"><span class="detail-label">Device name:</span>
+                <BaseCopyText>{{ log.deviceName }}</BaseCopyText>
               </div>
-              <div>
+              <div class="detail"><span class="detail-label">Device ID:</span>
+                <BaseCopyText>{{ log.deviceId }}</BaseCopyText>
+              </div>
+              <div class="detail"><span class="detail-label">OS name:</span>
+                <BaseCopyText>{{ log.osName }}</BaseCopyText>
+              </div>
+
+            </div>
+          </section>
+
+          <section class="extra-info-block">
+            <div class="extra-info-header">
+              <ArrowDownOnSquareIcon />Application information
+            </div>
+            <div class="extra-info-body">
+              <div class="detail"><span class="detail-label">Bundle:</span>
+                <BaseCopyText>{{ log.bundleId }}</BaseCopyText>
+              </div>
+              <div class="detail"><span class="detail-label">Platform:</span>
+                <BaseCopyText>{{ log.platform }}</BaseCopyText>
+              </div>
+            </div>
+          </section>
+
+          <section class="extra-info-block">
+            <div class="extra-info-header">
+              <ComputerDesktopIcon />Meta information
+            </div>
+            <div class="extra-info-body">
+              <div v-for="[key, value] in log.meta" :key="key" class="detail"><span class="detail-label">{{ key
+                  }}</span>
                 <BaseCopyText>{{ value }}</BaseCopyText>
               </div>
             </div>
+          </section>
+        </div>
+
+        <section v-if="log.tags?.length" class="extra-info-block">
+          <div class="extra-info-header">
+            <TagIcon />Tags
+          </div>
+          <div v-if="log.tags && log.tags.length > 0" class="tags">
+            <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" />
           </div>
         </section>
+
+
       </section>
     </transition>
   </div>
@@ -61,7 +87,7 @@ import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
 import BaseCopyText from '@/components/base/BaseCopyText.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon } from '@heroicons/vue/24/outline';
 import { ref } from 'vue';
 
 defineProps<{
@@ -94,19 +120,22 @@ function formatDate(ts: number) {
 .log-card.expanded {
   margin-bottom: 0.4rem;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   border-left-width: 4px;
 }
+
 .expand-enter-active,
 .expand-leave-active {
   transition: all 0.25s ease;
   overflow: hidden;
 }
+
 .expand-enter-from,
 .expand-leave-to {
   max-height: 0;
   opacity: 0;
 }
+
 .expand-enter-to,
 .expand-leave-from {
   max-height: 1000px;
@@ -173,32 +202,54 @@ function formatDate(ts: number) {
   flex-direction: column;
   padding-bottom: 1rem;
   gap: 1rem;
+  padding: 0 1.5rem;
+  margin-bottom: 1rem;
 }
 
-.stack-trace {
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.extra-info-block {
   display: flex;
   flex-direction: column;
-  align-items: start;
-  justify-content: start;
-  padding: 0 1rem;
+  gap: 0.5rem;
+  flex: 1;
 }
 
-
-.log-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  padding: 0 1rem;
-  gap: 0.4rem 1rem;
-  text-align: start;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.tags-meta {
+.extra-info-header {
   display: flex;
-  flex-wrap: wrap;
-  padding: 0 1rem;
-  gap: 1rem;
+  flex-direction: row;
+  align-items: end;
+}
+
+.extra-info-header svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+
+.extra-info-body {
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: #ffffff55;
+}
+
+.detail {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail .detail-label {
+  margin-right: 0.5rem;
+  color: #8a8a8a;
 }
 
 .tags {
@@ -208,14 +259,9 @@ function formatDate(ts: number) {
   align-items: center;
 }
 
-.meta {
-  font-size: 0.85rem;
-  text-align: start;
-}
 
-.meta .meta-values {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  margin: 0.3rem 0 0;
+.stack-trace {
+  text-align: start;
+  margin: 0;
 }
 </style>
