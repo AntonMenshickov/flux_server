@@ -259,7 +259,6 @@ function formatDate(ts: number) {
   align-items: center;
 }
 
-
 .stack-trace {
   text-align: start;
   margin: 0;
