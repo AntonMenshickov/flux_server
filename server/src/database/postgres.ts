@@ -119,7 +119,7 @@ export class Postgres {
         -- Индексы
         CREATE INDEX IF NOT EXISTS idx_${this.table}_timestamp ON ${this.table}(timestamp DESC);
         CREATE INDEX IF NOT EXISTS idx_${this.table}_app ON ${this.table}("applicationId");
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_loglevel_ts ON ${this.table}("logLevel" DESC);
+        CREATE INDEX IF NOT EXISTS idx_${this.table}_loglevel_ts ON ${this.table}("logLevel", timestamp DESC);
         CREATE INDEX IF NOT EXISTS idx_${this.table}_meta ON ${this.table} USING gin(meta);
         CREATE INDEX IF NOT EXISTS idx_${this.table}_tags ON ${this.table} USING gin(tags);
       `);
