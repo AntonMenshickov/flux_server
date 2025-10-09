@@ -144,7 +144,7 @@ function formatDate(ts: number) {
 
 .timestamp {
   font-size: 0.9rem;
-  color: #8a8a8a;
+  color: var(--color-text-dimmed);
 }
 
 .log-part-card {
@@ -160,7 +160,7 @@ function formatDate(ts: number) {
   width: 1rem;
   height: 1rem;
   margin-right: 0.5rem;
-  color: #888;
+  color: var(--color-text-dimmed);
 }
 
 .log-text {
