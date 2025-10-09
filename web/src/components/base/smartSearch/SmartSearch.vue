@@ -255,9 +255,10 @@ const parseAndApplyExpression = () => {
   if (!fieldOption) return false;
 
   const field = fieldOption.key;
+  const operatorAndValue = input.split(fieldOption.key).pop();
 
   const op = fieldOption.operators.find(op =>
-    input.includes(op)
+    operatorAndValue?.startsWith(op)
   );
   if (!op) {
     currentTags.splice(0, currentTags.length, field);

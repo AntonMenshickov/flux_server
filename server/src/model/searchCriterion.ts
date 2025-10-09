@@ -14,7 +14,7 @@ export enum Operator {
   GreaterThan = '>',
   LessThan = '<',
   In = 'in',
-  NotIn = 'not in',
+  NotIn = '!in',
 }
 
 export interface SearchCriterion {

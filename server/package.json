@@ -9,7 +9,6 @@
     "dev": "nodemon --watch src --exec \"ts-node src/server.ts\""
   },
   "dependencies": {
-    "@clickhouse/client": "^1.12.1",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
