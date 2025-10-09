@@ -1,10 +1,16 @@
 import type { Application } from '@/model/application/application';
 import { request } from '.';
 import type { Bundle } from '@/model/application/bundle';
+import type { ApplicationStats } from '@/model/application/applicationStats';
 
 
 interface ApplicationsSearchResponse {
   applications: Application[];
+  total: number;
+}
+
+interface ApplicationStatsSearchResponse {
+  applications: ApplicationStats[];
   total: number;
 }
 
@@ -13,6 +19,7 @@ export const applications = {
   updateApplication,
   deleteApplication,
   search,
+  searchStats,
 }
 
 async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
@@ -32,5 +39,10 @@ async function deleteApplication(applicationId: string) {
 
 async function search(search: string | null, limit: number, offset: number) {
   const result = await request<ApplicationsSearchResponse>({ authorized: true, 'method': 'get', url: '/applications/search', params: { search, limit, offset } },);
+  return result;
+}
+
+async function searchStats(search: string | null, limit: number, offset: number) {
+  const result = await request<ApplicationStatsSearchResponse>({ authorized: true, 'method': 'get', url: '/applications/searchStats', params: { search, limit, offset } },);
   return result;
 }

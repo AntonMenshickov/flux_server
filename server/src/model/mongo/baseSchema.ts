@@ -4,6 +4,7 @@ export interface IBaseSchema {
   createdAt: Date;
   updatedAt?: Date;
 }
+
 // Helper to extend a schema definition with createdAt/updatedAt and a pre-save hook
 export function baseSchema<T extends {}>(definition: Record<string, any>) {
   const base = {
@@ -14,7 +15,6 @@ export function baseSchema<T extends {}>(definition: Record<string, any>) {
   const schema = new Schema({ ...definition, ...base } as any);
 
   schema.pre('save', function (next) {
-    // `this` is the document
     if ((this as any).isNew) {
       (this as any).createdAt = new Date();
     } else {

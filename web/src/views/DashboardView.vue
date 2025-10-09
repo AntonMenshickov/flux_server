@@ -17,7 +17,7 @@ import DashboardAppBar from '@/components/DashboardAppBar.vue';
 import DashboardSidebar from '@/components/DashboardSidebar.vue';
 import UserList from '@/components/UsersList.vue';
 import ApplicationsList from '@/components/ApplicationsList.vue';
-import LogsList from '@/components/logs/LogsList.vue';
+import LogsList from '@/components/logsList/LogsList.vue';
 import { ref } from 'vue';
 import { SidebarItemEnum } from '@/model/sidebarItemEnum';
 import { useAppStateStore } from '@/stores/appStateStore';

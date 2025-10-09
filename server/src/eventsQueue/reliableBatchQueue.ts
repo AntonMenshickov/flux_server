@@ -2,6 +2,7 @@ import Redis from 'ioredis';
 import { EventMessageView } from '../model/eventMessageView';
 import { PostgresEventsRepository } from '../database/repository/postgresEventRepository';
 import { Database } from '../database/database';
+import { updateApplicationStats, updateApplicationStatsByAppId } from '../utils/applicationStats';
 
 export class ReliableBatchQueue {
   private static _instance: ReliableBatchQueue;
@@ -135,8 +136,18 @@ export class ReliableBatchQueue {
       await this.eventsRepo.insert(batch);
       await this.redis.del(this.processingName);
       this.processingLen = 0;
-      // this.listQueue(this.queueName);
-      // this.listQueue(this.processingName);
+      
+      // updating stats
+      const grouped: Record<string, EventMessageView[]> = batch.reduce<Record<string, EventMessageView[]>>((acc, event) => {
+        if (!acc[event.applicationId]) {
+          acc[event.applicationId] = [];
+        }
+        acc[event.applicationId].push(event);
+        return acc;
+      }, {});
+      for (const [applicationId, events] of Object.entries(grouped)) {
+        await updateApplicationStatsByAppId(applicationId, batch);
+      }
     } catch (err) {
       console.error('[ReliableBatchQueue] error while flushing messages to database', err);
     } finally {
