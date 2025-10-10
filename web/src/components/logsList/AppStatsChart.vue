@@ -71,14 +71,14 @@ function sumMaps(
   return result;
 }
 
-function colorFromString(str: string, saturation = 70, lightness = 60): string {
-  // Простой хеш строки
+function colorFromString(str: string, saturation = 50, lightness = 65): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  const hue = Math.abs(hash) % 360; // получаем угол оттенка
+  const hue = Math.abs(hash) % 360;
+
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
@@ -180,11 +180,11 @@ const renderCharts = () => {
       if (mergedOs.size > 0) {
         const labels = Array.from(mergedOs.keys());
         const values = Array.from(mergedOs.values());
-        const colors = labels.map((_, i) => `hsl(${(i * 50) % 360}, 70%, 60%)`);
+        const colors = labels.map(label => colorFromString(label));
 
         osChart?.destroy();
         osChart = new Chart(ctx, {
-          type: 'doughnut',
+          type: 'bar',
           data: {
             labels,
             datasets: [
@@ -197,7 +197,7 @@ const renderCharts = () => {
           },
           options: {
             responsive: true,
-            plugins: { legend: { position: 'bottom' } },
+            plugins: { legend: { display: false } },
           },
         });
       }
@@ -221,8 +221,8 @@ watch(() => props.data, renderCharts, { deep: true });
   min-width: 400px;
   padding: 1rem;
   border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
   background-color: white;
-  box-shadow: var(--box-shadow);
 }
 
 .title {

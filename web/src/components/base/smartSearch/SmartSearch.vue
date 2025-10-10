@@ -382,14 +382,14 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   padding: 0.35rem 0.6rem;
   box-sizing: border-box;
   border-radius: 8px;
-  border: 1px solid var(--color-border, #d0d0d0);
+  border: 1px solid var(--color-border);
   font-size: 0.95rem;
   background: white;
 }
 
 /* подсветка при фокусе внутри */
 .smart-search-field:focus-within {
-  border-color: var(--color-primary, #2b7cff);
+  border-color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(43, 124, 255, 0.12);
 }
 
