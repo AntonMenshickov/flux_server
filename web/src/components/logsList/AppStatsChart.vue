@@ -218,7 +218,6 @@ watch(() => props.data, renderCharts, { deep: true });
   flex-direction: row;
   gap: 1.5rem;
   flex: 1;
-  min-width: 400px;
   padding: 1rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
