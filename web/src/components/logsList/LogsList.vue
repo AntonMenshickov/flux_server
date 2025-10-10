@@ -134,8 +134,12 @@ onMounted(async () => {
 watch<string>(
   () => route.params.applicationId?.toString(),
   async (newId?: string) => {
-    if (!newId) return;
-    onAppIdChanged(newId);
+    if (!newId) {
+      application.value = null;
+      appsData.value = await fetchApps('');
+    } else {
+      onAppIdChanged(newId);
+    }
   }
 )
 
@@ -156,8 +160,6 @@ function handleScroll(event: Event) {
 
 function backToApps() {
   router.push({ name: 'logs', params: {} })
-  application.value = null;
-  fetchApps('');
 }
 
 async function selectApp(app: ApplicationShortStats) {
