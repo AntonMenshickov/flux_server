@@ -2,20 +2,18 @@
   <aside class="sidebar">
 
     <nav class="menu">
-      <ul>
-        <li v-if="showUsers" :class="{ active: activeItem == SidebarItemEnum.users }" @click="setActive(SidebarItemEnum.users)">
-          <UserIcon class="icon" />
-          <span>Users</span>
-        </li>
-        <li :class="{ active: activeItem == SidebarItemEnum.apps }" @click="setActive(SidebarItemEnum.apps)">
-          <CommandLineIcon class="icon" />
-          <span>Apps</span>
-        </li>
-        <li :class="{ active: activeItem == SidebarItemEnum.logs }" @click="setActive(SidebarItemEnum.logs)">
-          <DocumentTextIcon class="icon" />
-          <span>Logs</span>
-        </li>
-      </ul>
+      <router-link v-if="showUsers" :to="{ name: 'users' }" :class="{ active: activeItem == SidebarItemEnum.users }">
+        <UserIcon class="icon" />
+        <span>Users</span>
+      </router-link>
+      <router-link :to="{ name: 'apps' }" :class="{ active: activeItem == SidebarItemEnum.apps }">
+        <CommandLineIcon class="icon" />
+        <span>Apps</span>
+      </router-link>
+      <router-link :to="{ name: 'logs' }" :class="{ active: activeItem == SidebarItemEnum.logs }">
+        <DocumentTextIcon class="icon" />
+        <span>Logs</span>
+      </router-link>
     </nav>
   </aside>
 </template>
@@ -23,26 +21,34 @@
 <script setup lang="ts">
 import { UserIcon, DocumentTextIcon, CommandLineIcon } from '@heroicons/vue/24/outline';
 import { useUserStore } from '@/stores/userStore';
-import { ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { SidebarItemEnum } from '@/model/sidebarItemEnum';
-import { useAppStateStore } from '@/stores/appStateStore';
+import { useRoute } from 'vue-router';
 
-const appStateStore = useAppStateStore();
+const route = useRoute();
+
+onMounted(async () => {
+  const path = route.path.split('/').pop();
+  if (path) {
+    activeItem.value = path as SidebarItemEnum;
+  }
+});
+
+watch<string>(
+  () => route.path,
+  (newPath: string) => {
+    const path = newPath.split('/').pop();
+    if (!path) return;
+    activeItem.value = path as SidebarItemEnum;
+  }
+)
 
 
-const activeItem = ref<SidebarItemEnum>(appStateStore.page ?? SidebarItemEnum.logs)
-const emit = defineEmits(['update:active'])
+const activeItem = ref<SidebarItemEnum>(SidebarItemEnum.logs)
 const userStore = useUserStore();
 
-function showUsers(): boolean {
-  return userStore.profile?.isOwner || false;
-}
+const showUsers = computed(() => userStore.profile?.isOwner || false);
 
-function setActive(item: SidebarItemEnum) {
-  activeItem.value = item;
-  appStateStore.setPage(item);
-  emit('update:active', item);
-}
 </script>
 
 <style scoped>
@@ -62,13 +68,7 @@ function setActive(item: SidebarItemEnum) {
   padding: 1.1em 1em;
 }
 
-.menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.menu li {
+.menu a {
   display: flex;
   align-items: center;
   padding: 0.75em 1em;
@@ -76,13 +76,15 @@ function setActive(item: SidebarItemEnum) {
   cursor: pointer;
   transition: background 0.2s;
   border-radius: 0.5em;
+  color: #fff;
+  text-decoration: none;
 }
 
-.menu li:hover {
+.menu a:hover {
   background-color: var(--color-on-primary);
 }
 
-.menu li.active {
+.menu a.active {
   background-color: var(--color-accent);
 }
 

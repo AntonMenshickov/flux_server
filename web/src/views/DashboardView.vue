@@ -2,11 +2,9 @@
   <div class="dashboard">
     <DashboardAppBar />
     <div class="page-content">
-      <DashboardSidebar @update:active="activeMenu = $event" />
+      <DashboardSidebar />
       <main class="content">
-        <UserList v-if="activeMenu == SidebarItemEnum.users" />
-        <ApplicationsList v-if="activeMenu == SidebarItemEnum.apps" />
-        <LogsList v-if="activeMenu == SidebarItemEnum.logs" />
+        <router-view />
       </main>
     </div>
   </div>
@@ -15,17 +13,6 @@
 <script setup lang="ts">
 import DashboardAppBar from '@/components/DashboardAppBar.vue';
 import DashboardSidebar from '@/components/DashboardSidebar.vue';
-import UserList from '@/components/UsersList.vue';
-import ApplicationsList from '@/components/ApplicationsList.vue';
-import LogsList from '@/components/logsList/LogsList.vue';
-import { ref } from 'vue';
-import { SidebarItemEnum } from '@/model/sidebarItemEnum';
-import { useAppStateStore } from '@/stores/appStateStore';
-
-const appStateStore = useAppStateStore();
-
-const activeMenu = ref<SidebarItemEnum>(appStateStore.page ?? SidebarItemEnum.logs);
-
 </script>
 <style scoped>
 .dashboard {

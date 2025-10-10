@@ -39,6 +39,9 @@ const renderChart = () => {
 
   const options: ChartOptions<'bar'> = {
     responsive: true,
+    animation: {
+      duration: 0
+    },
     plugins: {
       legend: {
         display: false,
@@ -83,7 +86,7 @@ watch(() => props.appStats, () => renderChart(), { deep: true });
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .app-name {

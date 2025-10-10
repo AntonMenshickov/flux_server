@@ -15,7 +15,9 @@ interface ApplicationsWithStatsResponse {
   total: number;
 }
 
-interface ApplicationStatsResponse {
+export interface ApplicationStatsResponse {
+  id: string;
+  name: string;
   stats: IApplicationStats[];
 }
 

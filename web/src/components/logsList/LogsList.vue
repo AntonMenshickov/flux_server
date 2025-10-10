@@ -1,26 +1,29 @@
 <template>
-  <div class="logs-page">
+  <div class="logs-page" @scroll="handleScroll">
+    <div v-if="application != null" class="logs-page-header">
+      <ArrowLeftIcon @click="backToApps" class="go-to-apps" />
+      <div class="app-name">{{ application.name }}</div>
+    </div>
     <div v-if="application == null" class="apps">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
     </div>
     <div v-if="application != null" class="apps">
-      <AppCard :appName="application.name" :appStats="application" />
-      <AppStatsChart :data="appStats"/>
+      <AppStatsChart :data="application.stats" />
     </div>
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
         class="smart-search-field" />
     </div>
-    <div v-if="application != null" class="logs-list" @scroll="handleScroll">
+    <div v-if="application != null" class="logs-list">
       <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { applications } from '@/api/applications';
+import { applications, type ApplicationStatsResponse } from '@/api/applications';
 import { events } from '@/api/events';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { LogLevel } from '@/model/event/logLevel';
 import LogCard from '@/components/base/LogCard.vue';
@@ -28,8 +31,10 @@ import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { Operator, SearchCriterion, ValueType, type FieldOption } from '../base/smartSearch/types';
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
-import type { IApplicationStats } from '@/model/application/applicationStats';
-import AppStatsChart from './appStatsChart.vue';
+import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
+import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import router from '@/router';
+import { useRoute } from 'vue-router';
 
 
 const fieldOptions: FieldOption[] = [
@@ -106,24 +111,42 @@ const fieldOptions: FieldOption[] = [
 
 const appsData = ref<ApplicationShortStats[]>([]);
 const logs = ref<EventMessage[]>([]);
-const application = ref<ApplicationShortStats | null>(null);
-const appStats = ref<IApplicationStats[]>([]);
+const application = ref<ApplicationStatsResponse | null>(null);
 const criteria = ref<SearchCriterion[]>([]);
 const pageSize = 100;
 let offset = 0;
 let isLoading = false;
 let hasMore = true;
 
+const route = useRoute();
 
 const filteredLogs = computed(() => logs.value);
 
 onMounted(async () => {
-  fetchLogs(true);
-  appsData.value = await fetchApps('');
+  const appId = route.params.applicationId?.toString();
+  if (appId) {
+    onAppIdChanged(appId);
+  } else {
+    appsData.value = await fetchApps('');
+  }
 });
+
+watch<string>(
+  () => route.params.applicationId?.toString(),
+  async (newId?: string) => {
+    if (!newId) return;
+    onAppIdChanged(newId);
+  }
+)
+
+async function onAppIdChanged(appId: string) {
+  application.value = await fetchAppStats(appId);
+  applyFilters();
+}
 
 
 function handleScroll(event: Event) {
+  if (!application.value) return;
   const target = event.target as HTMLDivElement;
   const { scrollTop, clientHeight, scrollHeight } = target;
   if (scrollTop + clientHeight >= scrollHeight - 50 && !isLoading && hasMore) {
@@ -131,10 +154,14 @@ function handleScroll(event: Event) {
   }
 }
 
+function backToApps() {
+  router.push({ name: 'logs', params: {} })
+  application.value = null;
+  fetchApps('');
+}
+
 async function selectApp(app: ApplicationShortStats) {
-  application.value = app;
-  appStats.value = await fetchAppStats(app.id);
-  applyFilters();
+  router.push({ name: 'logs', params: { applicationId: app.id } })
 }
 
 function applyFilters() {
@@ -180,12 +207,12 @@ async function fetchApps(search: string): Promise<ApplicationShortStats[]> {
   return [];
 }
 
-async function fetchAppStats(applicationId: string): Promise<IApplicationStats[]> {
+async function fetchAppStats(applicationId: string): Promise<ApplicationStatsResponse | null> {
   const searchResult = await applications.getAppStats(applicationId);
   if (searchResult.isRight()) {
-    return searchResult.value.result.stats;
+    return searchResult.value.result;
   }
-  return [];
+  return null;
 }
 
 </script>
@@ -198,13 +225,32 @@ async function fetchAppStats(applicationId: string): Promise<IApplicationStats[]
   flex-direction: column;
   gap: 1rem;
   font-family: sans-serif;
+  overflow-y: auto;
+}
+
+.logs-page-header {
+  display: flex;
+  flex-direction: row;
+  margin: 1.5rem;
+  margin-bottom: 0;
+  margin-top: 1rem;
+}
+
+.go-to-apps {
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.app-name {
+  margin-left: 1rem;
+  font-size: 2rem;
+
 }
 
 .logs-list {
   padding: 1.5rem;
   padding-top: 1rem;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .smart-search {

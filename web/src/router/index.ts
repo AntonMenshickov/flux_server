@@ -1,10 +1,12 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
-import LoginView from '@/views/LoginView.vue'
 import { useUserStore } from '@/stores/userStore'
+import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
+import ApplicationsList from '@/components/ApplicationsList.vue'
+import UsersList from '@/components/UsersList.vue'
+import LogsList from '@/components/logsList/LogsList.vue'
 
 const routes: Array<RouteRecordRaw> = [
-  //this route will be automatically redirected to /login if not authenticated or to dashboard if authenticated
   {
     path: '/',
     name: 'home',
@@ -20,11 +22,28 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard',
     name: 'dashboard',
     component: DashboardView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'users',
+        name: 'users',
+        component: UsersList
+      },
+      {
+        path: 'apps',
+        name: 'apps',
+        component: ApplicationsList
+      },
+      {
+        path: 'logs/:applicationId?',
+        name: 'logs',
+        component: LogsList
+      },
+    ]
   }
 ]
 
-const router = createRouter({
+export const router = createRouter({
   history: createWebHashHistory(),
   routes
 })

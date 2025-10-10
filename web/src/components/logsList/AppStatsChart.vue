@@ -1,5 +1,6 @@
 <template>
   <div class="chart-wrapper">
+    <div class="title">Statistics</div>
     <canvas ref="chartRef" />
   </div>
 </template>
@@ -52,8 +53,11 @@ const renderChart = () => {
     data: { labels, datasets },
     options: {
       responsive: true,
+      animation: {
+        duration: 0,
+      },
       plugins: {
-        legend: { position: 'bottom' },
+        legend: { display: false },
         title: {
           display: false,
         },
@@ -76,8 +80,16 @@ watch(() => props.data, renderChart, { deep: true });
 
 <style scoped>
 .chart-wrapper {
-  width: 100%;
-  height: 200px;
-  flex: 1;
+  min-width: 400px;
+  height: auto;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: white;
+  box-shadow: var(--box-shadow);
+}
+
+.title {
+  margin-bottom: 0.5rem;
+  font-weight: bolder;
 }
 </style>

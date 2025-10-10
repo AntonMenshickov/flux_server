@@ -46,8 +46,6 @@ export async function searchAppStats(req: UserAuthRequest, res: Response, next: 
     ]);
 
 
-
-
     const latestStatsMap = new Map<string, IApplicationStats & Document>();
     for (const doc of latestStatsDocs) {
       latestStatsMap.set(doc._id.toString(), doc.latestStats);
