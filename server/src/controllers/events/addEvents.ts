@@ -7,9 +7,7 @@ import { eventMessageDtoSchema } from '../../utils/zodUtil';
 import { AppAuthRequest } from '../../middleware/authorizationRequired';
 import { eventMessageFromDto } from '../../model/eventMessageView';
 import { Database } from '../../database/database';
-import { ApplicationStats } from '../../model/mongo/applicationStats';
-import { LogLevel } from '../../model/eventMessageDto';
-import { updateApplicationStats } from '../../utils/applicationStats';
+import { EventsStatsService } from '../../services/eventsStatsService';
 
 const eventsValidateSchema = z.array(eventMessageDtoSchema);
 
@@ -41,9 +39,10 @@ export async function addEvents(req: AppAuthRequest, res: Response, next: NextFu
       }
     });
   }
-  await Database.instance.eventsRepository.insert(events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId, deviceName, osName)));
+  const eventsView = events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId, deviceName, osName));
+  await Database.instance.eventsRepository.insert(eventsView);
 
-  await updateApplicationStats(application, events);
+  await EventsStatsService.onEventsAdded(eventsView);
 
   return res.status(204).json({
     success: true,

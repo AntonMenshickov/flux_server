@@ -8,6 +8,7 @@ import { appSetMaintainers, appSetMaintainersValidateSchema } from './appSetMain
 import { userAuthorizationRequired } from '../../middleware/authorizationRequired';
 import { updateApp, updateAppValidateSchema } from './updateApp';
 import { searchAppStats, searchAppStatsValidateSchema } from './searchAppStats';
+import { getAppStats, getAppStatsValidateSchema } from './getAppStats';
 
 export default function applicationsModule(router: Router) {
   router.post('/applications/add',  validate(addAppValidateSchema), userAuthorizationRequired(addApp));
@@ -17,6 +18,7 @@ export default function applicationsModule(router: Router) {
   router.delete('/applications/delete', validate(deleteAppValidateSchema), userAuthorizationRequired(deleteApp));
   router.get('/applications/search', validate(searchAppsValidateSchema), userAuthorizationRequired(searchApps))
   router.get('/applications/searchStats', validate(searchAppStatsValidateSchema), userAuthorizationRequired(searchAppStats))
+  router.get('/applications/stats', validate(getAppStatsValidateSchema), userAuthorizationRequired(getAppStats))
 
   console.log('Application module loaded');
 }

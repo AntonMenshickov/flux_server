@@ -1,9 +1,9 @@
 import type { LogLevel } from '../event/logLevel';
 
-export interface IApplicationStats {
-  _id: string;
-  application: string;
-  logLevelStats: {
+export interface ApplicationShortStats {
+  id: string;
+  name: string;
+  stats: {
     [K in LogLevel]: number;
   };
   date: Date;

@@ -1,7 +1,8 @@
 import type { Application } from '@/model/application/application';
 import { request } from '.';
 import type { Bundle } from '@/model/application/bundle';
-import type { ApplicationStats } from '@/model/application/applicationStats';
+import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
+import type { IApplicationStats } from '@/model/application/applicationStats';
 
 
 interface ApplicationsSearchResponse {
@@ -9,9 +10,13 @@ interface ApplicationsSearchResponse {
   total: number;
 }
 
-interface ApplicationStatsSearchResponse {
-  applications: ApplicationStats[];
+interface ApplicationsWithStatsResponse {
+  applications: ApplicationShortStats[];
   total: number;
+}
+
+interface ApplicationStatsResponse {
+  stats: IApplicationStats[];
 }
 
 export const applications = {
@@ -19,7 +24,8 @@ export const applications = {
   updateApplication,
   deleteApplication,
   search,
-  searchStats,
+  searchApplicationsStats,
+  getAppStats,
 }
 
 async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
@@ -42,7 +48,12 @@ async function search(search: string | null, limit: number, offset: number) {
   return result;
 }
 
-async function searchStats(search: string | null, limit: number, offset: number) {
-  const result = await request<ApplicationStatsSearchResponse>({ authorized: true, 'method': 'get', url: '/applications/searchStats', params: { search, limit, offset } },);
+async function searchApplicationsStats(search: string | null, limit: number, offset: number) {
+  const result = await request<ApplicationsWithStatsResponse>({ authorized: true, 'method': 'get', url: '/applications/searchStats', params: { search, limit, offset } },);
+  return result;
+}
+
+async function getAppStats(applicationId: string) {
+  const result = await request<ApplicationStatsResponse>({ authorized: true, 'method': 'get', url: '/applications/stats', params: { applicationId } },);
   return result;
 }

@@ -1,4 +1,4 @@
-import { model, Schema, Types } from 'mongoose';
+import { model, Types } from 'mongoose';
 import { IBaseSchema, baseSchema } from './baseSchema';
 import { LogLevel } from '../eventMessageDto';
 
@@ -12,7 +12,7 @@ export interface IApplicationStats extends IBaseSchema {
 export const applicationStatsSchema = baseSchema<IApplicationStats>({
   application: {
     type: Types.ObjectId,
-    ref: 'User',
+    ref: 'Application',
     required: true,
   },
    logLevelStats: {

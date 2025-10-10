@@ -5,7 +5,7 @@
     </div>
     <div v-if="application != null" class="apps">
       <AppCard :appName="application.name" :appStats="application" />
-      <div>Additional application stats</div>
+      <AppStatsChart :data="appStats"/>
     </div>
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
@@ -27,7 +27,9 @@ import LogCard from '@/components/base/LogCard.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { Operator, SearchCriterion, ValueType, type FieldOption } from '../base/smartSearch/types';
 import AppCard from './AppCard.vue';
-import type { ApplicationStats } from '@/model/application/applicationStats';
+import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
+import type { IApplicationStats } from '@/model/application/applicationStats';
+import AppStatsChart from './appStatsChart.vue';
 
 
 const fieldOptions: FieldOption[] = [
@@ -102,9 +104,10 @@ const fieldOptions: FieldOption[] = [
   },
 ];
 
-const appsData = ref<ApplicationStats[]>([]);
+const appsData = ref<ApplicationShortStats[]>([]);
 const logs = ref<EventMessage[]>([]);
-const application = ref<ApplicationStats | null>(null);
+const application = ref<ApplicationShortStats | null>(null);
+const appStats = ref<IApplicationStats[]>([]);
 const criteria = ref<SearchCriterion[]>([]);
 const pageSize = 100;
 let offset = 0;
@@ -128,8 +131,9 @@ function handleScroll(event: Event) {
   }
 }
 
-function selectApp(app: ApplicationStats) {
+async function selectApp(app: ApplicationShortStats) {
   application.value = app;
+  appStats.value = await fetchAppStats(app.id);
   applyFilters();
 }
 
@@ -168,10 +172,18 @@ async function fetchLogs(clear: boolean = false) {
   isLoading = false;
 }
 
-async function fetchApps(search: string): Promise<ApplicationStats[]> {
-  const searchResult = await applications.searchStats(search, 10, 0);
+async function fetchApps(search: string): Promise<ApplicationShortStats[]> {
+  const searchResult = await applications.searchApplicationsStats(search, 10, 0);
   if (searchResult.isRight()) {
     return searchResult.value.result.applications;
+  }
+  return [];
+}
+
+async function fetchAppStats(applicationId: string): Promise<IApplicationStats[]> {
+  const searchResult = await applications.getAppStats(applicationId);
+  if (searchResult.isRight()) {
+    return searchResult.value.result.stats;
   }
   return [];
 }

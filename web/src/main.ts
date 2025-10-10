@@ -5,10 +5,13 @@ import { createPinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import './assets/variables.css';
+import { Chart, registerables } from 'chart.js';
 
 const pinia = createPinia()
 
 pinia.use(piniaPluginPersistedstate);
+
+Chart.register(...registerables);
 
 createApp(App)
   .use(pinia)

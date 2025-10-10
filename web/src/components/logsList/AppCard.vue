@@ -11,16 +11,12 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue';
-import { Chart, type ChartData, type ChartOptions, registerables } from 'chart.js';
-import type { ApplicationStats } from '@/model/application/applicationStats';
-
-Chart.register(...registerables);
+import { Chart, type ChartData, type ChartOptions } from 'chart.js';
+import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 
 const props = defineProps<{
-  appStats: ApplicationStats
+  appStats: ApplicationShortStats
 }>()
-
-
 
 const totalRecords = computed(() => Object.values(props.appStats.stats).reduce((sum, count) => sum + count, 0));
 
@@ -34,7 +30,7 @@ const renderChart = () => {
     labels: Object.keys(props.appStats.stats),
     datasets: [
       {
-        label: 'Количество записей',
+        label: 'Events amount',
         data: Object.values(props.appStats.stats),
         backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#a36fad'],
       },

@@ -4,7 +4,6 @@ import { EventMessage } from '../model/postgres/eventMessageDbView';
 
 export class Postgres {
   private _dataSource!: DataSource;
-
   private username: string;
   private password: string;
   private host: string;
