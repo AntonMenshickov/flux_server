@@ -121,6 +121,7 @@ export class Postgres {
         CREATE INDEX IF NOT EXISTS idx_${this.table}_loglevel_ts ON ${this.table}("logLevel", timestamp DESC);
         CREATE INDEX IF NOT EXISTS idx_${this.table}_meta ON ${this.table} USING gin(meta);
         CREATE INDEX IF NOT EXISTS idx_${this.table}_tags ON ${this.table} USING gin(tags);
+        CREATE INDEX IF NOT EXISTS idx_${this.table}_deviceId ON ${this.table}("deviceId");
       `);
       console.log(`Postgres table ${this.table} created`);
     } else {

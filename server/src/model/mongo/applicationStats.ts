@@ -6,6 +6,8 @@ export interface IApplicationStats extends IBaseSchema {
   _id: Types.ObjectId;
   application: Types.ObjectId;
   logLevelStats: Map<LogLevel, number>;
+  platformStats: Map<LogLevel, number>;
+  osStats: Map<LogLevel, number>;
   date: Date;
 }
 
@@ -15,7 +17,17 @@ export const applicationStatsSchema = baseSchema<IApplicationStats>({
     ref: 'Application',
     required: true,
   },
-   logLevelStats: {
+  logLevelStats: {
+    type: Map,
+    of: Number,
+    default: {}
+  },
+  platformStats: {
+    type: Map,
+    of: Number,
+    default: {}
+  },
+  osStats: {
     type: Map,
     of: Number,
     default: {}

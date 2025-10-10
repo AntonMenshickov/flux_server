@@ -21,7 +21,7 @@ export async function getAppStats(req: UserAuthRequest, res: Response, next: Nex
     if (!application) {
       return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
     }
-    const stats = await ApplicationStats.find({ application: application._id }).sort({ date: -1 }).exec();
+    const stats = await ApplicationStats.find({ application: application._id }).sort({ date: 1 }).exec();
 
     return res.status(200).json({
       success: true,
