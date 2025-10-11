@@ -147,9 +147,27 @@ export class PostgresEventsRepository {
       }
 
       // --- tags ---
-      if (criterion.field === "tags" && typeof value === "string") {
-        const tagsArray = value.split(",").map((t) => t.trim());
-        qb.andWhere(`${field} && :${paramKey}`, { [paramKey]: tagsArray });
+      if (criterion.field === "tags") {
+        const tagsArray = Array.isArray(value)
+          ? value
+          : String(value).split(",").map((t) => t.trim()).filter(Boolean);
+
+        switch (criterion.operator) {
+          case Operator.In:
+            qb.andWhere(`${field} && :${paramKey}`, { [paramKey]: tagsArray });
+            break;
+
+          case Operator.NotIn:
+            qb.andWhere(`NOT (${field} && :${paramKey})`, { [paramKey]: tagsArray });
+            break;
+
+          case Operator.Equals:
+            qb.andWhere(`${field} @> :${paramKey}`, { [paramKey]: tagsArray });
+            break;
+
+          default:
+            throw new Error(`Unsupported operator for tags: ${criterion.operator}`);
+        }
         return;
       }
 

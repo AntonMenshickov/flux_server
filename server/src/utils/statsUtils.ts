@@ -8,13 +8,3 @@ export function countUniqueFields<T>(array: T[], key: keyof T): Map<string, numb
 
   return map;
 }
-
-export function mergeAndSumMaps<K>(a: Map<K, number>, b: Map<K, number>): Map<K, number> {
-  const result = new Map(a);
-
-  for (const [key, value] of b) {
-    result.set(key, (result.get(key) ?? 0) + value);
-  }
-
-  return result;
-}

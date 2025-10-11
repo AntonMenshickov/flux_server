@@ -1,8 +1,7 @@
-import { EventMessageDto, LogLevel } from '../model/eventMessageDto';
 import { EventMessageView } from '../model/eventMessageView';
 import { Application, IApplication } from '../model/mongo/application';
 import { ApplicationStats } from '../model/mongo/applicationStats';
-import { countUniqueFields, mergeAndSumMaps } from '../utils/statsUtils';
+import { countUniqueFields } from '../utils/statsUtils';
 
 export class EventsStatsService {
   public static async onEventsAdded(events: EventMessageView[]): Promise<void> {
@@ -28,29 +27,28 @@ export class EventsStatsService {
   private static async updateApplicationStats(application: IApplication, events: EventMessageView[]): Promise<void> {
     const date = new Date();
     date.setUTCHours(0, 0, 0, 0);
-    const currentApplicationStats = await ApplicationStats.findOne({ application: application._id, date: date });
-    if (!currentApplicationStats) {
-      const newAppStatus = new ApplicationStats({
-        application: application._id,
-        logLevelStats: new Map(Object.values(LogLevel).map(l => [l, events.filter(e => e.logLevel == l).length])),
-        platformStats: countUniqueFields(events, 'platform'),
-        osStats: countUniqueFields(events, 'osName'),
-        date: date,
-      });
-      await newAppStatus.save();
-    } else {
-      const stats: Map<LogLevel, number> = new Map(Object.values(LogLevel).map(l => [l, events.filter(e => e.logLevel == l).length + (currentApplicationStats.logLevelStats.get(l) ?? 0)]));
-      await ApplicationStats.updateOne(
-        { _id: currentApplicationStats._id },
-        {
-          $set: {
-            logLevelStats: stats,
-            platformStats: mergeAndSumMaps(currentApplicationStats.platformStats, countUniqueFields(events, 'platform')),
-            osStats: mergeAndSumMaps(currentApplicationStats.osStats, countUniqueFields(events, 'osName'))
-          }
-        }
-      );
+    const incObject = {
+      ...this.buildIncMap('logLevelStats', countUniqueFields(events, 'logLevel')),
+      ...this.buildIncMap('platformStats', countUniqueFields(events, 'platform')),
+      ...this.buildIncMap('osStats', countUniqueFields(events, 'osName')),
+    };
+
+    await ApplicationStats.findOneAndUpdate(
+      { application: application._id, date },
+      { $inc: incObject, $setOnInsert: { application: application._id, date } },
+      { upsert: true, new: true }
+    );
+  }
+
+  private static buildIncMap(
+    prefix: string,
+    map: Map<string, number>
+  ): Record<string, number> {
+    const result: Record<string, number> = {};
+    for (const [key, value] of map.entries()) {
+      result[`${prefix}.${key}`] = value;
     }
+    return result;
   }
 
 }

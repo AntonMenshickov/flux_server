@@ -240,7 +240,7 @@ watch(() => props.data, renderCharts, { deep: true });
 
 .empty-message {
   text-align: center;
-  color: #777;
+  color: var(--color-text-dimmed);
   font-style: italic;
   padding: 1rem;
 }

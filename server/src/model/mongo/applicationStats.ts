@@ -35,14 +35,6 @@ export const applicationStatsSchema = baseSchema<IApplicationStats>({
   date: { type: Date, required: true },
 });
 
-
-applicationStatsSchema.pre('save', function (next) {
-  if ((this as any).isNew) {
-    const date = new Date();
-    date.setUTCHours(0, 0, 0, 0);
-    (this as any).date = date;
-  }
-  next();
-});
+applicationStatsSchema.index({ application: 1, date: 1 }, { unique: true });
 
 export const ApplicationStats = model<IApplicationStats>('ApplicationStats', applicationStatsSchema);
