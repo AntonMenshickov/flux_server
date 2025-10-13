@@ -1,19 +1,19 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 import { LogLevel } from '../eventMessageDto';
 
 
 @Entity({ name: process.env.POSTGRES_EVENTS_TABLE })
 export class EventMessage extends BaseEntity {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryColumn('uuid')
     id!: string;
 
     @Column({ type: 'timestamptz' })
     timestamp!: Date;
 
-    @Column({ type: 'enum', enum: LogLevel})
+    @Column({ type: 'text' })
     logLevel!: LogLevel;
 
-    @Column({ type: 'text' })
+    @PrimaryColumn({ type: 'text' })
     applicationId!: string;
 
     @Column({ type: 'text' })
