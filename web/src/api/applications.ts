@@ -18,6 +18,7 @@ interface ApplicationsWithStatsResponse {
 export interface ApplicationStatsResponse {
   id: string;
   name: string;
+  bundles: Bundle[];
   stats: IApplicationStats[];
 }
 

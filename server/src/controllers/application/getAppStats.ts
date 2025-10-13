@@ -28,6 +28,7 @@ export async function getAppStats(req: UserAuthRequest, res: Response, next: Nex
       result: {
         id: application._id,
         name: application.name,
+        bundles: application.bundles,
         stats: stats,
       }
     });

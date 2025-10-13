@@ -1,23 +1,36 @@
 <template>
   <div class="chart-wrapper">
-
-    <div v-if="hasLogLevelData" class="chart-section">
-      <div class="subtitle">Logs by Level</div>
-      <canvas ref="logChartRef" />
+    <div class="totals" v-if="hasAnyData">
+      <div class="totals-title">Totals</div>
+      <div class="totals-row">
+        <span class="totals-label">All records</span>
+        <span class="totals-value">{{ totalAll }}</span>
+      </div>
+      <div class="totals-row" v-for="lvl in logLevels" :key="lvl">
+        <span class="totals-label">{{ lvl }}</span>
+        <span class="totals-value">{{ totalByLevel[lvl] ?? 0 }}</span>
+      </div>
     </div>
 
-    <div v-if="hasPlatformData" class="chart-section">
-      <div class="subtitle">Platforms</div>
-      <canvas ref="platformChartRef" />
-    </div>
+    <div class="charts">
+      <div v-if="hasLogLevelData" class="chart-section">
+        <div class="subtitle">Logs by Level</div>
+        <canvas ref="logChartRef" />
+      </div>
 
-    <div v-if="hasOsData" class="chart-section">
-      <div class="subtitle">Operating Systems</div>
-      <canvas ref="osChartRef" />
-    </div>
+      <div v-if="hasPlatformData" class="chart-section">
+        <div class="subtitle">Platforms</div>
+        <canvas ref="platformChartRef" />
+      </div>
 
-    <div v-if="!hasLogLevelData && !hasPlatformData && !hasOsData" class="empty-message">
-      No statistics available
+      <div v-if="hasOsData" class="chart-section">
+        <div class="subtitle">Operating Systems</div>
+        <canvas ref="osChartRef" />
+      </div>
+
+      <div v-if="!hasLogLevelData && !hasPlatformData && !hasOsData" class="empty-message">
+        No statistics available
+      </div>
     </div>
   </div>
 </template>
@@ -29,6 +42,24 @@ import type { IApplicationStats } from '@/model/application/applicationStats';
 import { LogLevel } from '@/model/event/logLevel';
 
 const props = defineProps<{ data: IApplicationStats[] }>();
+const logLevels = Object.values(LogLevel);
+
+const hasAnyData = computed(() => props.data.length > 0);
+
+const totalByLevel = computed<Record<LogLevel, number>>(() => {
+  const totals = Object.values(LogLevel).reduce((acc, lvl) => {
+    acc[lvl as LogLevel] = 0;
+    return acc;
+  }, {} as Record<LogLevel, number>);
+  for (const stat of props.data) {
+    for (const lvl of Object.values(LogLevel)) {
+      totals[lvl as LogLevel] += stat.logLevelStats?.[lvl as LogLevel] ?? 0;
+    }
+  }
+  return totals;
+});
+
+const totalAll = computed(() => Object.values(totalByLevel.value).reduce((a, b) => a + b, 0));
 
 const logChartRef = ref<HTMLCanvasElement | null>(null);
 const platformChartRef = ref<HTMLCanvasElement | null>(null);
@@ -224,6 +255,12 @@ watch(() => props.data, renderCharts, { deep: true });
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
   background-color: white;
+}
+
+.charts {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
 }
 
 .title {
