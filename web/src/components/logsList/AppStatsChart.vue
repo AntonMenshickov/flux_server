@@ -159,6 +159,7 @@ const renderCharts = () => {
           },
           options: {
             responsive: true,
+            animation: { duration: 0 },
             plugins: { legend: { display: false } },
             scales: {
               y: { beginAtZero: true, ticks: { precision: 0 } },
@@ -197,6 +198,7 @@ const renderCharts = () => {
           },
           options: {
             responsive: true,
+            animation: { duration: 0 },
             plugins: { legend: { display: false } },
           },
         });
