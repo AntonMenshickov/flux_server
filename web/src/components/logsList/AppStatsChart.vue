@@ -4,7 +4,10 @@
       <div class="totals-header">
         <div class="totals-title">Totals</div>
         <div class="bundles" v-if="props.application.bundles?.length">
-          <div class="bundles-title">Bundles</div>
+          <div class="totals-row totals-overall">
+            <span class="totals-label">Bundles</span>
+            <span class="totals-value">{{ props.application.bundles.length }}</span>
+          </div>
           <ul class="bundles-list">
             <li v-for="(b, idx) in props.application.bundles" :key="idx" class="bundle-item">
               <span class="bundle-platform">{{ b.platform }}</span>
@@ -318,10 +321,7 @@ watch(() => props.application, renderCharts, { deep: true });
   font-weight: 700;
 }
 
-.bundles-title {
-  font-weight: 600;
-  color: var(--color-text-dimmed);
-}
+/* bundles-title removed in favor of consistent totals-row styling */
 
 .bundles-list {
   list-style: none;
