@@ -8,7 +8,7 @@
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
     </div>
     <div v-if="application != null" class="apps">
-      <AppStatsChart :data="application.stats" />
+      <AppStatsChart :application="application" />
     </div>
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"

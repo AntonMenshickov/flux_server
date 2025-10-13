@@ -1,14 +1,30 @@
 <template>
   <div class="chart-wrapper">
     <div class="totals" v-if="hasAnyData">
-      <div class="totals-title">Totals</div>
-      <div class="totals-row">
-        <span class="totals-label">All records</span>
-        <span class="totals-value">{{ totalAll }}</span>
+      <div class="totals-header">
+        <div class="totals-title">Totals</div>
+        <div class="bundles" v-if="props.application.bundles?.length">
+          <div class="bundles-title">Bundles</div>
+          <ul class="bundles-list">
+            <li v-for="(b, idx) in props.application.bundles" :key="idx" class="bundle-item">
+              <span class="bundle-platform">{{ b.platform }}</span>
+              <span class="bundle-sep">•</span>
+              <span class="bundle-id" :title="b.bundleId">{{ b.bundleId }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
-      <div class="totals-row" v-for="lvl in logLevels" :key="lvl">
-        <span class="totals-label">{{ lvl }}</span>
-        <span class="totals-value">{{ totalByLevel[lvl] ?? 0 }}</span>
+      <div class="totals-body">
+        <div class="totals-row totals-overall">
+          <span class="totals-label">All records</span>
+          <span class="totals-value">{{ totalAll }}</span>
+        </div>
+        <div class="totals-row" v-for="lvl in logLevels" :key="lvl">
+          <span class="level-chip" :style="{ backgroundColor: logColors[lvl] }"></span>
+          <span class="totals-label">{{ lvl }}</span>
+          <span class="spacer"></span>
+          <span class="totals-value">{{ totalByLevel[lvl] ?? 0 }}</span>
+        </div>
       </div>
     </div>
 
@@ -38,20 +54,20 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
 import { Chart } from 'chart.js';
-import type { IApplicationStats } from '@/model/application/applicationStats';
 import { LogLevel } from '@/model/event/logLevel';
+import type { ApplicationStatsResponse } from '@/api/applications';
 
-const props = defineProps<{ data: IApplicationStats[] }>();
+const props = defineProps<{ application: ApplicationStatsResponse }>();
 const logLevels = Object.values(LogLevel);
 
-const hasAnyData = computed(() => props.data.length > 0);
+const hasAnyData = computed(() => props.application.stats.length > 0);
 
 const totalByLevel = computed<Record<LogLevel, number>>(() => {
   const totals = Object.values(LogLevel).reduce((acc, lvl) => {
     acc[lvl as LogLevel] = 0;
     return acc;
   }, {} as Record<LogLevel, number>);
-  for (const stat of props.data) {
+  for (const stat of props.application.stats) {
     for (const lvl of Object.values(LogLevel)) {
       totals[lvl as LogLevel] += stat.logLevelStats?.[lvl as LogLevel] ?? 0;
     }
@@ -116,30 +132,30 @@ function colorFromString(str: string, saturation = 50, lightness = 65): string {
 // ---------- computed checks ----------
 
 const hasLogLevelData = computed(() =>
-  props.data.some(d => d.logLevelStats !== undefined)
+  props.application.stats.some(d => d.logLevelStats !== undefined)
 );
 const hasPlatformData = computed(() =>
-  props.data.some(d => d.platformStats !== undefined)
+  props.application.stats.some(d => d.platformStats !== undefined)
 );
 const hasOsData = computed(() =>
-  props.data.some(d => d.osStats !== undefined)
+  props.application.stats.some(d => d.osStats !== undefined)
 );
 
 // ---------- chart rendering ----------
 
 const renderCharts = () => {
-  if (!props.data.length) return;
+  if (!props.application.stats.length) return;
 
   // --- 1. Линейный график logLevel по дням ---
   if (hasLogLevelData.value && logChartRef.value) {
     const ctx = logChartRef.value.getContext('2d');
     if (ctx) {
       const logLevels = Object.values(LogLevel);
-      const labels = props.data.map(s => new Date(s.date).toLocaleDateString());
+      const labels = props.application.stats.map(s => new Date(s.date).toLocaleDateString());
 
       const datasets = logLevels.map(level => ({
         label: level,
-        data: props.data.map(s => s.logLevelStats?.[level as LogLevel] ?? 0),
+        data: props.application.stats.map(s => s.logLevelStats?.[level as LogLevel] ?? 0),
         borderColor: logColors[level],
         backgroundColor: logColors[level],
         borderWidth: 2,
@@ -168,7 +184,7 @@ const renderCharts = () => {
   if (hasPlatformData.value && platformChartRef.value) {
     const ctx = platformChartRef.value.getContext('2d');
     if (ctx) {
-      const mergedPlatform = sumMaps(props.data.map(s => s.platformStats));
+      const mergedPlatform = sumMaps(props.application.stats.map(s => s.platformStats));
       if (mergedPlatform.size > 0) {
         const labels = Array.from(mergedPlatform.keys());
         const values = Array.from(mergedPlatform.values());
@@ -208,7 +224,7 @@ const renderCharts = () => {
   if (hasOsData.value && osChartRef.value) {
     const ctx = osChartRef.value.getContext('2d');
     if (ctx) {
-      const mergedOs = sumMaps(props.data.map(s => s.osStats));
+      const mergedOs = sumMaps(props.application.stats.map(s => s.osStats));
       if (mergedOs.size > 0) {
         const labels = Array.from(mergedOs.keys());
         const values = Array.from(mergedOs.values());
@@ -242,7 +258,7 @@ const renderCharts = () => {
 };
 
 onMounted(renderCharts);
-watch(() => props.data, renderCharts, { deep: true });
+watch(() => props.application, renderCharts, { deep: true });
 </script>
 
 <style scoped>
@@ -282,5 +298,95 @@ watch(() => props.data, renderCharts, { deep: true });
   color: var(--color-text-dimmed);
   font-style: italic;
   padding: 1rem;
+}
+
+.totals {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.totals-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.totals-title {
+  font-weight: 700;
+}
+
+.bundles-title {
+  font-weight: 600;
+  color: var(--color-text-dimmed);
+}
+
+.bundles-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bundle-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.bundle-platform {
+  font-weight: 600;
+}
+
+.bundle-sep {
+  color: var(--color-text-dimmed);
+}
+
+.bundle-id {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.totals-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.totals-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.totals-overall {
+  border-bottom: 1px dashed var(--color-border);
+  margin-bottom: 0.25rem;
+}
+
+.totals-label {
+  color: var(--color-text);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.totals-value {
+  font-weight: 700;
+}
+
+.level-chip {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
 }
 </style>
