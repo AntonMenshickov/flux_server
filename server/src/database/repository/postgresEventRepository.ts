@@ -62,13 +62,28 @@ export class PostgresEventsRepository {
     const qb: SelectQueryBuilder<EventMessage> =
       EventMessage.createQueryBuilder("event");
 
+    // Белый список разрешённых полей -> соответствующие SQL-столбцы
+    const FIELD_TO_COLUMN: Record<string, string> = {
+      id: 'event.id',
+      timestamp: 'event.timestamp',
+      applicationId: 'event."applicationId"',
+      logLevel: 'event."logLevel"',
+      platform: 'event.platform',
+      bundleId: 'event."bundleId"',
+      deviceId: 'event."deviceId"',
+      deviceName: 'event."deviceName"',
+      osName: 'event."osName"',
+      message: 'event.message',
+      tags: 'event.tags',
+      meta: 'event.meta',
+    };
+
     qb.andWhere(`LOWER(event."applicationId") = LOWER(:applicationId)`, {
       applicationId,
     });
 
     filters.forEach((criterion, index) => {
       const paramKey = `param_${index}`;
-      const field = `"event"."${criterion.field}"`;
       let value: any = criterion.value;
 
       if (criterion.field === "dateFrom" || criterion.field === "dateTo") {
@@ -83,6 +98,7 @@ export class PostgresEventsRepository {
 
       // --- logLevel (всегда массив строк) ---
       if (criterion.field === "logLevel" && Array.isArray(value)) {
+        const field = FIELD_TO_COLUMN['logLevel'];
         switch (criterion.operator) {
           case Operator.In:
             qb.andWhere(`${field} IN (:...${paramKey})`, {
@@ -102,6 +118,7 @@ export class PostgresEventsRepository {
 
 
       if (criterion.field === "meta" && Array.isArray(value)) {
+        const field = FIELD_TO_COLUMN['meta'];
         const metaFilters = value as Record<string, string>[];
 
         switch (criterion.operator) {
@@ -148,6 +165,7 @@ export class PostgresEventsRepository {
 
       // --- tags ---
       if (criterion.field === "tags") {
+        const field = FIELD_TO_COLUMN['tags'];
         const tagsArray = Array.isArray(value)
           ? value
           : String(value).split(",").map((t) => t.trim()).filter(Boolean);
@@ -172,37 +190,41 @@ export class PostgresEventsRepository {
       }
 
       // --- Общие случаи ---
+      const fieldExpr = FIELD_TO_COLUMN[criterion.field];
+      if (!fieldExpr) {
+        throw new Error(`Unsupported filter field: ${criterion.field}`);
+      }
       switch (criterion.operator) {
         case Operator.Equals:
-          qb.andWhere(`${field} = :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${fieldExpr} = :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.NotEquals:
-          qb.andWhere(`${field} != :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${fieldExpr} != :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.Similar:
-          qb.andWhere(`CAST(${field} AS TEXT) ILIKE :${paramKey}`, {
+          qb.andWhere(`CAST(${fieldExpr} AS TEXT) ILIKE :${paramKey}`, {
             [paramKey]: `%${value}%`,
           });
           break;
 
         case Operator.GreaterThan:
-          qb.andWhere(`${field} > :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${fieldExpr} > :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.LessThan:
-          qb.andWhere(`${field} < :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${fieldExpr} < :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.In:
-          qb.andWhere(`${field} IN (:...${paramKey})`, {
+          qb.andWhere(`${fieldExpr} IN (:...${paramKey})`, {
             [paramKey]: value,
           });
           break;
 
         case Operator.NotIn:
-          qb.andWhere(`${field} NOT IN (:...${paramKey})`, {
+          qb.andWhere(`${fieldExpr} NOT IN (:...${paramKey})`, {
             [paramKey]: value,
           });
           break;
