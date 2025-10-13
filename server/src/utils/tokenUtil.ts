@@ -19,7 +19,7 @@ export const tokenUtil = {
     const decodedAccess = jwt.decode(accessToken) as JwtPayload;
     const accessTokenExpiresAt = decodedAccess?.exp ? new Date(decodedAccess.exp * 1000) : null;
     const refreshToken = jwt.sign({ userId }, secret, <SignOptions>{ expiresIn: process.env.JWT_RT_EXPIRES_IN });
-    const decodedRefresh = jwt.decode(accessToken) as JwtPayload;
+    const decodedRefresh = jwt.decode(refreshToken) as JwtPayload;
     const refreshTokenExpiresAt = decodedRefresh?.exp ? new Date(decodedRefresh.exp * 1000) : null;
     return {
       accessToken,
