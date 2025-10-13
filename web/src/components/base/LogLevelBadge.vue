@@ -25,18 +25,18 @@ const levelClass = computed(() => props.level.toLowerCase());
 }
 
 .log-level-badge.info {
-  background: #3b82f6;
+  background: var(--log-info);
 }
 
 .log-level-badge.warn {
-  background: #f59e0b;
+  background: var(--log-warn);
 }
 
 .log-level-badge.error {
-  background: #ef4444;
+  background: var(--log-error);
 }
 
 .log-level-badge.debug {
-  background: #a36fad;
+  background: var(--log-debug);
 }
 </style>

@@ -23,7 +23,7 @@
           <span class="totals-value">{{ totalAll }}</span>
         </div>
         <div class="totals-row" v-for="lvl in logLevels" :key="lvl">
-          <span class="level-chip" :style="{ backgroundColor: logColors[lvl] }"></span>
+          <span class="level-chip" :class="`level-${lvl}`"></span>
           <span class="totals-label">{{ lvl }}</span>
           <span class="spacer"></span>
           <span class="totals-value">{{ totalByLevel[lvl] ?? 0 }}</span>
@@ -260,7 +260,9 @@ const renderCharts = () => {
   }
 };
 
-onMounted(renderCharts);
+onMounted(() => {
+  renderCharts();
+});
 watch(() => props.application, renderCharts, { deep: true });
 </script>
 
@@ -304,7 +306,7 @@ watch(() => props.application, renderCharts, { deep: true });
 }
 
 .totals {
-  width: 260px;
+  min-width: 300px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -375,10 +377,6 @@ watch(() => props.application, renderCharts, { deep: true });
   color: var(--color-text);
 }
 
-.spacer {
-  flex: 1;
-}
-
 .totals-value {
   font-weight: 700;
 }
@@ -389,4 +387,9 @@ watch(() => props.application, renderCharts, { deep: true });
   border-radius: 2px;
   display: inline-block;
 }
+
+.level-info { background-color: var(--log-info); }
+.level-warn { background-color: var(--log-warn); }
+.level-error { background-color: var(--log-error); }
+.level-debug { background-color: var(--log-debug); }
 </style>

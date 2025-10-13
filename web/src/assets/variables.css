@@ -12,6 +12,11 @@
   --border-radius: 12px;
   --box-shadow: 0 4px 32px rgba(0, 0, 0, 0.1);
   --box-shadow-strong: 0 4px 32px rgba(0, 0, 0, 0.3);
+  /* Log level colors */
+  --log-info: #3b82f6;
+  --log-warn: #f59e0b;
+  --log-error: #ef4444;
+  --log-debug: #a36fad;
 }
 
 html,
