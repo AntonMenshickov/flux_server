@@ -3,7 +3,7 @@ import { IUser, User } from '../../model/mongo/user';
 import { responseMessages } from '../../strings/responseMessages';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { Document } from 'mongoose';
-import { TokenExpiredError } from 'jsonwebtoken';
+import { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import z from 'zod';
 
 export const refreshValidateSchema = z.object({
@@ -17,13 +17,17 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
   if (!refreshToken) {
     return res.status(400).json({ error: responseMessages.MISSING_REFRESH_TOKEN });
   }
-  const tokenData = tokenUtil.verify(refreshToken);
-  if (tokenData instanceof Error) {
-    if (tokenData instanceof TokenExpiredError) {
+  let tokenData: JwtPayload & { userId?: string };
+  try {
+    tokenData = tokenUtil.verify(refreshToken) as JwtPayload & { userId?: string };
+  } catch (err) {
+    if (err instanceof TokenExpiredError) {
       return res.status(401).json({ error: responseMessages.TOKEN_EXPIRED });
-    } else {
-      return res.status(401).json({ error: responseMessages.INVALID_REFRESH_TOKEN });
     }
+    return res.status(401).json({ error: responseMessages.INVALID_REFRESH_TOKEN });
+  }
+  if (!tokenData.userId) {
+    return res.status(401).json({ error: responseMessages.INVALID_REFRESH_TOKEN });
   }
   const user: IUser & Document | null = await User.findById(tokenData.userId).exec();
 
