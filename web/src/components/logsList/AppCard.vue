@@ -13,6 +13,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { Chart, type ChartData, type ChartOptions } from 'chart.js';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
+import { LogLevel } from '@/model/event/logLevel';
 
 const props = defineProps<{
   appStats: ApplicationShortStats
@@ -26,13 +27,27 @@ let chartInstance: Chart | null = null;
 const renderChart = () => {
   if (!chartRef.value) return;
 
+  const orderedLevels = [
+    LogLevel.INFO,
+    LogLevel.WARN,
+    LogLevel.ERROR,
+    LogLevel.DEBUG,
+  ];
+
+  const logColors: Record<LogLevel, string> = {
+    [LogLevel.INFO]: '#3b82f6',
+    [LogLevel.WARN]: '#f59e0b',
+    [LogLevel.ERROR]: '#ef4444',
+    [LogLevel.DEBUG]: '#a36fad',
+  };
+
   const data: ChartData<'bar'> = {
-    labels: Object.keys(props.appStats.stats),
+    labels: orderedLevels,
     datasets: [
       {
         label: 'Events amount',
-        data: Object.values(props.appStats.stats),
-        backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#a36fad'],
+        data: orderedLevels.map(l => props.appStats.stats[l] ?? 0),
+        backgroundColor: orderedLevels.map(l => logColors[l]),
       },
     ],
   };

@@ -9,12 +9,16 @@ import { connect } from 'mongoose';
 import { ReliableBatchQueue } from './eventsQueue/reliableBatchQueue';
 import { Database } from './database/database';
 import path from 'path';
+import { ApplicationStatsCleanupService } from './services/applicationStatsCleanup';
 
 
 export async function startServer() {
   console.log('Connecting to MongoDB...');
   await connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`);
   console.log('Connected to MongoDB');
+
+  // Schedule Mongo ApplicationStats cleanup
+  new ApplicationStatsCleanupService();
 
   const database = Database.instance;
   const postgres = database.postgres;
