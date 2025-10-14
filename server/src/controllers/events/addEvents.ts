@@ -6,8 +6,9 @@ import z from 'zod';
 import { eventMessageDtoSchema } from '../../utils/zodUtil';
 import { AppAuthRequest } from '../../middleware/authorizationRequired';
 import { eventMessageFromDto } from '../../model/eventMessageView';
-import { Database } from '../../database/database';
 import { EventsStatsService } from '../../services/eventsStatsService';
+import { container } from 'tsyringe';
+import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
 
 const eventsValidateSchema = z.array(eventMessageDtoSchema);
 
@@ -40,9 +41,9 @@ export async function addEvents(req: AppAuthRequest, res: Response, next: NextFu
     });
   }
   const eventsView = events.map(e => eventMessageFromDto(e, application._id.toString(), platform, bundleId, deviceId, deviceName, osName));
-  await Database.instance.eventsRepository.insert(eventsView);
+  await container.resolve(PostgresEventsRepository).insert(eventsView);
 
-  await EventsStatsService.onEventsAdded(eventsView);
+  await container.resolve(EventsStatsService).onEventsAdded(eventsView);
 
   return res.status(204).json({
     success: true,

@@ -1,24 +1,28 @@
 import Redis from 'ioredis';
 import { EventMessageView } from '../model/eventMessageView';
 import { PostgresEventsRepository } from '../database/repository/postgresEventRepository';
-import { Database } from '../database/database';
 import { EventsStatsService } from '../services/eventsStatsService';
+import { container, singleton } from 'tsyringe';
 
+@singleton()
 export class ReliableBatchQueue {
-  private static _instance: ReliableBatchQueue;
   private flushing = false;
   private redis: Redis;
   private queueLen: number = 0;
   private processingLen: number = 0;
   private flushTimer?: NodeJS.Timeout;
+  private queueName: string;
+  private processingName: string;
+  private batchSize: number;
+  private flushIntervalMs: number;
 
-  private constructor(
+  constructor(
     private eventsRepo: PostgresEventsRepository,
-    private queueName = 'queue',
-    private processingName = 'processing',
-    private batchSize = 5,
-    private flushIntervalMs = 10000,
   ) {
+    this.queueName = 'queue';
+    this.processingName = 'processing';
+    this.batchSize = 5;
+    this.flushIntervalMs = 10000;
     this.redis = new Redis({
       host: process.env.REDIS_HOST as string,
       port: Number(process.env.REDIS_PORT),
@@ -34,17 +38,7 @@ export class ReliableBatchQueue {
     });
   }
 
-  static get instance(): ReliableBatchQueue {
-    if (!ReliableBatchQueue._instance) {
-      ReliableBatchQueue._instance = new ReliableBatchQueue(Database.instance.eventsRepository,
-        'queue',
-        'processing',
-        Number(process.env.EVENTS_BATCH_SIZE),
-        Number(process.env.FLUSH_INTERVAL_MS),
-      );
-    }
-    return ReliableBatchQueue._instance;
-  }
+
 
   async init() {
     await this.restoreProcessing();
@@ -136,8 +130,8 @@ export class ReliableBatchQueue {
       await this.eventsRepo.insert(batch);
       await this.redis.del(this.processingName);
       this.processingLen = 0;
-      await EventsStatsService.onEventsAdded(batch);
-      
+      await container.resolve(EventsStatsService).onEventsAdded(batch);
+
     } catch (err) {
       console.error('[ReliableBatchQueue] error while flushing messages to database', err);
     } finally {

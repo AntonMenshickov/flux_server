@@ -1,7 +1,9 @@
 import { schedule } from 'node-cron';
 import { DataSource, LessThan } from 'typeorm';
 import { EventMessage } from '../model/postgres/eventMessageDbView';
+import { singleton } from 'tsyringe';
 
+@singleton()
 export class Postgres {
   private _dataSource!: DataSource;
   private username: string;

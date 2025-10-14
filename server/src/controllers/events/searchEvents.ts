@@ -2,9 +2,10 @@ import { Response, NextFunction, application } from 'express';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { EventMessageView } from '../../model/eventMessageView';
-import { Database } from '../../database/database';
 import { Operator } from '../../model/searchCriterion';
 import { objectIdSchema } from '../../utils/zodUtil';
+import { container } from 'tsyringe';
+import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
 
 
 const searchCriterionsValidateSchema = z.array(z.object({
@@ -31,8 +32,8 @@ export const searchEventsValidateSchema = z.object({
 export async function searchEvents(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { limit, offset, applicationId, filter } = searchEventsValidateSchema.parse(req).body;
 
-  
-  const events: EventMessageView[] = await Database.instance.eventsRepository.find(limit, offset, applicationId.toString(), filter ?? []);
+
+  const events: EventMessageView[] = await container.resolve(PostgresEventsRepository).find(limit, offset, applicationId.toString(), filter ?? []);
 
 
   return res.status(200).json({

@@ -4,14 +4,13 @@ import { EventMessage } from '../../model/postgres/eventMessageDbView';
 import { Postgres } from '../postgres';
 import { Operator, SearchCriterion } from '../../model/searchCriterion';
 import { SelectQueryBuilder } from 'typeorm';
+import { injectable } from 'tsyringe';
 
 
+@injectable()
 export class PostgresEventsRepository {
-  private postgres: Postgres;
 
-  constructor(postgres: Postgres) {
-    this.postgres = postgres;
-  }
+  constructor(private postgres: Postgres) { }
 
   public async insert(events: EventMessageView[]): Promise<void> {
     const chunkSize = 500;

@@ -7,9 +7,11 @@ import { websocket } from './websocket/ws';
 import expressWs from 'express-ws';
 import { connect } from 'mongoose';
 import { ReliableBatchQueue } from './eventsQueue/reliableBatchQueue';
-import { Database } from './database/database';
 import path from 'path';
 import { ApplicationStatsCleanupService } from './services/applicationStatsCleanup';
+import { container } from 'tsyringe';
+import { Postgres } from './database/postgres';
+import { PostgresEventsRepository } from './database/repository/postgresEventRepository';
 
 
 export async function startServer() {
@@ -18,10 +20,9 @@ export async function startServer() {
   console.log('Connected to MongoDB');
 
   // Schedule Mongo ApplicationStats cleanup
-  new ApplicationStatsCleanupService();
+  container.resolve(ApplicationStatsCleanupService).init();
 
-  const database = Database.instance;
-  const postgres = database.postgres;
+  const postgres = container.resolve(Postgres);
   await postgres.ensureInitialized();
 
   await postgres.ensureDatabase();
@@ -29,7 +30,7 @@ export async function startServer() {
   // await postgres.dropTable();
   await postgres.ensureTable();
 
-  ReliableBatchQueue.instance.init();
+  await container.resolve(ReliableBatchQueue).init();
 
   const app = express();
   const wsInstance = expressWs(app);

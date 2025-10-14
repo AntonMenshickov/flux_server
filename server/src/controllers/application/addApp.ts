@@ -6,8 +6,8 @@ import z from 'zod';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { objectIdSchema } from '../../utils/zodUtil';
-import { Database } from '../../database/database';
 import { Postgres } from '../../database/postgres';
+import { container } from 'tsyringe';
 
 
 export const addAppValidateSchema = z.object({
@@ -22,11 +22,11 @@ export const addAppValidateSchema = z.object({
 });
 
 export async function createAppPartition(applicationId: string) {
-  const database: Postgres = Database.instance.postgres;
+  const postgres: Postgres = container.resolve(Postgres);
   const partitionName = `events_app_${applicationId}`;
-  await database.dataSource.query(`
+  await postgres.dataSource.query(`
     CREATE TABLE IF NOT EXISTS ${partitionName}
-    PARTITION OF ${database.table}
+    PARTITION OF ${postgres.table}
     FOR VALUES IN ('${applicationId}');
   `);
 }

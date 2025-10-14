@@ -6,7 +6,7 @@ import z from 'zod';
 import { objectIdSchema } from '../../utils/zodUtil';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { Postgres } from '../../database/postgres';
-import { Database } from '../../database/database';
+import { container } from 'tsyringe';
 
 
 export const deleteAppValidateSchema = z.object({
@@ -16,10 +16,10 @@ export const deleteAppValidateSchema = z.object({
 });
 
 export async function dropAppPartition(applicationId: string) {
-  const database: Postgres = Database.instance.postgres;
+  const postgres: Postgres = container.resolve(Postgres);
   const partitionName = `events_app_${applicationId}`;
 
-  await database.dataSource.query(`
+  await postgres.dataSource.query(`
     DROP TABLE IF EXISTS ${partitionName};
   `);
 }

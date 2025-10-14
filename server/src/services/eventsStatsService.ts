@@ -1,10 +1,12 @@
+import { injectable } from 'tsyringe';
 import { EventMessageView } from '../model/eventMessageView';
 import { Application, IApplication } from '../model/mongo/application';
 import { ApplicationStats } from '../model/mongo/applicationStats';
 import { countUniqueFields } from '../utils/statsUtils';
 
+@injectable()
 export class EventsStatsService {
-  public static async onEventsAdded(events: EventMessageView[]): Promise<void> {
+  public async onEventsAdded(events: EventMessageView[]): Promise<void> {
     const grouped: Record<string, EventMessageView[]> = events.reduce<Record<string, EventMessageView[]>>((acc, event) => {
       if (!acc[event.applicationId]) {
         acc[event.applicationId] = [];
@@ -17,14 +19,14 @@ export class EventsStatsService {
     }
   }
 
-  private static async updateApplicationStatsByAppId(id: string, events: EventMessageView[]): Promise<void> {
+  private async updateApplicationStatsByAppId(id: string, events: EventMessageView[]): Promise<void> {
     const application = await Application.findById(id);
     if (!application) return;
     this.updateApplicationStats(application, events);
   }
 
 
-  private static async updateApplicationStats(application: IApplication, events: EventMessageView[]): Promise<void> {
+  private async updateApplicationStats(application: IApplication, events: EventMessageView[]): Promise<void> {
     const date = new Date();
     date.setUTCHours(0, 0, 0, 0);
     const incObject = {
@@ -40,7 +42,7 @@ export class EventsStatsService {
     );
   }
 
-  private static buildIncMap(
+  private buildIncMap(
     prefix: string,
     map: Map<string, number>
   ): Record<string, number> {

@@ -1,11 +1,16 @@
 import { schedule } from 'node-cron';
 import { ApplicationStats } from '../model/mongo/applicationStats';
+import { singleton } from 'tsyringe';
 
+@singleton()
 export class ApplicationStatsCleanupService {
   private readonly statsMaxAgeInDays: number;
 
   constructor() {
     this.statsMaxAgeInDays = Number(process.env.DB_LOGS_MAX_AGE_DAYS);
+  }
+
+  public init() {
     console.info(
       `Mongo ApplicationStats cleanup scheduled hourly; keeping last ${this.statsMaxAgeInDays} days`
     );
