@@ -3,7 +3,7 @@
     <div v-if="application != null" class="logs-page-header">
       <ArrowLeftIcon @click="backToApps" class="go-to-apps" />
       <div class="app-name">{{ application.name }}</div>
-      <OnlineDevices :applicationId="application?.id" />
+      <OnlineDevices :applicationId="application?.id" @update:select="deviceSelected" />
     </div>
     <div v-if="application == null" class="apps">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
@@ -16,7 +16,7 @@
         class="smart-search-field" />
     </div>
     <div v-if="application != null" class="logs-list">
-      <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" />
+      <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" @search="addSearchCriterion" />
     </div>
   </div>
 </template>
@@ -26,90 +26,19 @@ import { applications, type ApplicationStatsResponse } from '@/api/applications'
 import { events } from '@/api/events';
 import { ref, computed, onMounted, watch } from 'vue';
 import type { EventMessage } from '@/model/event/eventMessage';
-import { LogLevel } from '@/model/event/logLevel';
 import LogCard from '@/components/base/LogCard.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
-import { Operator, SearchCriterion, ValueType, type FieldOption } from '../base/smartSearch/types';
+import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/smartSearch/types';
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
+import type { ConnectedDevice } from '@/api/applications';
+import { fieldOptions } from '@/components/logsList/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 
-
-const fieldOptions: FieldOption[] = [
-  {
-    key: 'dateFrom',
-    operators: [Operator.Equals],
-    valueType: ValueType.Date,
-    placeholder: 'From date',
-  },
-  {
-    key: 'dateTo',
-    operators: [Operator.Equals],
-    valueType: ValueType.Date,
-    placeholder: 'To date',
-  },
-  {
-    key: 'meta',
-    operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
-    valueType: ValueType.KeyValue,
-    placeholder: 'Meta key-value',
-  },
-  {
-    key: 'message',
-    operators: [Operator.Equals, Operator.NotEquals, Operator.Similar],
-    valueType: ValueType.String,
-    placeholder: 'Log message',
-  },
-  {
-    key: 'logLevel',
-    operators: [Operator.In, Operator.NotIn],
-    valueType: ValueType.MultiSelect,
-    fetchValues: async (filter = '') => {
-      return Object.values(LogLevel).filter(l => l.toString().toLowerCase().includes(filter.toLowerCase())).map(l => l.toString());
-    },
-    placeholder: 'Select log levels',
-  },
-  {
-    key: 'tags',
-    operators: [Operator.Equals, Operator.In, Operator.NotIn],
-    valueType: ValueType.String,
-    placeholder: 'Comma separated tags',
-  },
-  {
-    key: 'platform',
-    operators: [Operator.Equals, Operator.Similar],
-    valueType: ValueType.String,
-    placeholder: 'Platform name',
-  },
-  {
-    key: 'bundleId',
-    operators: [Operator.Equals, Operator.Similar],
-    valueType: ValueType.String,
-    placeholder: 'Bundle ID',
-  },
-  {
-    key: 'deviceId',
-    operators: [Operator.Equals, Operator.Similar],
-    valueType: ValueType.String,
-    placeholder: 'Device ID',
-  },
-  {
-    key: 'deviceName',
-    operators: [Operator.Equals, Operator.Similar],
-    valueType: ValueType.String,
-    placeholder: 'Device Name',
-  },
-  {
-    key: 'osName',
-    operators: [Operator.Equals, Operator.Similar],
-    valueType: ValueType.String,
-    placeholder: 'Operating System Name',
-  },
-];
 
 const appsData = ref<ApplicationShortStats[]>([]);
 const logs = ref<EventMessage[]>([]);
@@ -170,6 +99,19 @@ async function selectApp(app: ApplicationShortStats) {
 function applyFilters() {
   fetchLogs(true);
 }
+
+function deviceSelected(device: ConnectedDevice) {
+  criteria.value = [
+    { field: SearchFieldKey.DeviceId, operator: Operator.Equals, value: device.deviceId },
+  ];
+  applyFilters();
+}
+
+const addSearchCriterion = (criterion: SearchCriterion) => {
+  criteria.value = [...criteria.value, criterion];
+  applyFilters();
+};
+
 
 async function fetchLogs(clear: boolean = false) {
   isLoading = true;
@@ -279,7 +221,4 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   margin: 1.5rem;
   margin-bottom: 0;
 }
-
-/* Online devices panel styles */
-/* Online devices now handled by OnlineDevices.vue */
 </style>

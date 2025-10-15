@@ -23,6 +23,7 @@ export interface ApplicationStatsResponse {
 }
 
 export interface ConnectedDevice {
+  uuid: string;
   deviceId: string;
   deviceName: string;
   platform: string;
@@ -74,7 +75,12 @@ async function getAppStats(applicationId: string) {
   return result;
 }
 
-async function getConnectedDevices(applicationId: string) {
-  const result = await request<ConnectedDevicesResponse>({ authorized: true, method: 'get', url: '/applications/connected-devices', params: { applicationId } });
+async function getConnectedDevices(applicationId: string, search?: string) {
+  const result = await request<ConnectedDevicesResponse>({ 
+    authorized: true, 
+    method: 'get', 
+    url: '/applications/connected-devices', 
+    params: { applicationId, search }
+  });
   return result;
 }

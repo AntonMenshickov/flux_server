@@ -1,14 +1,22 @@
 <template>
   <div class="online-devices-panel">
-    <button class="online-devices-toggle" @click="open = !open">
-      Online devices ({{ devices.length }})
-      <span :class="['arrow', open ? 'open' : '']">▼</span>
-    </button>
+    <div class="toggle-container" ref="dropdownRef">
+      <div :class="['toggle-wrapper', { open }]" @click="!open && (open = true)">
+        <transition name="fade" mode="out-in">
+          <BaseInput v-if="open" ref="searchInputRef" v-model="search" class="online-devices-input"
+            placeholder="Search devices..." @input="debounceLoad" />
+          <div v-else class="devices-count">
+            Online devices ({{ devices.length }})
+            <span class="arrow">▼</span>
+          </div>
+        </transition>
+      </div>
+    </div>
     <transition name="fade">
       <ul v-if="open && devices.length" class="devices-list">
-        <li v-for="(d, idx) in devices" :key="idx" class="device-item">
+        <li v-for="(d, idx) in devices" :key="idx" class="device-item" @click="() => select(d)">
           <div class="device-name">{{ d.deviceName }} {{ d.deviceId }}</div>
-          <div class="device-meta">{{ d.platform }} • {{ d.osName }} • {{ d.bundleId }}</div>
+          <div class="device-meta">{{ d.platform }} • {{ d.osName }} • {{ d.bundleId }} • {{ d.uuid }}</div>
         </li>
         <li v-if="!devices.length" class="device-item device-empty">No devices online</li>
       </ul>
@@ -17,26 +25,67 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, watchEffect, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import { applications, type ConnectedDevice } from '@/api/applications';
+import BaseInput from '../base/BaseInput.vue';
 
 const props = defineProps<{ applicationId: string | null }>();
 
 const devices = ref<ConnectedDevice[]>([]);
 const open = ref(false);
+const search = ref('');
+const searchInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
+const dropdownRef = ref<HTMLElement | null>(null);
+let loadTimeout: ReturnType<typeof setTimeout>;
 
+const emit = defineEmits<{
+  (e: 'update:select', value: ConnectedDevice): void
+}>()
+
+onMounted(() => {
+  load(props.applicationId);
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
+
+
+watchEffect(() => {
+  if (open.value && searchInputRef.value?.$el) {
+    nextTick(() => {
+      const input = searchInputRef.value?.$el;
+      if (input) input.focus();
+    });
+  }
+});
+
+function select(device: ConnectedDevice) {
+  emit('update:select', device);
+} 
 
 async function load(id: string | null) {
   if (!id) { devices.value = []; return; }
-  const resp = await applications.getConnectedDevices(id);
+  const resp = await applications.getConnectedDevices(id, search.value);
   if (resp.isRight()) {
-    devices.value = resp.value.result.devices ;
+    devices.value = resp.value.result.devices;
   } else {
     devices.value = [];
   }
 }
 
-onMounted(() => load(props.applicationId));
+function debounceLoad() {
+  clearTimeout(loadTimeout);
+  loadTimeout = setTimeout(() => load(props.applicationId), 300);
+}
+
+function handleClickOutside(event: MouseEvent) {
+  if (!open.value) return;
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    open.value = false;
+  }
+}
 watch(() => props.applicationId, (v) => load(v));
 </script>
 
@@ -48,19 +97,55 @@ watch(() => props.applicationId, (v) => load(v));
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 220px;
+  min-width: 200px;
+  box-sizing: border-box;
 }
 
-.online-devices-toggle {
+.toggle-container {
+  width: 100%;
+}
+
+.toggle-wrapper {
   background: #f1f5f9;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-wrapper.open {
+  background: white;
+}
+
+.devices-count {
+  box-sizing: border-box;
+  min-height: 40px;
   padding: 0.4rem 1rem;
   font-weight: 600;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  user-select: none;
+}
+
+.online-devices-input {
+  width: 100%;
+  background: transparent;
+  border: none !important;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.online-devices-input :deep(input) {
+  border: none !important;
+  background: transparent;
+  padding: 0;
+  font-weight: 500;
+}
+
+.toggle-wrapper:hover {
+  border-color: #94a3b8;
 }
 
 .arrow {
@@ -97,7 +182,8 @@ watch(() => props.applicationId, (v) => load(v));
 .device-item {
   padding: 0.25rem;
   border-radius: 4px;
-  background: #f8fafc;
+  background: var(--color-secondary);
+  cursor: pointer;
 }
 
 .device-empty {

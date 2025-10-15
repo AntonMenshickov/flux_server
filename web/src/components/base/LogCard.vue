@@ -27,13 +27,13 @@
             </div>
             <div class="extra-info-body">
               <div class="detail"><span class="detail-label">Device name:</span>
-                <BaseCopyText>{{ log.deviceName }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceName, log.deviceName)">{{ log.deviceName }}</BaseCopyText>
               </div>
               <div class="detail"><span class="detail-label">Device ID:</span>
-                <BaseCopyText>{{ log.deviceId }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceId, log.deviceId)">{{ log.deviceId }}</BaseCopyText>
               </div>
               <div class="detail"><span class="detail-label">OS name:</span>
-                <BaseCopyText>{{ log.osName }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.OsName, log.osName)">{{ log.osName }}</BaseCopyText>
               </div>
 
             </div>
@@ -45,10 +45,10 @@
             </div>
             <div class="extra-info-body">
               <div class="detail"><span class="detail-label">Bundle:</span>
-                <BaseCopyText>{{ log.bundleId }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.BundleId, log.bundleId)">{{ log.bundleId }}</BaseCopyText>
               </div>
               <div class="detail"><span class="detail-label">Platform:</span>
-                <BaseCopyText>{{ log.platform }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.Platform, log.platform)">{{ log.platform }}</BaseCopyText>
               </div>
             </div>
           </section>
@@ -60,7 +60,7 @@
             <div class="extra-info-body">
               <div v-for="[key, value] in log.meta" :key="key" class="detail"><span class="detail-label">{{ key
                   }}</span>
-                <BaseCopyText>{{ value }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.Meta, { key, value })">{{ value }}</BaseCopyText>
               </div>
             </div>
           </section>
@@ -71,7 +71,7 @@
             <TagIcon />Tags
           </div>
           <div v-if="log.tags && log.tags.length > 0" class="tags">
-            <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" />
+            <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" @click="emitSearch(SearchFieldKey.Tags, tag)" />
           </div>
         </section>
 
@@ -89,6 +89,11 @@ import BaseCopyText from '@/components/base/BaseCopyText.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon } from '@heroicons/vue/24/outline';
 import { ref } from 'vue';
+import { SearchFieldKey, SearchCriterion, Operator } from '@/components/base/smartSearch/types';
+
+const emit = defineEmits<{
+  (e: 'search', criterion: SearchCriterion): void
+}>();
 
 defineProps<{
   log: EventMessage
@@ -98,6 +103,14 @@ const expanded = ref<boolean>(false);
 
 function toggle() {
   expanded.value = !expanded.value;
+}
+
+function emitSearch(field: SearchFieldKey, value: string | { key: string; value: string }) {
+  if (field === SearchFieldKey.Meta && typeof value === 'object') {
+    emit('search', new SearchCriterion(field, Operator.Equals, [{ [value.key]: value.value }]));
+  } else if (typeof value === 'string') {
+    emit('search', new SearchCriterion(field, Operator.Equals, value));
+  }
 }
 
 function formatDate(ts: number) {

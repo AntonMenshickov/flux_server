@@ -1,5 +1,5 @@
 <template>
-  <BaseCopyText :decorated="false">
+  <BaseCopyText :decorated="false" @click="$emit('click', label)">
     <span class="tag-badge">{{ label }}</span>
   </BaseCopyText>
 </template>
@@ -9,6 +9,10 @@ import BaseCopyText from './BaseCopyText.vue';
 
 defineProps<{
   label: string
+}>();
+
+defineEmits<{
+  (e: 'click', value: string): void
 }>();
 </script>
 

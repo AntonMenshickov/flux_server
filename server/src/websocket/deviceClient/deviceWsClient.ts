@@ -11,6 +11,7 @@ import { WsDeviceMessage } from './model/wsDeviceMessage';
 import { addEventMessage } from './addEventMessage';
 import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';
+import { v4 as uuidv4 } from 'uuid';
 
 export const wsConnectValidateSchema = z.object({
   headers: z.object({
@@ -29,6 +30,7 @@ const wsMessageValidateSchema = z.object({
 });
 
 export class DeviceClientInfo {
+  readonly uuid: string;
   readonly applicationId: string;
   readonly platform: string;
   readonly bundleId: string;
@@ -36,7 +38,8 @@ export class DeviceClientInfo {
   readonly deviceName: string;
   readonly osName: string;
 
-  constructor(applicationId: string, platform: string, bundleId: string, deviceId: string, deviceName: string, osName: string) {
+  constructor(uuid: string, applicationId: string, platform: string, bundleId: string, deviceId: string, deviceName: string, osName: string) {
+    this.uuid = uuid;
     this.applicationId = applicationId;
     this.platform = platform;
     this.bundleId = bundleId;
@@ -83,6 +86,7 @@ export class DeviceWsClient {
         return;
       }
       this.clientInfo = new DeviceClientInfo(
+        uuidv4(),
         applicationId,
         platform,
         bundleid,

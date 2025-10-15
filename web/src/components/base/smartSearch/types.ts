@@ -7,8 +7,22 @@ export enum ValueType {
   MultiSelect = 'multiselect',
 }
 
+export enum SearchFieldKey {
+  DateFrom = 'dateFrom',
+  DateTo = 'dateTo',
+  Meta = 'meta',
+  Message = 'message',
+  LogLevel = 'logLevel',
+  Tags = 'tags',
+  Platform = 'platform',
+  BundleId = 'bundleId',
+  DeviceId = 'deviceId',
+  DeviceName = 'deviceName',
+  OsName = 'osName',
+}
+
 export interface FieldOption {
-  key: string;
+  key: SearchFieldKey;
   operators: Operator[];
   valueType: ValueType;
   fetchValues?: (filter: string) => Promise<string[]>;
@@ -27,7 +41,7 @@ export enum Operator {
 
 export class SearchCriterion {
   constructor(
-    public field: string | null = null,
+    public field: SearchFieldKey | null = null,
     public operator: Operator | null = null,
     public value: string | number | Date | Record<string, string>[] | string[] | null = null
   ) { }

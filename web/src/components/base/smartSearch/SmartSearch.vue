@@ -43,6 +43,7 @@
   </div>
 </template>
 
+
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Operator, SearchCriterion, ValueType, type FieldOption } from './types';
@@ -159,7 +160,7 @@ const moveSelection = (delta: number) => {
 const showFieldSuggestions = (filter = '') => {
   const f = filter.toLowerCase();
   suggestions.value = props.options
-    .filter(opt => opt.key.toLowerCase().includes(f) || String(opt.key).toLowerCase().includes(f))
+    .filter(opt => String(opt.key).toLowerCase().includes(f))
     .map(opt => opt.key);
   selectedIndex.value = 0;
   suggestionsVisible.value = true;
@@ -250,7 +251,7 @@ const parseAndApplyExpression = () => {
   const input = [...currentTags, inputText.value.trim()].join('');
   if (!input) return false;
   const fieldOption = props.options.find(opt =>
-    input.toLowerCase().startsWith(opt.key.toLowerCase())
+    input.toLowerCase().startsWith(String(opt.key).toLowerCase())
   );
   if (!fieldOption) return false;
 
