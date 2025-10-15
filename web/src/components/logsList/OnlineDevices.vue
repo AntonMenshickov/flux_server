@@ -1,19 +1,19 @@
 <template>
   <div class="online-devices-panel">
     <div class="toggle-container" ref="dropdownRef">
-      <div :class="['toggle-wrapper', { open }]" @click="!open && (open = true)">
+      <div :class="['toggle-wrapper', { open }]" @click="openDevicesList">
         <transition name="fade" mode="out-in">
           <BaseInput v-if="open" ref="searchInputRef" v-model="search" class="online-devices-input"
-            placeholder="Search devices..." @input="debounceLoad" />
+            placeholder="Search online devices..." @input="debounceLoad" />
           <div v-else class="devices-count">
-            Online devices ({{ devices.length }})
+            Online devices ({{ deviceCount }})
             <span class="arrow">▼</span>
           </div>
         </transition>
       </div>
     </div>
     <transition name="fade">
-      <ul v-if="open && devices.length" class="devices-list">
+      <ul v-if="open" class="devices-list">
         <li v-for="(d, idx) in devices" :key="idx" class="device-item" @click="() => select(d)">
           <div class="device-name">{{ d.deviceName }} {{ d.deviceId }}</div>
           <div class="device-meta">{{ d.platform }} • {{ d.osName }} • {{ d.bundleId }} • {{ d.uuid }}</div>
@@ -32,11 +32,13 @@ import BaseInput from '../base/BaseInput.vue';
 const props = defineProps<{ applicationId: string | null }>();
 
 const devices = ref<ConnectedDevice[]>([]);
+const deviceCount = ref(0);
 const open = ref(false);
-const search = ref('');
+const search = ref<string>('');
 const searchInputRef = ref<InstanceType<typeof BaseInput> | null>(null);
 const dropdownRef = ref<HTMLElement | null>(null);
-let loadTimeout: ReturnType<typeof setTimeout>;
+let loadTimeout: number;
+let refreshInterval: number;
 
 const emit = defineEmits<{
   (e: 'update:select', value: ConnectedDevice): void
@@ -44,10 +46,15 @@ const emit = defineEmits<{
 
 onMounted(() => {
   load(props.applicationId);
+  loadDeviceCount(props.applicationId);
+  refreshInterval = setInterval(() => {
+    if (props.applicationId) loadDeviceCount(props.applicationId);
+  }, 30000);
   document.addEventListener('click', handleClickOutside);
 });
 
 onBeforeUnmount(() => {
+  clearInterval(refreshInterval);
   document.removeEventListener('click', handleClickOutside);
 });
 
@@ -65,13 +72,30 @@ function select(device: ConnectedDevice) {
   emit('update:select', device);
 } 
 
+function openDevicesList() {
+  open.value = true;
+  search.value = '';
+  loadDeviceCount(props.applicationId);
+  load(props.applicationId);
+}
+
 async function load(id: string | null) {
   if (!id) { devices.value = []; return; }
-  const resp = await applications.getConnectedDevices(id, search.value);
+  const resp = await applications.searchOnlineDevices(id, search.value);
   if (resp.isRight()) {
     devices.value = resp.value.result.devices;
   } else {
     devices.value = [];
+  }
+}
+
+async function loadDeviceCount(id: string | null) {
+  if (!id) { deviceCount.value = 0; return; }
+  const resp = await applications.countOnlineDevices(id);
+  if (resp.isRight()) {
+    deviceCount.value = resp.value.result.count;
+  } else {
+    deviceCount.value = 0;
   }
 }
 
@@ -97,7 +121,7 @@ watch(() => props.applicationId, (v) => load(v));
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 200px;
+  min-width: 250px;
   box-sizing: border-box;
 }
 
@@ -124,6 +148,7 @@ watch(() => props.applicationId, (v) => load(v));
   font-weight: 600;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
   user-select: none;
 }
@@ -158,8 +183,6 @@ watch(() => props.applicationId, (v) => load(v));
 }
 
 .devices-list {
-  max-height: 10px;
-  overflow-y: auto;
   position: absolute;
   left: 0;
   right: 0;
@@ -167,7 +190,7 @@ watch(() => props.applicationId, (v) => load(v));
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 180px;
+  max-height: 270px;
   overflow: auto;
   display: flex;
   flex-direction: column;

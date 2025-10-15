@@ -5,15 +5,15 @@ import { DeviceWsClientService } from '../../services/deviceWsClientsService';
 import { objectIdSchema } from '../../utils/zodUtil';
 import { DeviceClientInfo } from '../../websocket/deviceClient/deviceWsClient';
 
-export const getConnectedDevicesValidateSchema = z.object({
+export const searchOnlineDevicesValidateSchema = z.object({
   query: z.object({
     applicationId: objectIdSchema.nonoptional(),
     search: z.string().trim().optional(),
   })
 });
 
-export async function getConnectedDevices(req: Request, res: Response) {
-  const { applicationId, search } = getConnectedDevicesValidateSchema.parse(req).query;
+export async function searchOnlineDevices(req: Request, res: Response) {
+  const { applicationId, search } = searchOnlineDevicesValidateSchema.parse(req).query;
   const service = container.resolve(DeviceWsClientService);
 
   const clients: DeviceClientInfo[] = service.clients

@@ -35,6 +35,10 @@ export interface ConnectedDevicesResponse {
   devices: ConnectedDevice[];
 }
 
+export interface ConnectedDevicesCountResponse {
+  count: number;
+}
+
 export const applications = {
   addApplication,
   updateApplication,
@@ -42,7 +46,8 @@ export const applications = {
   search,
   searchApplicationsStats,
   getAppStats,
-  getConnectedDevices,
+  searchOnlineDevices,
+  countOnlineDevices,
 }
 
 async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
@@ -66,7 +71,7 @@ async function search(search: string | null, limit: number, offset: number) {
 }
 
 async function searchApplicationsStats(search: string | null, limit: number, offset: number) {
-  const result = await request<ApplicationsWithStatsResponse>({ authorized: true, 'method': 'get', url: '/applications/searchStats', params: { search, limit, offset } },);
+  const result = await request<ApplicationsWithStatsResponse>({ authorized: true, 'method': 'get', url: '/applications/search-stats', params: { search, limit, offset } },);
   return result;
 }
 
@@ -75,11 +80,16 @@ async function getAppStats(applicationId: string) {
   return result;
 }
 
-async function getConnectedDevices(applicationId: string, search?: string) {
+async function countOnlineDevices(applicationId: string) {
+  const result = await request<ConnectedDevicesCountResponse>({ authorized: true, 'method': 'get', url: '/applications/count-online-devices', params: { applicationId } },);
+  return result;
+}
+
+async function searchOnlineDevices(applicationId: string, search?: string) {
   const result = await request<ConnectedDevicesResponse>({ 
     authorized: true, 
     method: 'get', 
-    url: '/applications/connected-devices', 
+    url: '/applications/search-online-devices', 
     params: { applicationId, search }
   });
   return result;
