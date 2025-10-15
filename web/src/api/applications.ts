@@ -22,6 +22,18 @@ export interface ApplicationStatsResponse {
   stats: IApplicationStats[];
 }
 
+export interface ConnectedDevice {
+  deviceId: string;
+  deviceName: string;
+  platform: string;
+  bundleId: string;
+  osName: string;
+}
+
+export interface ConnectedDevicesResponse {
+  devices: ConnectedDevice[];
+}
+
 export const applications = {
   addApplication,
   updateApplication,
@@ -29,6 +41,7 @@ export const applications = {
   search,
   searchApplicationsStats,
   getAppStats,
+  getConnectedDevices,
 }
 
 async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
@@ -58,5 +71,10 @@ async function searchApplicationsStats(search: string | null, limit: number, off
 
 async function getAppStats(applicationId: string) {
   const result = await request<ApplicationStatsResponse>({ authorized: true, 'method': 'get', url: '/applications/stats', params: { applicationId } },);
+  return result;
+}
+
+async function getConnectedDevices(applicationId: string) {
+  const result = await request<ConnectedDevicesResponse>({ authorized: true, method: 'get', url: '/applications/connected-devices', params: { applicationId } });
   return result;
 }

@@ -1,12 +1,11 @@
-import { WebSocket, MessageEvent, ErrorEvent, CloseEvent } from 'ws';
-import { WsClient } from '../ws';
 import { EventMessageDto } from '../../model/eventMessageDto';
 import { eventMessageDtoSchema } from '../../utils/zodUtil';
 import { eventMessageFromDto } from '../../model/eventMessageView';
 import { ReliableBatchQueue } from '../../eventsQueue/reliableBatchQueue';
 import { container } from 'tsyringe';
+import { DeviceClientInfo } from './deviceWsClient';
 
-export async function addEventMessage(ws: WebSocket, client: WsClient, payload: any) {
+export async function addEventMessage(client: DeviceClientInfo, payload: object) {
   const logMessage: EventMessageDto = eventMessageDtoSchema.parse(payload);
 
   const eventData = eventMessageFromDto(

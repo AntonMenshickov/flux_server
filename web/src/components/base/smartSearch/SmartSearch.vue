@@ -445,7 +445,7 @@ input {
   padding: 0.3rem;
   border-radius: 8px;
   margin: 0;
-  border: 1px solid var(--color-border, #d0d0d0);
+  border: 1px solid var(--color-border);
   background-color: #fff;
   box-sizing: border-box;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -460,7 +460,7 @@ input {
 }
 
 .suggestions-list li.selected {
-  background-color: var(--color-primary, #2b7cff);
+  background-color: var(--color-primary);
   color: white;
 }
 

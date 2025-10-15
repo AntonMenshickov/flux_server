@@ -3,6 +3,7 @@
     <div v-if="application != null" class="logs-page-header">
       <ArrowLeftIcon @click="backToApps" class="go-to-apps" />
       <div class="app-name">{{ application.name }}</div>
+      <OnlineDevices :applicationId="application?.id" />
     </div>
     <div v-if="application == null" class="apps">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
@@ -33,6 +34,7 @@ import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 
@@ -148,7 +150,6 @@ async function onAppIdChanged(appId: string) {
   applyFilters();
 }
 
-
 function handleScroll(event: Event) {
   if (!application.value) return;
   const target = event.target as HTMLDivElement;
@@ -233,6 +234,7 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
 .logs-page-header {
   display: flex;
   flex-direction: row;
+  align-items: center;
   margin: 1.5rem;
   margin-bottom: 0;
   margin-top: 1rem;
@@ -277,4 +279,7 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   margin: 1.5rem;
   margin-bottom: 0;
 }
+
+/* Online devices panel styles */
+/* Online devices now handled by OnlineDevices.vue */
 </style>

@@ -263,7 +263,11 @@ const renderCharts = () => {
 onMounted(() => {
   renderCharts();
 });
-watch(() => props.application, renderCharts, { deep: true });
+
+watch(() => props.application, () => {
+  renderCharts();
+}, { deep: true });
+
 </script>
 
 <style scoped>
@@ -388,8 +392,19 @@ watch(() => props.application, renderCharts, { deep: true });
   display: inline-block;
 }
 
-.level-info { background-color: var(--log-info); }
-.level-warn { background-color: var(--log-warn); }
-.level-error { background-color: var(--log-error); }
-.level-debug { background-color: var(--log-debug); }
+.level-info {
+  background-color: var(--log-info);
+}
+
+.level-warn {
+  background-color: var(--log-warn);
+}
+
+.level-error {
+  background-color: var(--log-error);
+}
+
+.level-debug {
+  background-color: var(--log-debug);
+}
 </style>
