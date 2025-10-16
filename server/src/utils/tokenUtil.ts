@@ -31,7 +31,7 @@ export const tokenUtil = {
   decode: (token: string): JwtPayload & { userId: string } => {
     return jwt.decode(token) as JwtPayload & { userId: string };
   },
-  verify: (token: string): JwtPayload & { userId?: string, applicationId?: string } | TokenExpiredError | JsonWebTokenError => {
+  verify: (token: string): JwtPayload & { userId?: string, applicationId?: string } => {
     const secret: string = process.env.JWT_SECRET!;
     return jwt.verify(token, secret) as JwtPayload & { userId: string };
   }

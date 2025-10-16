@@ -4,6 +4,7 @@ import { responseMessages } from '../strings/responseMessages';
 import z from 'zod';
 import { WsClientType } from './model/wsClientType';
 import { DeviceWsClient } from './deviceClient/deviceWsClient';
+import { WebWsClient } from './webClient/webWsClient';
 
 
 const wsConnectValidateSchema = z.object({
@@ -23,6 +24,9 @@ export async function websocket(ws: WebSocket, req: Request): Promise<void> {
     switch (client) {
       case WsClientType.device:
         new DeviceWsClient(ws, req);
+        return;
+      case WsClientType.web:
+        new WebWsClient(ws, req);
         return;
     }
   } catch (err) {
