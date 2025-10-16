@@ -20,5 +20,6 @@ export const responseMessages = {
   WS_CLIENT_NOT_FOUND: 'WebSocket client not found',
   WS_UNKNOWN_MESSAGE_TYPE: 'Unknown WebSocket message type',
   DEVICE_INFO_VALIDATION_FAILED: 'Device info validation failed',
+  USER_INFO_VALIDATION_FAILED: 'User info validation failed',
   INTERNAL_SERVER_ERROR: 'Internal server error',
 }

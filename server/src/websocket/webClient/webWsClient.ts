@@ -8,12 +8,12 @@ import { container } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import { WebWsClientService } from '../../services/webWsClientsService';
 import { WsClientMessage, WsClientMessageType } from '../deviceClient/model/wsClientMessage';
+import { WsClientMessage as WsClientMessageTypeDef } from '../deviceClient/model/wsClientMessage';
 import { IUser, User } from '../../model/mongo/user';
 import { Document } from 'mongoose';
-import { TokenExpiredError } from 'jsonwebtoken';
 
 const wsConnectValidateSchema = z.object({
-  headers: z.object({
+  query: z.object({
     token: z.string().trim().nonempty(),
   })
 });
@@ -48,12 +48,13 @@ export class WebWsClient {
 
   private async initializeClient() {
     const parseResult = wsConnectValidateSchema.safeParse(this.req);
+
     if (!parseResult.success) {
-      this.ws.close(4001, responseMessages.DEVICE_INFO_VALIDATION_FAILED);
+      this.ws.close(4001, responseMessages.USER_INFO_VALIDATION_FAILED);
       return;
     }
     try {
-      const { token } = parseResult.data.headers;
+      const { token } = parseResult.data.query;
       const payload = tokenUtil.verify(token);
       const userId = payload.userId;
       if (!userId) {
@@ -109,6 +110,15 @@ export class WebWsClient {
 
   private registerClient() {
     this.api.connect();
+  }
+
+  // Send a server-originated message to the web client
+  public sendServerMessage(message: WsClientMessageTypeDef) {
+    try {
+      this.ws.send(JSON.stringify(message));
+    } catch (err) {
+      console.error('Failed to send server message to web ws client', err);
+    }
   }
 
   private deleteClient() {

@@ -39,6 +39,12 @@ const routes: Array<RouteRecordRaw> = [
         name: 'logs',
         component: LogsList
       },
+      {
+        path: 'logs/online/:uuid',
+        name: 'online-log-stream',
+        component: () => import('@/views/OnlineLogStream.vue'),
+        props: true
+      },
     ]
   }
 ]

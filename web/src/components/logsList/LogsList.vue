@@ -14,27 +14,27 @@
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
         class="smart-search-field" />
+      <!-- Live stream UI moved to OnlineLogStream.vue -->
     </div>
     <div v-if="application != null" class="logs-list">
-      <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" @search="addSearchCriterion" />
+      <LogCard v-for="(log, index) in logs" :key="index" :log="log" @search="addSearchCriterion" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { applications, type ApplicationStatsResponse } from '@/api/applications';
+import { applications, type ApplicationStatsResponse, type ConnectedDevice } from '@/api/applications';
 import { events } from '@/api/events';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import LogCard from '@/components/base/LogCard.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
-import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/smartSearch/types';
+import { SearchCriterion } from '@/components/base/smartSearch/types';
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
 import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
-import type { ConnectedDevice } from '@/api/applications';
 import { fieldOptions } from '@/components/logsList/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
@@ -50,8 +50,6 @@ let isLoading = false;
 let hasMore = true;
 
 const route = useRoute();
-
-const filteredLogs = computed(() => logs.value);
 
 onMounted(async () => {
   const appId = route.params.applicationId?.toString();
@@ -73,6 +71,7 @@ watch<string>(
     }
   }
 )
+
 
 async function onAppIdChanged(appId: string) {
   application.value = await fetchAppStats(appId);
@@ -101,10 +100,7 @@ function applyFilters() {
 }
 
 function deviceSelected(device: ConnectedDevice) {
-  criteria.value = [
-    { field: SearchFieldKey.DeviceId, operator: Operator.Equals, value: device.deviceId },
-  ];
-  applyFilters();
+  router.push({ name: 'online-log-stream', params: { uuid: device.uuid } });
 }
 
 const addSearchCriterion = (criterion: SearchCriterion) => {
@@ -191,7 +187,6 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
 .app-name {
   margin-left: 1rem;
   font-size: 2rem;
-
 }
 
 .logs-list {

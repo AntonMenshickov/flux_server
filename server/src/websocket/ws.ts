@@ -7,20 +7,15 @@ import { DeviceWsClient } from './deviceClient/deviceWsClient';
 import { WebWsClient } from './webClient/webWsClient';
 
 
-const wsConnectValidateSchema = z.object({
-  headers: z.object({
-    client: z.enum(WsClientType).nonoptional()
-  })
-});
-
 export async function websocket(ws: WebSocket, req: Request): Promise<void> {
-  const parseResult = wsConnectValidateSchema.safeParse(req);
-  if (!parseResult.success) {
+  // Accept client type from headers.client or query.client (browser cannot set custom headers on WS handshake)
+  const clientRaw = (req.headers as any).client ?? (req as any).query?.client;
+  if (!clientRaw || (clientRaw !== WsClientType.device && clientRaw !== WsClientType.web)) {
     ws.close(4001, responseMessages.DEVICE_INFO_VALIDATION_FAILED);
     return;
   }
   try {
-    const { client } = parseResult.data.headers;
+    const client = clientRaw as WsClientType;
     switch (client) {
       case WsClientType.device:
         new DeviceWsClient(ws, req);

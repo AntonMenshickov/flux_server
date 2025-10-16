@@ -6,6 +6,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { Application, IApplication } from '../../model/mongo/application';
 import { Document } from 'mongoose';
 import { WebSocket, MessageEvent, ErrorEvent, CloseEvent } from 'ws';
+import { WsServerMessage } from './model/wsServerMessage';
 import { addEventMessage } from './addEventMessage';
 import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';
@@ -69,7 +70,7 @@ export class DeviceWsClient {
     }
     try {
       const { platform, bundleid, deviceid, devicename, osname, token } = parseResult.data.headers;
-      const payload = tokenUtil.verify(token) as JwtPayload;
+      const payload = tokenUtil.verify(token);
       const applicationId = payload.applicationId;
       if (!applicationId) {
         this.ws.close(4001, responseMessages.INVALID_TOKEN);
@@ -142,5 +143,14 @@ export class DeviceWsClient {
 
   private deleteClient() {
     this.api.disconnect();
+  }
+
+  // Send a server-originated message to the device client
+  public sendServerMessage(message: WsServerMessage) {
+    try {
+      this.ws.send(JSON.stringify(message));
+    } catch (err) {
+      console.error('Failed to send server message to device ws client', err);
+    }
   }
 }
