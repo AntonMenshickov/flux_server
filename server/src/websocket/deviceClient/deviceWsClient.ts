@@ -1,17 +1,16 @@
 import z from 'zod';
 import { Request } from 'express';
-import { WsDeviceMessageType } from './model/wsDeviceMessageType';
 import { responseMessages } from '../../strings/responseMessages';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { JwtPayload } from 'jsonwebtoken';
 import { Application, IApplication } from '../../model/mongo/application';
 import { Document } from 'mongoose';
 import { WebSocket, MessageEvent, ErrorEvent, CloseEvent } from 'ws';
-import { WsDeviceMessage } from './model/wsDeviceMessage';
 import { addEventMessage } from './addEventMessage';
 import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';
 import { v4 as uuidv4 } from 'uuid';
+import { WsClientMessage, WsClientMessageType } from './model/wsClientMessage';
 
 export const wsConnectValidateSchema = z.object({
   headers: z.object({
@@ -25,8 +24,8 @@ export const wsConnectValidateSchema = z.object({
 });
 
 const wsMessageValidateSchema = z.object({
-  type: z.enum(WsDeviceMessageType),
-  payload: z.object(),
+  type: z.enum(WsClientMessageType),
+  payload: z.unknown(),
 });
 
 export class DeviceClientInfo {
@@ -116,9 +115,9 @@ export class DeviceWsClient {
       this.ws.close(4004, parseResult.error.message);
       return;
     }
-    const message: WsDeviceMessage = parseResult.data;
+    const message: WsClientMessage = parseResult.data;
     switch (message.type) {
-      case WsDeviceMessageType.eventMessage:
+      case WsClientMessageType.eventMessage:
         addEventMessage(this.clientInfo, message.payload);
         break;
       default:
