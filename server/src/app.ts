@@ -25,11 +25,6 @@ export async function startServer() {
   const postgres = container.resolve(Postgres);
   await postgres.ensureInitialized();
 
-  await postgres.ensureDatabase();
-  // await postgres.clearTable();
-  // await postgres.dropTable();
-  await postgres.ensureTable();
-
   await container.resolve(ReliableBatchQueue).init();
 
   const app = express();

@@ -2,6 +2,7 @@ import { schedule } from 'node-cron';
 import { DataSource, LessThan } from 'typeorm';
 import { EventMessage } from '../model/postgres/eventMessageDbView';
 import { singleton } from 'tsyringe';
+import path from 'path';
 
 @singleton()
 export class Postgres {
@@ -44,7 +45,9 @@ export class Postgres {
           password: this.password,
           database: this.database,
           entities: [EventMessage],
+          migrations: [path.join(__dirname, '../migrations/*{.ts,.js}')],
           synchronize: false,
+          migrationsRun: true,
           logging: false,
           extra: {
             max: 20,// max pool size
@@ -61,84 +64,12 @@ export class Postgres {
     return Promise.resolve();
   }
 
-  public async databaseExists(): Promise<boolean> {
-    const result = await this._dataSource
-      .createQueryRunner()
-      .query(
-        `SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = $1) as exists`,
-        [this.database],
-      );
-    return result[0]?.exists ?? false;
-  }
-
-  public async ensureDatabase(): Promise<void> {
-    const exists = await this.databaseExists();
-    if (!exists) {
-      await this._dataSource.query(`CREATE DATABASE ${this.database}`);
-      console.log(`Postgres database ${this.database} created`);
-    } else {
-      console.log(`Postgres database ${this.database} exists`);
-    }
-  }
-
-  public async tableExists(): Promise<boolean> {
-    const result = await this._dataSource
-      .createQueryRunner()
-      .query(
-        `SELECT EXISTS (
-         SELECT 1 
-         FROM information_schema.tables 
-         WHERE table_schema = 'public' AND table_name = $1
-       ) as exists`,
-        [this.table],
-      );
-
-    return result[0]?.exists ?? false;
-  }
-
-  public async ensureTable(): Promise<void> {
-    const exists = await this.tableExists();
-    if (!exists) {
-      await this._dataSource.query(`
-        CREATE TABLE IF NOT EXISTS ${this.table} (
-            id UUID NOT NULL,
-            timestamp TIMESTAMPTZ NOT NULL,
-            "logLevel" TEXT NOT NULL CHECK ("logLevel" IN ('info','warn','error','debug')),
-            "applicationId" TEXT NOT NULL,
-            platform TEXT NOT NULL,
-            "bundleId" TEXT NOT NULL,
-            "deviceId" TEXT NOT NULL,
-            "deviceName" TEXT NOT NULL,
-            "osName" TEXT NOT NULL,
-            message TEXT NOT NULL,
-            tags TEXT[],
-            meta JSONB,
-            "stackTrace" TEXT,
-            PRIMARY KEY (id, "applicationId")
-        ) PARTITION BY LIST ("applicationId");
-
-        -- Индексы
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_timestamp ON ${this.table}(timestamp DESC);
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_app ON ${this.table}("applicationId");
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_loglevel_ts ON ${this.table}("logLevel", timestamp DESC);
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_meta ON ${this.table} USING gin(meta);
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_tags ON ${this.table} USING gin(tags);
-        CREATE INDEX IF NOT EXISTS idx_${this.table}_deviceId ON ${this.table}("deviceId");
-      `);
-      console.log(`Postgres table ${this.table} created`);
-    } else {
-      console.log(`Postgres table ${this.table} exists`);
-    }
-  }
-
-  public async clearTable(): Promise<void> {
-    await this._dataSource.query(`TRUNCATE TABLE ${this.table};`);
-  }
-
-  public async dropTable(): Promise<void> {
-    await this._dataSource.query(`DROP TABLE IF EXISTS ${this.table};`);
-  }
-
+  
+  
+  
+  
+  
+  
   private async deleteOldRows() {
     console.info(`Postgres deleting rows older than ${this.logsMaxAgeInDays} days`);
     const deleteFrom = new Date();

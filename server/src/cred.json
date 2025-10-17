@@ -1,7 +1,0 @@
-{
-    "success": true,
-    "result": {
-        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJjNzQ3MTRmYzI0NTRhYWVjZmUxMzYiLCJpYXQiOjE3NTcxODEwNDEsImV4cCI6MTc1NzI2NzQ0MX0.6JDY754pc9UzivJ_hvT_4v2Z-C5rRGMxb9wBv_ZfCf4",
-        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJjNzQ3MTRmYzI0NTRhYWVjZmUxMzYiLCJpYXQiOjE3NTcxODEwNDEsImV4cCI6MTc1OTc3MzA0MX0.ezlaA_DlKujHgJn4aSpskz_T2rfQG9RWxoTid4yQi8k"
-    }
-}
