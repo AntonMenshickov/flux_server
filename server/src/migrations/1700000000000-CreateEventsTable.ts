@@ -1,8 +1,10 @@
+import { container } from 'tsyringe';
 import { MigrationInterface, QueryRunner } from "typeorm";
+import { ConfigService } from '../services/configService';
 
 export class CreateEventsTable1700000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const table = process.env.POSTGRES_EVENTS_TABLE || 'events';
+    const table = container.resolve(ConfigService).postgresEventsTable;
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS ${table} (
@@ -32,7 +34,7 @@ export class CreateEventsTable1700000000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    const table = process.env.POSTGRES_EVENTS_TABLE || 'events';
+    const table = container.resolve(ConfigService).postgresEventsTable;
     await queryRunner.query(`
       DROP TABLE IF EXISTS ${table};
     `);

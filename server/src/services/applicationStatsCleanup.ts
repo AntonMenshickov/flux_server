@@ -1,13 +1,14 @@
 import { schedule } from 'node-cron';
 import { ApplicationStats } from '../model/mongo/applicationStats';
-import { singleton } from 'tsyringe';
+import { container, singleton } from 'tsyringe';
+import { ConfigService } from './configService';
 
 @singleton()
 export class ApplicationStatsCleanupService {
   private readonly statsMaxAgeInDays: number;
 
   constructor() {
-    this.statsMaxAgeInDays = Number(process.env.DB_LOGS_MAX_AGE_DAYS);
+    this.statsMaxAgeInDays = container.resolve(ConfigService).dbLogsMaxAgeDays;
   }
 
   public init() {

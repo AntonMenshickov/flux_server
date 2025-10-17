@@ -3,6 +3,8 @@ import { DataSource, LessThan } from 'typeorm';
 import { EventMessage } from '../model/postgres/eventMessageDbView';
 import { singleton } from 'tsyringe';
 import path from 'path';
+import { ConfigService } from '../services/configService';
+import { container } from 'tsyringe';
 
 @singleton()
 export class Postgres {
@@ -16,13 +18,14 @@ export class Postgres {
   private logsMaxAgeInDays: number;
 
   constructor() {
-    this.username = process.env.POSTGRES_USERNAME as string;
-    this.password = process.env.POSTGRES_PASSWORD as string;
-    this.host = process.env.POSTGRES_HOST as string;
-    this.port = Number(process.env.POSTGRES_PORT);
-    this.database = process.env.POSTGRES_DATABASE as string;
-    this.table = process.env.POSTGRES_EVENTS_TABLE as string;
-    this.logsMaxAgeInDays = Number(process.env.DB_LOGS_MAX_AGE_DAYS);
+    const config = container.resolve(ConfigService);
+    this.username = config.postgresUsername;
+    this.password = config.postgresPassword;
+    this.host = config.postgresHost;
+    this.port = config.postgresPort;
+    this.database = config.postgresDatabase;
+    this.table = config.postgresEventsTable;
+    this.logsMaxAgeInDays = config.dbLogsMaxAgeDays;
     console.info(`Postgres cron delete rows older than ${this.logsMaxAgeInDays} days scheduled for every hour`);
     schedule('0 * * * *', () => this.deleteOldRows());
   }

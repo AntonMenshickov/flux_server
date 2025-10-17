@@ -12,11 +12,13 @@ import { ApplicationStatsCleanupService } from './services/applicationStatsClean
 import { container } from 'tsyringe';
 import { Postgres } from './database/postgres';
 import { PostgresEventsRepository } from './database/repository/postgresEventRepository';
+import { ConfigService } from './services/configService';
 
 
 export async function startServer() {
+  const config = container.resolve(ConfigService);
   console.log('Connecting to MongoDB...');
-  await connect(`mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DATABASE}`);
+  await connect(`mongodb://${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}`);
   console.log('Connected to MongoDB');
 
   // Schedule Mongo ApplicationStats cleanup
@@ -68,7 +70,7 @@ export async function startServer() {
   };
   app.use(errorHandler);
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 4000;
+  const port = config.port;
   app.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`);
   });

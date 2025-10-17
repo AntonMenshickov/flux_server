@@ -3,6 +3,7 @@ import { EventMessageView } from '../model/eventMessageView';
 import { PostgresEventsRepository } from '../database/repository/postgresEventRepository';
 import { EventsStatsService } from '../services/eventsStatsService';
 import { container, singleton } from 'tsyringe';
+import { ConfigService } from '../services/configService';
 
 @singleton()
 export class ReliableBatchQueue {
@@ -19,13 +20,14 @@ export class ReliableBatchQueue {
   constructor(
     private eventsRepo: PostgresEventsRepository,
   ) {
+    const configService = container.resolve(ConfigService);
     this.queueName = 'queue';
     this.processingName = 'processing';
-    this.batchSize = process.env.EVENTS_BATCH_SIZE ? Number(process.env.EVENTS_BATCH_SIZE) : 100;
-    this.flushIntervalMs = process.env.FLUSH_INTERVAL_MS ? Number(process.env.FLUSH_INTERVAL_MS) : 1000 * 60;
+    this.batchSize = configService.eventsBatchSize;
+    this.flushIntervalMs = configService.flushIntervalMs;
     this.redis = new Redis({
-      host: process.env.REDIS_HOST as string,
-      port: Number(process.env.REDIS_PORT),
+      host: configService.redisHost,
+      port: configService.redisPort,
       connectTimeout: 10000,
       retryStrategy(times) {
         const delay = Math.min(times * 200, 2000);
