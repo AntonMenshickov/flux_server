@@ -2,8 +2,10 @@
   <div class="online-log-stream">
     <div class="stream-header">
       <ArrowLeftIcon @click="goBack" class="back-button" />
-      <span class="device-id">Device: {{ uuid }}</span>
-      <span class="ws-status">WS: <span :class="'ws-' + connectionStatus">{{ connectionStatus }}</span></span>
+      <span class="device-id">Device: {{ deviceUuid }}</span>
+      <span class="ws-status">
+        <WifiIcon :class="'ws-' + connectionStatus" />
+      </span>
     </div>
     <div ref="scrollContainer" class="logs-list">
       <LogCard v-for="(log, index) in logs" :key="index" :log="log" />
@@ -19,11 +21,12 @@ import { CONFIG } from '@/config';
 import { useUserStore } from '@/stores/userStore';
 import LogCard from '@/components/base/LogCard.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, WifiIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
 const router = useRouter();
-const uuid = route.params.uuid as string;
+const deviceUuid = route.params.uuid as string;
+let webUuid: string | null = null;
 
 const scrollContainer = ref<HTMLElement | null>(null)
 const isAtBottom = ref(true)
@@ -53,17 +56,15 @@ onMounted(async () => {
   };
   const opened = await ensureOpen();
   if (!opened) console.warn('WebSocket not open before startLogs request; subscription may fail');
-  const startResult = await wsStreams.startLogs(uuid);
-  if (startResult.isRight()) {
-  } else {
-    console.warn('Failed to start logs stream', startResult.value);
-  }
+
 });
 
 onBeforeUnmount(async () => {
   scrollContainer.value?.removeEventListener('scroll', handleScroll)
   try {
-    await wsStreams.stopLogs(uuid);
+    if (webUuid) {
+      await wsStreams.stopLogs(webUuid, deviceUuid);
+    }
   } catch { }
   forceDisconnect = true;
   if (ws) {
@@ -95,7 +96,6 @@ function setupWebSocket(tokenStr: string) {
   if (ws) return;
   const wsUrl = CONFIG.API_URL.replace(/^http/, 'ws') + '/ws?client=web&token=' + encodeURIComponent(tokenStr);
   connectionStatus.value = 'connecting';
-  logs.value = [];
   ws = new WebSocket(wsUrl);
   ws.onopen = () => {
     console.log('Ws open');
@@ -105,12 +105,24 @@ function setupWebSocket(tokenStr: string) {
       reconnectTimer = null;
     }
   };
-  ws.onmessage = (ev) => {
+  ws.onmessage = async (ev) => {
     try {
       const msg = JSON.parse(ev.data);
-      if (msg && msg.type === 0 && msg.payload) {
-        logs.value = [...logs.value, msg.payload];
+      if (msg) {
+        if (msg.type === 3 && msg.payload) {
+          logs.value = [...logs.value, msg.payload];
+        } else if (msg.type === 2 && msg.payload) {
+          if (webUuid == null) {
+            webUuid = msg.payload as string;
+            const startResult = await wsStreams.startLogs(webUuid, deviceUuid);
+            if (startResult.isRight()) {
+            } else {
+              console.warn('Failed to start logs stream', startResult.value);
+            }
+          }
+        }
       }
+
     } catch (e) { console.error(e); }
   };
   ws.onclose = () => {
@@ -168,7 +180,7 @@ function goBack() {
   flex-direction: row;
   align-items: center;
   margin: 1.5rem;
-  margin-bottom: 0;
+  margin-bottom: 1rem;
   margin-top: 1rem;
 }
 
@@ -184,12 +196,28 @@ function goBack() {
 }
 
 .ws-status {
+  width: 2rem;
+  height: 2rem;
   margin-left: 1rem;
+}
+
+.ws-connection {
+  color: yellowgreen;
+}
+
+.ws-open {
+  color: green;
+}
+
+.ws-error,
+.ws-closed {
+  color: red;
 }
 
 .logs-list {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
+  padding-top: 0;
 }
 </style>

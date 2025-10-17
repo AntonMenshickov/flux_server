@@ -6,7 +6,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { Application, IApplication } from '../../model/mongo/application';
 import { Document } from 'mongoose';
 import { WebSocket, MessageEvent, ErrorEvent, CloseEvent } from 'ws';
-import { WsServerMessage } from './model/wsServerMessage';
+import { WsServerMessage } from '../model/wsServerMessage';
 import { addEventMessage } from './addEventMessage';
 import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';

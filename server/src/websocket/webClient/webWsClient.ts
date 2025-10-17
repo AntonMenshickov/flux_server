@@ -2,15 +2,14 @@ import z from 'zod';
 import { Request } from 'express';
 import { responseMessages } from '../../strings/responseMessages';
 import { tokenUtil } from '../../utils/tokenUtil';
-import { JwtPayload } from 'jsonwebtoken';
 import { WebSocket, MessageEvent, ErrorEvent, CloseEvent } from 'ws';
 import { container } from 'tsyringe';
 import { v4 as uuidv4 } from 'uuid';
 import { WebWsClientService } from '../../services/webWsClientsService';
 import { WsClientMessage, WsClientMessageType } from '../deviceClient/model/wsClientMessage';
-import { WsClientMessage as WsClientMessageTypeDef } from '../deviceClient/model/wsClientMessage';
 import { IUser, User } from '../../model/mongo/user';
 import { Document } from 'mongoose';
+import { WsServerMessage, WsServerMessageType } from '../model/wsServerMessage';
 
 const wsConnectValidateSchema = z.object({
   query: z.object({
@@ -68,6 +67,7 @@ export class WebWsClient {
       }
       this.clientInfo = new WebClientInfo(uuidv4(), userId);
       this.registerClient();
+      this.sendServerMessage({ type: WsServerMessageType.clientUuidResponse, payload: this.clientInfo.uuid })
     } catch (err) {
       this.deleteClient();
       this.ws.close(4001, responseMessages.INVALID_TOKEN);
@@ -113,7 +113,7 @@ export class WebWsClient {
   }
 
   // Send a server-originated message to the web client
-  public sendServerMessage(message: WsClientMessageTypeDef) {
+  public sendServerMessage(message: WsServerMessage) {
     try {
       this.ws.send(JSON.stringify(message));
     } catch (err) {

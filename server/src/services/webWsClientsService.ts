@@ -1,10 +1,14 @@
-import { singleton } from 'tsyringe';
+import { container, singleton } from 'tsyringe';
 import { WebWsClient } from '../websocket/webClient/webWsClient';
+import { DeviceWsClientService } from './deviceWsClientsService';
+import { WsServerMessageType } from '../websocket/model/wsServerMessage';
 
 @singleton()
 export class WebWsClientService {
   #clients: Array<WebWsClient> = [];
-  #subscriptions: Map<string, Set<WebWsClient>> = new Map(); // uuid -> set of web clients
+  // deviceUuid -> set of web clients
+  private subscribers: Map<string, Set<WebWsClient>> = new Map();
+  private keepEventsStreamInterval: NodeJS.Timeout | null = null;
 
   get clients(): Array<WebWsClient> { return [...this.#clients]; }
 
@@ -15,12 +19,12 @@ export class WebWsClientService {
   #deleteClient(client: WebWsClient) {
     const info = client.getClientInfo();
     if (info) {
-      this.#unsubscribeFromAll(info.userId);
+      this.unsubscribeFromAll(info.uuid);
     }
     this.#clients = this.#clients.filter(e => e != client);
   }
 
-  createWebClientAPI(client: WebWsClient) {
+  public createWebClientAPI(client: WebWsClient) {
     const registerClient = this.#addClient.bind(this);
     const deleteClient = this.#deleteClient.bind(this);
     return Object.freeze({
@@ -29,44 +33,67 @@ export class WebWsClientService {
     });
   }
 
-  findClientByUserId(userId: string): WebWsClient | undefined {
-    return this.#clients.find(c => c.getClientInfo()?.userId === userId);
+  private findClientByUuid(uuid: string): WebWsClient | undefined {
+    return this.#clients.find(c => c.getClientInfo()?.uuid == uuid);
   }
 
-  #unsubscribeFromAll(userId: string): boolean {
-    const client = this.findClientByUserId(userId);
-    for (let uuid in this.#clients) {
-      this.unsubscribe(userId, uuid);
+  private unsubscribeFromAll(webUuid: string): boolean {
+    for (let r of this.subscribers) {
+      this.unsubscribe(webUuid, r[0]);
     }
     return true;
   }
 
-  subscribe(userId: string, uuid: string): boolean {
-    const client = this.findClientByUserId(userId);
+  private updateKeepEventsStreamTimer() {
+    if (!this.subscribers.size) {
+      if (this.keepEventsStreamInterval) {
+        clearInterval(this.keepEventsStreamInterval);
+        this.keepEventsStreamInterval = null;
+      }
+    } else {
+      if (!this.keepEventsStreamInterval) {
+        this.keepEventsStreamInterval = setInterval(() => this.sendKeepEventsStreamEventToClients(), 1000 * 5);
+      }
+    }
+  }
+
+  private sendKeepEventsStreamEventToClients() {
+    for (let r of this.subscribers) {
+      container.resolve(DeviceWsClientService).sendToDevice(r[0], { type: WsServerMessageType.keepEventsStream, payload: {} });
+    }
+  }
+
+  public subscribe(webUuid: string, deviceUuid: string): boolean {
+    const client = this.findClientByUuid(webUuid);
     if (!client) return false;
-    let set = this.#subscriptions.get(uuid);
+    let set = this.subscribers.get(deviceUuid);
     if (!set) {
       set = new Set();
-      this.#subscriptions.set(uuid, set);
+      this.subscribers.set(deviceUuid, set);
     }
     set.add(client);
-    console.log(`WebWsClientService: subscribed user ${userId} to device ${uuid}`);
+    this.updateKeepEventsStreamTimer();
+    console.log(`WebWsClientService: subscribed web client ${webUuid} to device ${deviceUuid}`);
     return true;
   }
 
-  unsubscribe(userId: string, uuid: string): boolean {
-    const client = this.findClientByUserId(userId);
+  public unsubscribe(webUuid: string, deviceUuid: string): boolean {
+    const client = this.findClientByUuid(webUuid);
     if (!client) return false;
-    const set = this.#subscriptions.get(uuid);
+    const set = this.subscribers.get(deviceUuid);
     if (!set) return false;
     set.delete(client);
-    if (set.size === 0) this.#subscriptions.delete(uuid);
-    console.log(`WebWsClientService: unsubscribed user ${userId} from device ${uuid}`);
+    if (set.size === 0) {
+      this.subscribers.delete(deviceUuid);
+      container.resolve(DeviceWsClientService).sendToDevice(deviceUuid, { type: WsServerMessageType.stopEventsStream, payload: {} });
+    }
+    this.updateKeepEventsStreamTimer();
+    console.log(`WebWsClientService: unsubscribed web client ${webUuid} from device ${deviceUuid}`);
     return true;
   }
 
-  getSubscribers(uuid: string): WebWsClient[] {
-    const set = this.#subscriptions.get(uuid);
+  public getSubscribers(deviceUuid: string): WebWsClient[] {
+    const set = this.subscribers.get(deviceUuid);
     return set ? Array.from(set) : [];
   }
 }

@@ -5,7 +5,7 @@ import { ReliableBatchQueue } from '../../eventsQueue/reliableBatchQueue';
 import { container } from 'tsyringe';
 import { DeviceClientInfo } from './deviceWsClient';
 import { WebWsClientService } from '../../services/webWsClientsService';
-import { WsClientMessageType, WsClientMessage } from './model/wsClientMessage';
+import { WsServerMessage, WsServerMessageType } from '../model/wsServerMessage';
 
 export async function addEventMessage(client: DeviceClientInfo, payload: object) {
   const logMessage: EventMessageDto = eventMessageDtoSchema.parse(payload);
@@ -25,10 +25,10 @@ export async function addEventMessage(client: DeviceClientInfo, payload: object)
     const webService = container.resolve(WebWsClientService);
   const subscribers = webService.getSubscribers(client.uuid);
   if (subscribers.length) console.log(`Forwarding event from device ${client.uuid} to ${subscribers.length} web subscribers`);
-    const message: WsClientMessage = { type: WsClientMessageType.eventMessage, payload: eventData };
+    const message: WsServerMessage = { type: WsServerMessageType.eventMessage, payload: eventData };
     subscribers.forEach(s => {
       try {
-        (s as any).sendServerMessage(message);
+        s.sendServerMessage(message);
       } catch (e) {
         console.error('Failed to forward event to web subscriber', e);
       }

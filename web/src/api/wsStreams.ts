@@ -7,10 +7,10 @@ export const wsStreams = {
   stopLogs,
 }
 
-async function startLogs(uuid: string) {
-  return await request<EmptyResult>({ authorized: true, method: 'post', url: '/ws/streams/start', data: { uuid } });
+async function startLogs(webUuid: string, deviceUuid: string) {
+  return await request<EmptyResult>({ authorized: true, method: 'post', url: '/ws/streams/start', data: { webUuid, deviceUuid } });
 }
 
-async function stopLogs(uuid: string) {
-  return await request<EmptyResult>({ authorized: true, method: 'post', url: '/ws/streams/stop', data: { uuid } });
+async function stopLogs(webUuid: string, deviceUuid: string) {
+  return await request<EmptyResult>({ authorized: true, method: 'post', url: '/ws/streams/stop', data: { webUuid, deviceUuid } });
 }

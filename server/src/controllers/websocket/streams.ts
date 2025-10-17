@@ -3,19 +3,20 @@ import { z } from 'zod';
 import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';
 import { WebWsClientService } from '../../services/webWsClientsService';
-import { WsServerMessageType } from '../../websocket/deviceClient/model/wsServerMessage';
+import { WsServerMessageType } from '../../websocket/model/wsServerMessage';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 
 export const streamControlValidateSchema = z.object({
   body: z.object({
-    uuid: z.string().trim().nonempty(),
+    webUuid: z.uuid().nonempty(),
+    deviceUuid: z.uuid().nonempty(),
   })
 });
 
 export async function startDeviceStream(req: UserAuthRequest, res: Response) {
-  const { uuid } = streamControlValidateSchema.parse(req).body;
+  const { deviceUuid, webUuid } = streamControlValidateSchema.parse(req).body;
   const service = container.resolve(DeviceWsClientService);
-  const sent = service.sendToDevice(uuid, { type: WsServerMessageType.startEventsStream, payload: {} });
+  const sent = service.sendToDevice(deviceUuid, { type: WsServerMessageType.startEventsStream, payload: {} });
   if (!sent) {
     return res.status(404).json({ success: false, error: 'Device not found or not connected' });
   }
@@ -24,7 +25,7 @@ export async function startDeviceStream(req: UserAuthRequest, res: Response) {
     const webService = container.resolve(WebWsClientService);
     const user = req.user;
     if (user && user._id) {
-      webService.subscribe(user._id.toString(), uuid);
+      webService.subscribe(webUuid, deviceUuid);
     }
   } catch (e) { /* ignore */ }
 
@@ -32,9 +33,9 @@ export async function startDeviceStream(req: UserAuthRequest, res: Response) {
 }
 
 export async function stopDeviceStream(req: UserAuthRequest, res: Response) {
-  const { uuid } = streamControlValidateSchema.parse(req).body;
+  const { deviceUuid, webUuid } = streamControlValidateSchema.parse(req).body;
   const service = container.resolve(DeviceWsClientService);
-  const sent = service.sendToDevice(uuid, { type: WsServerMessageType.stopEventsStream, payload: {} });
+  const sent = service.sendToDevice(deviceUuid, { type: WsServerMessageType.stopEventsStream, payload: {} });
   if (!sent) {
     return res.status(404).json({ success: false, error: 'Device not found or not connected' });
   }
@@ -43,7 +44,7 @@ export async function stopDeviceStream(req: UserAuthRequest, res: Response) {
     const webService = container.resolve(WebWsClientService);
     const user = req.user;
     if (user && user._id) {
-      webService.unsubscribe(user._id.toString(), uuid);
+      webService.unsubscribe(webUuid, deviceUuid);
     }
   } catch (e) { /* ignore */ }
 
