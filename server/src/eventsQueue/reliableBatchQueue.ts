@@ -21,8 +21,8 @@ export class ReliableBatchQueue {
   ) {
     this.queueName = 'queue';
     this.processingName = 'processing';
-    this.batchSize = 100;
-    this.flushIntervalMs = 1000 * 60;
+    this.batchSize = process.env.EVENTS_BATCH_SIZE ? Number(process.env.EVENTS_BATCH_SIZE) : 100;
+    this.flushIntervalMs = process.env.FLUSH_INTERVAL_MS ? Number(process.env.FLUSH_INTERVAL_MS) : 1000 * 60;
     this.redis = new Redis({
       host: process.env.REDIS_HOST as string,
       port: Number(process.env.REDIS_PORT),
