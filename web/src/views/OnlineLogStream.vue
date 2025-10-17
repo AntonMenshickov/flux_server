@@ -2,10 +2,25 @@
   <div class="online-log-stream">
     <div class="stream-header">
       <ArrowLeftIcon @click="goBack" class="back-button" />
-      <span class="device-id">Device: {{ deviceUuid }}</span>
-      <span class="ws-status">
-        <WifiIcon :class="'ws-' + connectionStatus" />
-      </span>
+      <span class="device-id">{{ connectedDevice?.deviceName }} ({{ connectedDevice?.deviceId }})</span>
+    </div>
+    <div class="row">
+      <div class="device-info">
+        <span :title="`Websocket ${connectionStatus}`">
+          <WifiIcon :class="'ws-status ws-' + connectionStatus" />
+        </span>
+        <span :title="deviceConnected ? 'Device online' : 'Device offline'">
+          <DevicePhoneMobileIcon :class="{ 'device-status': true, 'device-connected': deviceConnected }" />
+        </span>
+        <div class="device-item">
+          <div class="device-name">{{ connectedDevice?.deviceName }} {{ connectedDevice?.deviceId }}</div>
+          <div class="device-meta">{{ connectedDevice?.platform }} • {{ connectedDevice?.osName }} • {{
+            connectedDevice?.bundleId }} • {{ connectedDevice?.uuid }}</div>
+        </div>
+      </div>
+      <BaseButton :class="{ 'enabled': autoscrollEnabled }" @click="toggleAutoScroll" title="Toggle autoscroll">
+        <ChevronDoubleDownIcon class="auto-scroll-icon" />
+      </BaseButton>
     </div>
     <div ref="scrollContainer" class="logs-list">
       <LogCard v-for="(log, index) in logs" :key="index" :log="log" />
@@ -17,24 +32,28 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { wsStreams } from '@/api/wsStreams';
-import { CONFIG } from '@/config';
-import { useUserStore } from '@/stores/userStore';
 import LogCard from '@/components/base/LogCard.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
-import { ArrowLeftIcon, WifiIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon } from '@heroicons/vue/24/outline';
+import { WebsocketClient, type ConnectionStatus } from '@/websocketClient/websocketClient';
+import { applications, type ConnectedDevice } from '@/api/applications';
+import BaseButton from '@/components/base/BaseButton.vue';
 
 const route = useRoute();
 const router = useRouter();
 const deviceUuid = route.params.uuid as string;
 let webUuid: string | null = null;
 
-const scrollContainer = ref<HTMLElement | null>(null)
-const isAtBottom = ref(true)
+const scrollContainer = ref<HTMLElement | null>(null);
+const isAtBottom = ref(true);
 const logs = ref<EventMessage[]>([]);
-let ws: WebSocket | null = null;
-let reconnectTimer: number | null = null;
-const connectionStatus = ref<'connecting' | 'open' | 'closed' | 'error'>('closed');
-let forceDisconnect = false;
+const deviceConnected = ref(true);
+const connectedDevice = ref<ConnectedDevice | null>(null);
+const autoscrollEnabled = ref(true);
+
+let wsClient: WebsocketClient | null = null;
+const connectionStatus = ref<ConnectionStatus>('closed');
+
 
 
 onMounted(async () => {
@@ -42,21 +61,7 @@ onMounted(async () => {
   el?.addEventListener('scroll', handleScroll)
   nextTick(() => (el!.scrollTop = el!.scrollHeight))
 
-  const userStore = useUserStore();
-  const tokenStr = userStore.token?.accessToken ?? '';
-  setupWebSocket(tokenStr);
-  // ensure websocket is open before requesting start
-  const ensureOpen = async () => {
-    const maxWait = 3000;
-    const start = Date.now();
-    while (ws && ws.readyState !== WebSocket.OPEN && Date.now() - start < maxWait) {
-      await new Promise(r => setTimeout(r, 50));
-    }
-    return ws && ws.readyState === WebSocket.OPEN;
-  };
-  const opened = await ensureOpen();
-  if (!opened) console.warn('WebSocket not open before startLogs request; subscription may fail');
-
+  initializeEventsStream();
 });
 
 onBeforeUnmount(async () => {
@@ -66,20 +71,13 @@ onBeforeUnmount(async () => {
       await wsStreams.stopLogs(webUuid, deviceUuid);
     }
   } catch { }
-  forceDisconnect = true;
-  if (ws) {
-    ws.close();
-    ws = null;
-  }
-  if (reconnectTimer) {
-    clearTimeout(reconnectTimer);
-    reconnectTimer = null;
-  }
+  wsClient?.disconnect();
 });
 
 watch(
   () => logs.value.length,
   async () => {
+    if (!autoscrollEnabled.value) return;
     await nextTick()
     const el = scrollContainer.value
     if (!el) return
@@ -91,73 +89,66 @@ watch(
   }
 )
 
-
-function setupWebSocket(tokenStr: string) {
-  if (ws) return;
-  const wsUrl = CONFIG.API_URL.replace(/^http/, 'ws') + '/ws?client=web&token=' + encodeURIComponent(tokenStr);
-  connectionStatus.value = 'connecting';
-  ws = new WebSocket(wsUrl);
-  ws.onopen = () => {
-    console.log('Ws open');
-    connectionStatus.value = 'open';
-    if (reconnectTimer) {
-      clearTimeout(reconnectTimer);
-      reconnectTimer = null;
-    }
-  };
-  ws.onmessage = async (ev) => {
-    try {
-      const msg = JSON.parse(ev.data);
-      if (msg) {
-        if (msg.type === 3 && msg.payload) {
-          logs.value = [...logs.value, msg.payload];
-        } else if (msg.type === 2 && msg.payload) {
-          if (webUuid == null) {
-            webUuid = msg.payload as string;
-            const startResult = await wsStreams.startLogs(webUuid, deviceUuid);
-            if (startResult.isRight()) {
-            } else {
-              console.warn('Failed to start logs stream', startResult.value);
+async function initializeEventsStream() {
+  const deviceResult = await applications.getOnlineDevice(deviceUuid);
+  if (deviceResult.isLeft()) {
+    console.error(deviceResult.value);
+    deviceConnected.value = false;
+  } else {
+    connectedDevice.value = deviceResult.value.result.device;
+    // ensure websocket is open before requesting start
+    const ensureOpen = async () => {
+      const maxWait = 3000;
+      const start = Date.now();
+      while (connectionStatus.value !== 'open' && Date.now() - start < maxWait) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return connectionStatus.value === 'open';
+    };
+    wsClient = new WebsocketClient(async (message) => {
+      try {
+        const msg = JSON.parse(message);
+        if (msg) {
+          if (msg.type === 3 && msg.payload) {
+            logs.value = [...logs.value, msg.payload];
+          } else if (msg.type === 2 && msg.payload) {
+            if (webUuid == null) {
+              webUuid = msg.payload as string;
+              const startResult = await wsStreams.startLogs(webUuid, deviceUuid);
+              if (startResult.isRight()) {
+              } else {
+                console.warn('Failed to start logs stream', startResult.value);
+              }
             }
+          } else if (msg.type === 5) {
+            deviceConnected.value = false;
           }
         }
-      }
 
-    } catch (e) { console.error(e); }
-  };
-  ws.onclose = () => {
-    console.log('Ws closed');
-    connectionStatus.value = 'closed';
-    ws = null;
-    scheduleReconnect();
-  };
-  ws.onerror = (e) => {
-    console.log('Ws error');
-    connectionStatus.value = 'error';
-    scheduleReconnect();
-    console.error('Logs websocket error', e);
-  };
+      } catch (e) {
+        console.error(e);
+      }
+    }, (status) => { connectionStatus.value = status });
+    wsClient.connect();
+    const opened = await ensureOpen();
+    if (!opened) console.warn('WebSocket not open!');
+  }
+
 }
 
-function scheduleReconnect() {
-  if (forceDisconnect) {
-    if (reconnectTimer)
-      clearTimeout(reconnectTimer)
-    return;
+function toggleAutoScroll() {
+  const el = scrollContainer.value
+  if (el && !autoscrollEnabled.value) {
+    el.scrollTop = el.scrollHeight
   }
-  if (reconnectTimer) return;
-  reconnectTimer = setTimeout(() => {
-    const userStore = useUserStore();
-    const tokenStr = userStore.token?.accessToken ?? '';
-    setupWebSocket(tokenStr);
-  }, 2000);
+  autoscrollEnabled.value = !autoscrollEnabled.value;
 }
 
 function handleScroll() {
   const el = scrollContainer.value
   if (!el) return
 
-  const threshold = 5 // пикселей допуска
+  const threshold = 5
   const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
   isAtBottom.value = distanceFromBottom <= threshold
 }
@@ -191,6 +182,11 @@ function goBack() {
 }
 
 .device-id {
+  display: inline-block;
+  max-width: 600px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-left: 1rem;
   font-size: 2rem;
 }
@@ -198,7 +194,6 @@ function goBack() {
 .ws-status {
   width: 2rem;
   height: 2rem;
-  margin-left: 1rem;
 }
 
 .ws-connection {
@@ -214,10 +209,64 @@ function goBack() {
   color: red;
 }
 
+.device-status {
+  width: 2rem;
+  height: 2rem;
+  margin-left: 0.5rem;
+  color: red;
+}
+
+.device-connected {
+  color: green;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 1rem;
+}
+
+.device-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.device-item {
+  margin-left: 0.5rem;
+  background: var(--color-secondary);
+  text-align: start;
+}
+
+.device-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.device-meta {
+  color: var(--color-text-dimmed, #888);
+  font-size: 0.85rem;
+}
+
+.enabled {
+  background-color: green;
+}
+
+.auto-scroll-icon {
+  width: 1rem;
+  height: 1rem;
+  color: white;
+}
+
 .logs-list {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
-  padding-top: 0;
+  margin: 1rem;
+  margin-top: 0.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  background-color: white;
 }
 </style>

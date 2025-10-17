@@ -209,11 +209,6 @@ watch(() => props.applicationId, (v) => load(v));
   cursor: pointer;
 }
 
-.device-empty {
-  color: #888;
-  font-style: italic;
-}
-
 .device-name {
   font-weight: 600;
   font-size: 0.95rem;
@@ -222,6 +217,11 @@ watch(() => props.applicationId, (v) => load(v));
 .device-meta {
   color: var(--color-text-dimmed, #888);
   font-size: 0.85rem;
+}
+
+.device-empty {
+  color: #888;
+  font-style: italic;
 }
 
 .fade-enter-active,

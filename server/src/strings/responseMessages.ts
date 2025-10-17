@@ -21,5 +21,6 @@ export const responseMessages = {
   WS_UNKNOWN_MESSAGE_TYPE: 'Unknown WebSocket message type',
   DEVICE_INFO_VALIDATION_FAILED: 'Device info validation failed',
   USER_INFO_VALIDATION_FAILED: 'User info validation failed',
+  DEVICE_NOT_FOUND: 'Device not found',
   INTERNAL_SERVER_ERROR: 'Internal server error',
 }

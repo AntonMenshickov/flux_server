@@ -1,5 +1,7 @@
-import { singleton } from 'tsyringe';
+import { container, singleton } from 'tsyringe';
 import { DeviceWsClient } from '../websocket/deviceClient/deviceWsClient';
+import { WebWsClientService } from './webWsClientsService';
+import { WsServerMessageType } from '../websocket/model/wsServerMessage';
 
 @singleton()
 export class DeviceWsClientService {
@@ -9,10 +11,24 @@ export class DeviceWsClientService {
 
   #addClient(client: DeviceWsClient) {
     this.#clients.push(client);
+    const clientInfo = client.getClientInfo();
+    if (clientInfo) {
+      console.log(`DeviceWsClientService: client connected ${clientInfo.deviceName} ${clientInfo.uuid}:${clientInfo.deviceId}`);
+    }
   }
 
   #deleteClient(client: DeviceWsClient) {
     this.#clients = this.#clients.filter(e => e != client);
+    const clientInfo = client.getClientInfo();
+    if (clientInfo) {
+      const webClientService = container.resolve(WebWsClientService);
+      const subscribers = webClientService.getSubscribers(clientInfo.uuid);
+      for (let subscriber of subscribers) {
+        subscriber.sendServerMessage({ type: WsServerMessageType.deviceDisconnected, payload: {} });
+      }
+      webClientService.removeSubscribersForDevice(clientInfo.uuid);
+      console.log(`DeviceWsClientService: client disconnected ${clientInfo.deviceName} ${clientInfo.uuid}:${clientInfo.deviceId}`);
+    }
   }
 
   createDeviceClientAPI(client: DeviceWsClient) {
@@ -28,13 +44,8 @@ export class DeviceWsClientService {
   sendToDevice(uuid: string, message: any): boolean {
     const client = this.#clients.find(c => c.getClientInfo()?.uuid === uuid);
     if (!client) return false;
-    try {
-      // DeviceWsClient exposes sendServerMessage
-      (client as any).sendServerMessage(message);
-      return true;
-    } catch (err) {
-      console.error('Failed to send message to device', err);
-      return false;
-    }
+    // DeviceWsClient exposes sendServerMessage
+    client.sendServerMessage(message);
+    return true;
   }
 }

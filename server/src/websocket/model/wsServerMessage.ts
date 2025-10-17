@@ -4,6 +4,7 @@ export enum WsServerMessageType {
   clientUuidResponse = 2,
   eventMessage = 3,
   keepEventsStream = 4,
+  deviceDisconnected = 5,
 }
 
 export interface WsServerMessage {

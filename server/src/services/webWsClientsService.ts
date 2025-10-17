@@ -14,12 +14,17 @@ export class WebWsClientService {
 
   #addClient(client: WebWsClient) {
     this.#clients.push(client);
+    const clientInfo = client.getClientInfo();
+    if (clientInfo) {
+      console.log(`WebWsClientService: client connected ${clientInfo.userId} ${clientInfo.uuid}`);
+    }
   }
 
   #deleteClient(client: WebWsClient) {
     const info = client.getClientInfo();
     if (info) {
       this.unsubscribeFromAll(info.uuid);
+      console.log(`WebWsClientService: client disconnected ${info.userId} ${info.uuid}`);
     }
     this.#clients = this.#clients.filter(e => e != client);
   }
@@ -90,6 +95,10 @@ export class WebWsClientService {
     this.updateKeepEventsStreamTimer();
     console.log(`WebWsClientService: unsubscribed web client ${webUuid} from device ${deviceUuid}`);
     return true;
+  }
+
+  public removeSubscribersForDevice(deviceUuid: string) {
+    this.subscribers.delete(deviceUuid);
   }
 
   public getSubscribers(deviceUuid: string): WebWsClient[] {

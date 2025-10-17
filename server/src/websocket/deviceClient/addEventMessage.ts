@@ -23,15 +23,11 @@ export async function addEventMessage(client: DeviceClientInfo, payload: object)
   // Also forward the event to any subscribed web clients
   try {
     const webService = container.resolve(WebWsClientService);
-  const subscribers = webService.getSubscribers(client.uuid);
-  if (subscribers.length) console.log(`Forwarding event from device ${client.uuid} to ${subscribers.length} web subscribers`);
+    const subscribers = webService.getSubscribers(client.uuid);
+    if (!subscribers.length) return;
     const message: WsServerMessage = { type: WsServerMessageType.eventMessage, payload: eventData };
     subscribers.forEach(s => {
-      try {
-        s.sendServerMessage(message);
-      } catch (e) {
-        console.error('Failed to forward event to web subscriber', e);
-      }
+      s.sendServerMessage(message);
     });
   } catch (e) {
     console.error(e);

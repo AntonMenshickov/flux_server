@@ -39,6 +39,10 @@ export interface ConnectedDevicesCountResponse {
   count: number;
 }
 
+export interface GetOnlineDeviceResponse {
+  device: ConnectedDevice;
+}
+
 export const applications = {
   addApplication,
   updateApplication,
@@ -48,6 +52,7 @@ export const applications = {
   getAppStats,
   searchOnlineDevices,
   countOnlineDevices,
+  getOnlineDevice,
 }
 
 async function addApplication(name: string, bundles: Bundle[], maintainers: string[]) {
@@ -92,5 +97,10 @@ async function searchOnlineDevices(applicationId: string, search?: string) {
     url: '/applications/search-online-devices', 
     params: { applicationId, search }
   });
+  return result;
+}
+
+async function getOnlineDevice(deviceUuid: string) {
+  const result = await request<GetOnlineDeviceResponse>({ authorized: true, 'method': 'get', url: '/applications/get-online-device', params: { deviceUuid } },);
   return result;
 }

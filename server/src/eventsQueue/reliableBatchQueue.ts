@@ -21,8 +21,8 @@ export class ReliableBatchQueue {
   ) {
     this.queueName = 'queue';
     this.processingName = 'processing';
-    this.batchSize = 5;
-    this.flushIntervalMs = 10000;
+    this.batchSize = 100;
+    this.flushIntervalMs = 1000 * 60;
     this.redis = new Redis({
       host: process.env.REDIS_HOST as string,
       port: Number(process.env.REDIS_PORT),
@@ -112,7 +112,6 @@ export class ReliableBatchQueue {
       await this.flush().catch(console.error);
     }
   }
-
 
   private async flush() {
     if (this.flushing) return;
