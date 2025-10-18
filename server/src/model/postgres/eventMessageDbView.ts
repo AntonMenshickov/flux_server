@@ -12,7 +12,11 @@ export class EventMessage extends BaseEntity {
     @Column({ type: 'timestamptz' })
     timestamp!: Date;
 
-    @Column({ type: 'text' })
+    @Column({
+        type: 'enum',
+        enum: LogLevel,
+        enumName: 'log_level_enum',
+    })
     logLevel!: LogLevel;
 
     @PrimaryColumn({ type: 'text' })

@@ -31,6 +31,7 @@ const renderChart = () => {
     LogLevel.INFO,
     LogLevel.WARN,
     LogLevel.ERROR,
+    LogLevel.CRASH,
     LogLevel.DEBUG,
   ];
 
@@ -38,6 +39,7 @@ const renderChart = () => {
     [LogLevel.INFO]: '#3b82f6',
     [LogLevel.WARN]: '#f59e0b',
     [LogLevel.ERROR]: '#ef4444',
+    [LogLevel.CRASH]: '#8B0000',
     [LogLevel.DEBUG]: '#a36fad',
   };
 

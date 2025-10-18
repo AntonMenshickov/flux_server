@@ -26,8 +26,6 @@ export class Postgres {
     this.database = config.postgresDatabase;
     this.table = config.postgresEventsTable;
     this.logsMaxAgeInDays = config.dbLogsMaxAgeDays;
-    console.info(`Postgres cron delete rows older than ${this.logsMaxAgeInDays} days scheduled for every hour`);
-    schedule('0 * * * *', () => this.deleteOldRows());
   }
 
   get dataSource(): DataSource {
@@ -53,25 +51,21 @@ export class Postgres {
           migrationsRun: true,
           logging: false,
           extra: {
-            max: 20,// max pool size
-            idleTimeoutMillis: 30000,// close idle clients after 30 second
+            max: 20,
+            idleTimeoutMillis: 30000,
           },
         });
 
       await this._dataSource.initialize();
     }
+    console.info(`Postgres cron delete rows older than ${this.logsMaxAgeInDays} days scheduled for every hour`);
+    schedule('0 * * * *', () => this.deleteOldRows());
     return this._dataSource;
   }
 
   public async connect(): Promise<void> {
     return Promise.resolve();
   }
-
-  
-  
-  
-  
-  
   
   private async deleteOldRows() {
     console.info(`Postgres deleting rows older than ${this.logsMaxAgeInDays} days`);

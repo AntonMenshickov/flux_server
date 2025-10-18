@@ -63,6 +63,8 @@ import type { ApplicationStatsResponse } from '@/api/applications';
 const props = defineProps<{ application: ApplicationStatsResponse }>();
 const logLevels = Object.values(LogLevel);
 
+const lastSevenDaysStats = computed(() => props.application.stats.slice(-7));
+
 const hasAnyData = computed(() => props.application.stats.length > 0);
 
 const totalByLevel = computed<Record<LogLevel, number>>(() => {
@@ -92,6 +94,7 @@ const logColors: Record<LogLevel, string> = {
   [LogLevel.INFO]: '#3b82f6',
   [LogLevel.WARN]: '#f59e0b',
   [LogLevel.ERROR]: '#ef4444',
+  [LogLevel.CRASH]: '#8B0000',
   [LogLevel.DEBUG]: '#a36fad',
 };
 
@@ -135,19 +138,19 @@ function colorFromString(str: string, saturation = 50, lightness = 65): string {
 // ---------- computed checks ----------
 
 const hasLogLevelData = computed(() =>
-  props.application.stats.some(d => d.logLevelStats !== undefined)
+  lastSevenDaysStats.value.some(d => d.logLevelStats !== undefined)
 );
 const hasPlatformData = computed(() =>
-  props.application.stats.some(d => d.platformStats !== undefined)
+  lastSevenDaysStats.value.some(d => d.platformStats !== undefined)
 );
 const hasOsData = computed(() =>
-  props.application.stats.some(d => d.osStats !== undefined)
+  lastSevenDaysStats.value.some(d => d.osStats !== undefined)
 );
 
 // ---------- chart rendering ----------
 
 const renderCharts = () => {
-  if (!props.application.stats.length) return;
+  if (!lastSevenDaysStats.value.length) return;
 
   // --- 1. Линейный график logLevel по дням ---
   if (hasLogLevelData.value && logChartRef.value) {
@@ -174,7 +177,12 @@ const renderCharts = () => {
           responsive: true,
           animation: { duration: 0 },
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 },  } },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
         },
       });
     }
@@ -187,7 +195,7 @@ const renderCharts = () => {
   if (hasPlatformData.value && platformChartRef.value) {
     const ctx = platformChartRef.value.getContext('2d');
     if (ctx) {
-      const mergedPlatform = sumMaps(props.application.stats.map(s => s.platformStats));
+      const mergedPlatform = sumMaps(lastSevenDaysStats.value.map(s => s.platformStats));
       if (mergedPlatform.size > 0) {
         const labels = Array.from(mergedPlatform.keys());
         const values = Array.from(mergedPlatform.values());
@@ -227,7 +235,7 @@ const renderCharts = () => {
   if (hasOsData.value && osChartRef.value) {
     const ctx = osChartRef.value.getContext('2d');
     if (ctx) {
-      const mergedOs = sumMaps(props.application.stats.map(s => s.osStats));
+      const mergedOs = sumMaps(lastSevenDaysStats.value.map(s => s.osStats));
       if (mergedOs.size > 0) {
         const labels = Array.from(mergedOs.keys());
         const values = Array.from(mergedOs.values());
@@ -402,6 +410,10 @@ watch(() => props.application, () => {
 
 .level-error {
   background-color: var(--log-error);
+}
+
+.level-crash {
+  background-color: var(--log-crash);
 }
 
 .level-debug {

@@ -189,7 +189,6 @@ function formatDate(ts: number) {
   word-break: break-word;
 }
 
-
 .log-card.log-message.info {
   background-color: rgba(2, 132, 199, 0.078);
   border-left-color: rgba(2, 132, 199, 0.2);
@@ -201,12 +200,21 @@ function formatDate(ts: number) {
 }
 
 .log-card.log-message.error {
-  border-left-color: #ff000033;
-  background-color: #ff000014;
+  border-left-color: rgba(255, 0, 0, 0.2);
+  background-color: rgba(255, 0, 0, 0.078);
+}
+
+.log-card.log-message.crash {
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+  border-color: rgba(138, 0, 0, 0.2);
+  border-left-color: rgba(138, 0, 0, 0.4);
+  background-color: rgba(255, 0, 0, 0.078);
 }
 
 .log-card.log-message.debug {
-  border-left-color: rgb(163, 111, 173);
+  border-left-color: rgba(163, 111, 173, 0.2);
   background-color: rgba(163, 111, 173, 0.1);
 }
 
