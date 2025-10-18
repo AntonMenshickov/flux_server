@@ -3,7 +3,7 @@ import { EventFilter } from './eventsFilter';
 import { EventMessage } from '../../model/postgres/eventMessageDbView';
 import { Postgres } from '../postgres';
 import { Operator, SearchCriterion } from '../../model/searchCriterion';
-import { SelectQueryBuilder } from 'typeorm';
+import { In, SelectQueryBuilder } from 'typeorm';
 import { injectable } from 'tsyringe';
 
 
@@ -43,6 +43,19 @@ export class PostgresEventsRepository {
           .execute();
       }
     });
+  }
+
+  public async findExistIds(ids: string[]): Promise<string[]> {
+    if (!ids.length) return [];
+
+
+    const existingRecords = await EventMessage.find({
+      where: { id: In(ids) },
+      select: ["id"],
+    });
+
+
+    return existingRecords.map(record => record.id);
   }
 
   public async findById(id: string): Promise<EventMessageView | null> {

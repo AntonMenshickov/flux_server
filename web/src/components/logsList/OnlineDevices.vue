@@ -17,6 +17,7 @@
         <li v-for="(d, idx) in devices" :key="idx" class="device-item" @click="() => select(d)">
           <div class="device-name">{{ d.deviceName }} {{ d.deviceId }}</div>
           <div class="device-meta">{{ d.platform }} • {{ d.osName }} • {{ d.bundleId }} • {{ d.uuid }}</div>
+          <div v-for="(meta, i) in Object.entries(d.meta)" :key="i" class="device-meta">{{ meta[0] }}: {{ meta[1] }}</div>
         </li>
         <li v-if="!devices.length" class="device-item device-empty">No devices online</li>
       </ul>
@@ -70,7 +71,7 @@ watchEffect(() => {
 
 function select(device: ConnectedDevice) {
   emit('update:select', device);
-} 
+}
 
 function openDevicesList() {
   open.value = true;

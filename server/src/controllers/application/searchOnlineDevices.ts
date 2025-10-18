@@ -31,7 +31,8 @@ export async function searchOnlineDevices(req: Request, res: Response) {
         (d.deviceName && d.deviceName.toLowerCase().includes(s)) ||
         (d.platform && d.platform.toLowerCase().includes(s)) ||
         (d.bundleId && d.bundleId.toLowerCase().includes(s)) ||
-        (d.osName && d.osName.toLowerCase().includes(s))
+        (d.osName && d.osName.toLowerCase().includes(s)) ||
+        (d.meta.size && Array.from(d.meta.values()).some((v) => v.toLowerCase().includes(s)))
       );
     })
     : clients;
@@ -39,7 +40,7 @@ export async function searchOnlineDevices(req: Request, res: Response) {
   res.json({
     success: true,
     result: {
-      devices: filtered,
+      devices: filtered.map(d => d.toJson()),
     }
   });
 }

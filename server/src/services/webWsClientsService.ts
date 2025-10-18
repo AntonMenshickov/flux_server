@@ -19,7 +19,6 @@ export class WebWsClientService {
       console.log(`WebWsClientService: client connected ${clientInfo.userId} ${clientInfo.uuid}`);
     }
   }
-
   #deleteClient(client: WebWsClient) {
     const info = client.getClientInfo();
     if (info) {

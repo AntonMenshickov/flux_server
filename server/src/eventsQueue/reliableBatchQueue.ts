@@ -115,6 +115,25 @@ export class ReliableBatchQueue {
     }
   }
 
+  private async removeObjectsByIdFromQueue(queueName: string, idsToRemove: string[]) {
+    const items = await this.redis.lrange(queueName, 0, -1);
+
+    const pipeline = this.redis.multi();
+
+    for (const item of items) {
+      try {
+        const obj = JSON.parse(item) as EventMessageView;
+        if (idsToRemove.includes(obj.id)) {
+          pipeline.lrem(queueName, 1, item);
+        }
+      } catch (err) {
+        console.error(`Failed to remove item from ${queueName}`, item, err);
+      }
+    }
+
+    await pipeline.exec();
+  }
+
   private async flush() {
     if (this.flushing) return;
     this.flushing = true;
@@ -132,11 +151,16 @@ export class ReliableBatchQueue {
       await this.redis.del(this.processingName);
       this.processingLen = 0;
       await container.resolve(EventsStatsService).onEventsAdded(batch);
-
+      console.log(`[ReliableBatchQueue] Flushed ${batch.length} messages`);
     } catch (err) {
       console.error('[ReliableBatchQueue] error while flushing messages to database', err);
+
+      const existing = await this.eventsRepo.findExistIds(batch.map(e => e.id));
+      if (existing.length) {
+        console.log(`[ReliableBatchQueue] found ${existing.length} saved records. Removing from queue`);
+        await this.removeObjectsByIdFromQueue(this.processingName, existing);
+      }
     } finally {
-      console.log(`[ReliableBatchQueue] Flushed ${batch.length} messages`);
       this.flushing = false;
     }
   }

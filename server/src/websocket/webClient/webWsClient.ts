@@ -107,11 +107,6 @@ export class WebWsClient {
     console.error('WebSocket (web) error:', err.error, err.message);
     this.ws.close(5000, responseMessages.INTERNAL_SERVER_ERROR);
   }
-
-  private registerClient() {
-    this.api.connect();
-  }
-
   // Send a server-originated message to the web client
   public sendServerMessage(message: WsServerMessage) {
     try {
@@ -119,6 +114,10 @@ export class WebWsClient {
     } catch (err) {
       console.error('Failed to send server message to web ws client', err);
     }
+  }
+
+  private registerClient() {
+    this.api.connect();
   }
 
   private deleteClient() {

@@ -29,6 +29,7 @@ export interface ConnectedDevice {
   platform: string;
   bundleId: string;
   osName: string;
+  meta: { [key: string]: string }
 }
 
 export interface ConnectedDevicesResponse {

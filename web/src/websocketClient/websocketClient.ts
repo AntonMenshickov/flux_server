@@ -23,7 +23,6 @@ export class WebsocketClient {
     this.onStatusUpdate('connecting');
     this.ws = new WebSocket(wsUrl);
     this.ws.onopen = () => {
-      console.log('Ws open');
       this.onStatusUpdate('open');
       if (this.reconnectTimer) {
         clearTimeout(this.reconnectTimer);
@@ -34,13 +33,11 @@ export class WebsocketClient {
       this.onMessage(String(ev.data));
     };
     this.ws.onclose = () => {
-      console.log('Ws closed');
       this.onStatusUpdate('closed');
       this.ws = null;
       this.scheduleReconnect();
     };
     this.ws.onerror = (e) => {
-      console.log('Ws error');
       this.onStatusUpdate('error');
       this.ws?.close();
       this.scheduleReconnect();

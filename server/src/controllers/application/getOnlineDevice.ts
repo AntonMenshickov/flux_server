@@ -28,7 +28,7 @@ export async function getOnlineDevice(req: Request, res: Response) {
   res.json({
     success: true,
     result: {
-      device,
+      device: device.toJson(),
     }
   });
 }

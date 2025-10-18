@@ -37,8 +37,18 @@ export class DeviceClientInfo {
   readonly deviceId: string;
   readonly deviceName: string;
   readonly osName: string;
+  readonly meta: ReadonlyMap<string, string>;
 
-  constructor(uuid: string, applicationId: string, platform: string, bundleId: string, deviceId: string, deviceName: string, osName: string) {
+  constructor(
+    uuid: string,
+    applicationId: string,
+    platform: string,
+    bundleId: string,
+    deviceId: string,
+    deviceName: string,
+    osName: string,
+    meta: ReadonlyMap<string, string>,
+  ) {
     this.uuid = uuid;
     this.applicationId = applicationId;
     this.platform = platform;
@@ -46,6 +56,27 @@ export class DeviceClientInfo {
     this.deviceId = deviceId;
     this.deviceName = deviceName;
     this.osName = osName;
+    this.meta = meta;
+  }
+
+  public copy(changes: Partial<DeviceClientInfo>): DeviceClientInfo {
+    return new DeviceClientInfo(
+      changes.uuid ?? this.uuid,
+      changes.applicationId ?? this.applicationId,
+      changes.platform ?? this.platform,
+      changes.bundleId ?? this.bundleId,
+      changes.deviceId ?? this.deviceId,
+      changes.deviceName ?? this.deviceName,
+      changes.osName ?? this.osName,
+      changes.meta ?? this.meta,
+    );
+  }
+
+  public toJson(): object {
+    return {
+      ...this,
+      meta: Object.fromEntries(this.meta)
+    }
   }
 }
 
@@ -93,6 +124,7 @@ export class DeviceWsClient {
         deviceid,
         devicename,
         osname,
+        new Map(),
       );
       this.registerClient();
     } catch (err) {
@@ -120,6 +152,9 @@ export class DeviceWsClient {
     switch (message.type) {
       case WsClientMessageType.eventMessage:
         addEventMessage(this.clientInfo, message.payload);
+        break;
+      case WsClientMessageType.updateMetaKeys:
+        this.clientInfo = this.clientInfo?.copy({ meta: new Map(Object.entries(message.payload)) });
         break;
       default:
         this.ws.close(4005, responseMessages.WS_UNKNOWN_MESSAGE_TYPE);

@@ -12,10 +12,19 @@
         <span :title="deviceConnected ? 'Device online' : 'Device offline'">
           <DevicePhoneMobileIcon :class="{ 'device-status': true, 'device-connected': deviceConnected }" />
         </span>
-        <div class="device-item">
-          <div class="device-name">{{ connectedDevice?.deviceName }} {{ connectedDevice?.deviceId }}</div>
-          <div class="device-meta">{{ connectedDevice?.platform }} • {{ connectedDevice?.osName }} • {{
-            connectedDevice?.bundleId }} • {{ connectedDevice?.uuid }}</div>
+        <div v-if="connectedDevice" class="device-item">
+          <div class="device-name">{{ connectedDevice.deviceName }} {{ connectedDevice.deviceId }}</div>
+          <div class="device-params">{{ connectedDevice.platform }} • {{ connectedDevice.osName }} • {{
+            connectedDevice.bundleId }} • {{ connectedDevice.uuid }}</div>
+
+        </div>
+        <div v-if="connectedDevice" class="device-meta">
+          <div class="meta-values">
+            <div v-for="([key, value], i) in Object.entries(connectedDevice.meta)" :key="i" class="meta-item">
+              <span class="meta-key">{{ key }}</span>
+              <span class="meta-value">{{ value }}</span>
+            </div>
+          </div>
         </div>
       </div>
       <BaseButton :class="{ 'enabled': autoscrollEnabled }" @click="toggleAutoScroll" title="Toggle autoscroll">
@@ -230,7 +239,7 @@ function goBack() {
 .device-info {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: end;
 }
 
 .device-item {
@@ -244,7 +253,37 @@ function goBack() {
   font-size: 1rem;
 }
 
+.device-params {
+  color: var(--color-text-dimmed, #888);
+  font-size: 0.85rem;
+}
+
 .device-meta {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  margin-left: 2rem;
+  max-height: 2rem;
+  overflow-y: auto;
+}
+
+.meta-values {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 1rem;
+  text-align: start;
+}
+
+.meta-item {
+  display: contents;
+}
+
+.meta-key {
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.meta-value {
   color: var(--color-text-dimmed, #888);
   font-size: 0.85rem;
 }
