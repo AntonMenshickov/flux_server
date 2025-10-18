@@ -161,7 +161,6 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
 <style scoped>
 .logs-page {
   height: 100%;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -190,8 +189,8 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
 }
 
 .logs-list {
-  padding: 1.5rem;
-  padding-top: 1rem;
+  margin: 1.5rem;
+  margin-top: 1rem;
 }
 
 .smart-search {

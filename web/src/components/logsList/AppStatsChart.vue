@@ -299,7 +299,7 @@ watch(() => props.application, () => {
 }
 
 .chart-section {
-  width: 100%;
+  flex: 1;
 }
 
 .empty-message {
