@@ -22,7 +22,7 @@
           <span class="totals-label">All records</span>
           <span class="totals-value">{{ totalAll }}</span>
         </div>
-        <div class="totals-row" v-for="lvl in logLevels" :key="lvl">
+        <div class="totals-row log-level-value" v-for="lvl in logLevels" :key="lvl" @click="() => emitSearch(lvl)">
           <span class="level-chip" :class="`level-${lvl}`"></span>
           <span class="totals-label">{{ lvl }}</span>
           <span class="spacer"></span>
@@ -60,6 +60,13 @@ import { Chart } from 'chart.js';
 import { LogLevel } from '@/model/event/logLevel';
 import type { ApplicationStatsResponse } from '@/api/applications';
 
+onMounted(() => {
+  renderCharts();
+});
+const emit = defineEmits<{
+  (e: 'search', logLevel: LogLevel): void
+}>();
+
 const props = defineProps<{ application: ApplicationStatsResponse }>();
 const logLevels = Object.values(LogLevel);
 
@@ -79,6 +86,11 @@ const totalByLevel = computed<Record<LogLevel, number>>(() => {
   }
   return totals;
 });
+
+watch(() => props.application, () => {
+  renderCharts();
+}, { deep: true });
+
 
 const totalAll = computed(() => Object.values(totalByLevel.value).reduce((a, b) => a + b, 0));
 
@@ -177,7 +189,7 @@ const renderCharts = () => {
           responsive: true,
           animation: { duration: 0 },
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 },  } },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 }, } },
           interaction: {
             mode: 'nearest',
             axis: 'x',
@@ -268,13 +280,10 @@ const renderCharts = () => {
   }
 };
 
-onMounted(() => {
-  renderCharts();
-});
+function emitSearch(value: LogLevel) {
+  emit('search', value);
+}
 
-watch(() => props.application, () => {
-  renderCharts();
-}, { deep: true });
 
 </script>
 
@@ -391,6 +400,10 @@ watch(() => props.application, () => {
 
 .totals-value {
   font-weight: 700;
+}
+
+.log-level-value {
+  cursor: pointer;
 }
 
 .level-chip {

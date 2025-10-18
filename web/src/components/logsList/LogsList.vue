@@ -9,12 +9,11 @@
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
     </div>
     <div v-if="application != null" class="apps">
-      <AppStatsChart :application="application" />
+      <AppStatsChart :application="application" @search="addLogLevelCriterion" />
     </div>
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
         class="smart-search-field" />
-      <!-- Live stream UI moved to OnlineLogStream.vue -->
     </div>
     <div v-if="application != null" class="logs-list">
       <LogCard v-for="(log, index) in logs" :key="index" :log="log" @search="addSearchCriterion" />
@@ -29,7 +28,7 @@ import { ref, onMounted, watch } from 'vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import LogCard from '@/components/base/LogCard.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
-import { SearchCriterion } from '@/components/base/smartSearch/types';
+import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/smartSearch/types';
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
@@ -38,6 +37,7 @@ import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import { fieldOptions } from '@/components/logsList/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
+import type { LogLevel } from '@/model/event/logLevel';
 
 
 const appsData = ref<ApplicationShortStats[]>([]);
@@ -105,6 +105,17 @@ function deviceSelected(device: ConnectedDevice) {
 
 const addSearchCriterion = (criterion: SearchCriterion) => {
   criteria.value = [...criteria.value, criterion];
+  applyFilters();
+};
+
+const addLogLevelCriterion = (logLevel: LogLevel) => {
+  const criteriaIndex = criteria.value.findIndex((e) => e.field == SearchFieldKey.LogLevel);
+  if (criteriaIndex == -1) {
+    criteria.value = [...criteria.value, new SearchCriterion(SearchFieldKey.LogLevel, Operator.In, [logLevel])]
+  } else {
+    const foundCriteria = criteria.value[criteriaIndex];
+    criteria.value[criteriaIndex] = new SearchCriterion(SearchFieldKey.LogLevel, Operator.In, Array.from(new Set([...foundCriteria.value as LogLevel[], logLevel])))
+  }
   applyFilters();
 };
 
