@@ -4,7 +4,7 @@ import { ConfigService } from '../../services/configService';
 import { container } from 'tsyringe';
 
 
-@Entity({ name: container.resolve(ConfigService).postgresEventsTable })
+@Entity({ name: process.env.POSTGRES_EVENTS_TABLE })
 export class EventMessage extends BaseEntity {
     @PrimaryColumn('uuid')
     id!: string;
