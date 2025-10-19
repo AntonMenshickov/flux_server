@@ -11,6 +11,11 @@ if (configLoadResult.error) {
   console.error(configLoadResult.error);
 }
 
+import { container } from 'tsyringe';
+import { ConfigService } from './services/configService';
+
+container.resolve(ConfigService);
+
 
 import { startServer } from './app';
 
