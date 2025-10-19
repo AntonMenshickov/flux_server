@@ -2,7 +2,7 @@
   <div class="chart-wrapper">
     <div class="totals" v-if="hasAnyData">
       <div class="totals-header">
-        <div class="totals-title">Totals</div>
+        <div class="totals-title">Summary</div>
         <div class="bundles" v-if="props.application.bundles?.length">
           <div class="totals-row totals-overall">
             <span class="totals-label">Bundles</span>
@@ -31,23 +31,23 @@
       </div>
     </div>
     <div v-if="hasLogLevelData" class="chart-section">
-        <div class="subtitle">Logs by Level</div>
-        <canvas ref="logChartRef" />
-      </div>
+      <div class="subtitle">Logs by Level</div>
+      <canvas ref="logChartRef" />
+    </div>
 
-      <div v-if="hasPlatformData" class="chart-section">
-        <div class="subtitle">Platforms</div>
-        <canvas ref="platformChartRef" />
-      </div>
+    <div v-if="hasPlatformData" class="chart-section">
+      <div class="subtitle">Platforms</div>
+      <canvas ref="platformChartRef" />
+    </div>
 
-      <div v-if="hasOsData" class="chart-section">
-        <div class="subtitle">Operating Systems</div>
-        <canvas ref="osChartRef" />
-      </div>
+    <div v-if="hasOsData" class="chart-section">
+      <div class="subtitle">Operating Systems</div>
+      <canvas ref="osChartRef" />
+    </div>
 
-      <div v-if="!hasLogLevelData && !hasPlatformData && !hasOsData" class="empty-message">
-        No statistics available
-      </div>
+    <div v-if="!hasLogLevelData && !hasPlatformData && !hasOsData" class="empty-message">
+      No statistics available
+    </div>
   </div>
 </template>
 
@@ -230,6 +230,14 @@ const renderCharts = () => {
             plugins: { legend: { display: false } },
             scales: {
               y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: {
+                ticks: {
+                  callback: function (value) {
+                    const label = typeof value === 'string' ? `${value}` : this.getLabelForValue(value);
+                    return label.length > 10 ? label.slice(0, 10) + '...' : label;
+                  }
+                }
+              }
             },
           },
         });
@@ -267,6 +275,16 @@ const renderCharts = () => {
             responsive: true,
             animation: { duration: 0 },
             plugins: { legend: { display: false } },
+            scales: {
+              x: {
+                ticks: {
+                  callback: function (value) {
+                    const label = typeof value === 'string' ? `${value}` : this.getLabelForValue(value);
+                    return label.length > 10 ? label.slice(0, 10) + '...' : label;
+                  }
+                }
+              }
+            }
           },
         });
       }
@@ -289,7 +307,7 @@ function emitSearch(value: LogLevel) {
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  flex: 1;
+  flex-wrap: wrap;
   padding: 1rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
@@ -307,6 +325,8 @@ function emitSearch(value: LogLevel) {
 }
 
 .chart-section {
+  min-width: 300px;
+  max-width: 450px;
   flex: 1;
 }
 
@@ -328,7 +348,9 @@ function emitSearch(value: LogLevel) {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
+  flex: 1;
 }
 
 .totals-header {
@@ -339,6 +361,7 @@ function emitSearch(value: LogLevel) {
 
 .totals-title {
   font-weight: 700;
+  align-self: flex-start;
 }
 
 /* bundles-title removed in favor of consistent totals-row styling */

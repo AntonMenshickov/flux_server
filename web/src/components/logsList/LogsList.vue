@@ -14,6 +14,9 @@
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
         class="smart-search-field" />
+      <BaseButton @click="fetchLogs(true)" title="reload">
+        <ArrowPathIcon class="refresh-icon"/>
+      </BaseButton>
     </div>
     <div v-if="application != null" class="logs-list">
       <LogCard v-for="(log, index) in logs" :key="index" :log="log" @search="addSearchCriterion" />
@@ -32,12 +35,13 @@ import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/sma
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import { fieldOptions } from '@/components/logsList/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
+import BaseButton from '../base/BaseButton.vue';
 
 
 const appsData = ref<ApplicationShortStats[]>([]);
@@ -230,5 +234,9 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
 .stats-wrapper {
   margin: 1.5rem;
   margin-bottom: 0;
+}
+
+.refresh-icon {
+  width: 1.1rem;
 }
 </style>
