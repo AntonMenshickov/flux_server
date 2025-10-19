@@ -17,15 +17,14 @@ export class Postgres {
   public table: string;
   private logsMaxAgeInDays: number;
 
-  constructor() {
-    const config = container.resolve(ConfigService);
-    this.username = config.postgresUsername;
-    this.password = config.postgresPassword;
-    this.host = config.postgresHost;
-    this.port = config.postgresPort;
-    this.database = config.postgresDatabase;
-    this.table = config.postgresEventsTable;
-    this.logsMaxAgeInDays = config.dbLogsMaxAgeDays;
+  constructor(private configService: ConfigService) {
+    this.username = this.configService.postgresUsername;
+    this.password = this.configService.postgresPassword;
+    this.host = this.configService.postgresHost;
+    this.port = this.configService.postgresPort;
+    this.database = this.configService.postgresDatabase;
+    this.table = this.configService.postgresEventsTable;
+    this.logsMaxAgeInDays = this.configService.dbLogsMaxAgeDays;
   }
 
   get dataSource(): DataSource {
