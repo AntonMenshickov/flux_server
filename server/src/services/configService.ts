@@ -34,60 +34,68 @@ export class ConfigService {
 
   constructor() {
     const schema = z.object({
-      PORT: z.coerce.number().default(4000),
+      PORT: z.coerce.number(),
 
       JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
-      JWT_AT_EXPIRES_IN: z.string().default('1d'),
-      JWT_RT_EXPIRES_IN: z.string().default('30d'),
+      JWT_AT_EXPIRES_IN: z.string(),
+      JWT_RT_EXPIRES_IN: z.string(),
 
-      MONGO_HOST: z.string().default('127.0.0.1'),
-      MONGO_PORT: z.coerce.number().default(27017),
-      MONGO_DATABASE: z.string().default('flux'),
+      MONGO_HOST: z.string(),
+      MONGO_PORT: z.coerce.number(),
+      MONGO_DATABASE: z.string(),
 
-      POSTGRES_HOST: z.string().default('127.0.0.1'),
-      POSTGRES_PORT: z.coerce.number().default(5432),
-      POSTGRES_USERNAME: z.string().default('postgres'),
-      POSTGRES_PASSWORD: z.string().default('default'),
-      POSTGRES_DATABASE: z.string().default('flux'),
-      POSTGRES_EVENTS_TABLE: z.string().default('events'),
+      POSTGRES_HOST: z.string(),
+      POSTGRES_PORT: z.coerce.number(),
+      POSTGRES_USERNAME: z.string(),
+      POSTGRES_PASSWORD: z.string(),
+      POSTGRES_DATABASE: z.string(),
+      POSTGRES_EVENTS_TABLE: z.string(),
 
-      DB_LOGS_MAX_AGE_DAYS: z.coerce.number().default(30),
+      DB_LOGS_MAX_AGE_DAYS: z.coerce.number(),
 
-      REDIS_HOST: z.string().default('127.0.0.1'),
-      REDIS_PORT: z.coerce.number().default(6379),
+      REDIS_HOST: z.string(),
+      REDIS_PORT: z.coerce.number(),
 
-      EVENTS_BATCH_SIZE: z.coerce.number().default(100),
-      FLUSH_INTERVAL_MS: z.coerce.number().default(60000),
+      EVENTS_BATCH_SIZE: z.coerce.number(),
+      FLUSH_INTERVAL_MS: z.coerce.number(),
     });
 
-    const env = schema.parse(process.env);
+    const result = schema.safeParse(process.env);
 
-    this.config = {
-      port: env.PORT,
+    if (result.success) {
+      const env = result.data;
+      console.log('Config loaded', env)
 
-      jwtSecret: env.JWT_SECRET,
-      jwtAtExpiresIn: env.JWT_AT_EXPIRES_IN,
-      jwtRtExpiresIn: env.JWT_RT_EXPIRES_IN,
+      this.config = {
+        port: env.PORT,
 
-      mongoHost: env.MONGO_HOST,
-      mongoPort: env.MONGO_PORT,
-      mongoDatabase: env.MONGO_DATABASE,
+        jwtSecret: env.JWT_SECRET,
+        jwtAtExpiresIn: env.JWT_AT_EXPIRES_IN,
+        jwtRtExpiresIn: env.JWT_RT_EXPIRES_IN,
 
-      postgresHost: env.POSTGRES_HOST,
-      postgresPort: env.POSTGRES_PORT,
-      postgresUsername: env.POSTGRES_USERNAME,
-      postgresPassword: env.POSTGRES_PASSWORD,
-      postgresDatabase: env.POSTGRES_DATABASE,
-      postgresEventsTable: env.POSTGRES_EVENTS_TABLE,
+        mongoHost: env.MONGO_HOST,
+        mongoPort: env.MONGO_PORT,
+        mongoDatabase: env.MONGO_DATABASE,
 
-      dbLogsMaxAgeDays: env.DB_LOGS_MAX_AGE_DAYS,
+        postgresHost: env.POSTGRES_HOST,
+        postgresPort: env.POSTGRES_PORT,
+        postgresUsername: env.POSTGRES_USERNAME,
+        postgresPassword: env.POSTGRES_PASSWORD,
+        postgresDatabase: env.POSTGRES_DATABASE,
+        postgresEventsTable: env.POSTGRES_EVENTS_TABLE,
 
-      redisHost: env.REDIS_HOST,
-      redisPort: env.REDIS_PORT,
+        dbLogsMaxAgeDays: env.DB_LOGS_MAX_AGE_DAYS,
 
-      eventsBatchSize: env.EVENTS_BATCH_SIZE,
-      flushIntervalMs: env.FLUSH_INTERVAL_MS,
-    };
+        redisHost: env.REDIS_HOST,
+        redisPort: env.REDIS_PORT,
+
+        eventsBatchSize: env.EVENTS_BATCH_SIZE,
+        flushIntervalMs: env.FLUSH_INTERVAL_MS,
+      };
+    } else {
+      console.error(result.error);
+      throw result.error;
+    }
   }
 
   get port() { return this.config.port; }
