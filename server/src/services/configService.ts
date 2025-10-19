@@ -1,3 +1,5 @@
+import path from 'path';
+import dotenv from 'dotenv';
 import { singleton } from 'tsyringe';
 import { z } from 'zod';
 
@@ -33,6 +35,15 @@ export class ConfigService {
   private readonly config: AppConfig;
 
   constructor() {
+    //Reading config from config.env
+    const environmentConfig = path.join(__dirname, '../config.env');
+    console.log('Loading config from file', environmentConfig);
+    const configLoadResult = dotenv.config({ path: environmentConfig })
+
+    if (configLoadResult.error) {
+      console.error(configLoadResult.error);
+    }
+
     const schema = z.object({
       PORT: z.coerce.number(),
 
