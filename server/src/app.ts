@@ -11,7 +11,6 @@ import path from 'path';
 import { ApplicationStatsCleanupService } from './services/applicationStatsCleanup';
 import { container } from 'tsyringe';
 import { Postgres } from './database/postgres';
-import { PostgresEventsRepository } from './database/repository/postgresEventRepository';
 import { ConfigService } from './services/configService';
 
 
