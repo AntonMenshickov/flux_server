@@ -17,7 +17,7 @@ import { ConfigService } from './services/configService';
 export async function startServer() {
   const config = container.resolve(ConfigService);
   console.log('Connecting to MongoDB...');
-  await connect(`mongodb://${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}`);
+  await connect(`mongodb://${config.mongoUser}:${config.mongoPassword}@${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}?authSource=admin`);
   console.log('Connected to MongoDB');
 
   // Schedule Mongo ApplicationStats cleanup

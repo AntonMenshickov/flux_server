@@ -28,6 +28,7 @@ export class ReliableBatchQueue {
     this.redis = new Redis({
       host: configService.redisHost,
       port: configService.redisPort,
+      password: configService.redisPassword,
       connectTimeout: 10000,
       retryStrategy(times) {
         const delay = Math.min(times * 200, 2000);
