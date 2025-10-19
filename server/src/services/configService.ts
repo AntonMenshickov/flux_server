@@ -42,6 +42,7 @@ export class ConfigService {
 
     if (configLoadResult.error) {
       console.error(configLoadResult.error);
+      throw configLoadResult.error;
     }
 
     const schema = z.object({
@@ -71,7 +72,7 @@ export class ConfigService {
       FLUSH_INTERVAL_MS: z.coerce.number(),
     });
 
-    const result = schema.safeParse(process.env);
+    const result = schema.safeParse(configLoadResult.parsed);
 
     if (result.success) {
       const env = result.data;
