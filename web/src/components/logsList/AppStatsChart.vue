@@ -30,9 +30,7 @@
         </div>
       </div>
     </div>
-
-    <div class="charts">
-      <div v-if="hasLogLevelData" class="chart-section">
+    <div v-if="hasLogLevelData" class="chart-section">
         <div class="subtitle">Logs by Level</div>
         <canvas ref="logChartRef" />
       </div>
@@ -50,7 +48,6 @@
       <div v-if="!hasLogLevelData && !hasPlatformData && !hasOsData" class="empty-message">
         No statistics available
       </div>
-    </div>
   </div>
 </template>
 
@@ -291,18 +288,12 @@ function emitSearch(value: LogLevel) {
 .chart-wrapper {
   display: flex;
   flex-direction: row;
-  gap: 1.5rem;
+  gap: 1rem;
   flex: 1;
   padding: 1rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
   background-color: white;
-}
-
-.charts {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
 }
 
 .title {
@@ -317,6 +308,12 @@ function emitSearch(value: LogLevel) {
 
 .chart-section {
   flex: 1;
+}
+
+.chart-section canvas {
+  max-width: 100%;
+  height: auto !important;
+  display: block;
 }
 
 .empty-message {

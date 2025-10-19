@@ -8,7 +8,7 @@
     <div v-if="application == null" class="apps">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
     </div>
-    <div v-if="application != null" class="apps">
+    <div v-if="application != null" class="stats-wrapper">
       <AppStatsChart :application="application" @search="addLogLevelCriterion" />
     </div>
     <div v-if="application != null" class="smart-search">
@@ -223,6 +223,11 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   flex-direction: row;
   flex-wrap: wrap;
   gap: 1.5rem;
+  margin: 1.5rem;
+  margin-bottom: 0;
+}
+
+.stats-wrapper {
   margin: 1.5rem;
   margin-bottom: 0;
 }
