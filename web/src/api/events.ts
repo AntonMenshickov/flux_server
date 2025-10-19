@@ -1,4 +1,4 @@
-import type { EventMessage } from '@/model/event/eventMessage';
+import { eventMessageFromJson, type EventMessage } from '@/model/event/eventMessage';
 import { request } from '.';
 import type { SearchCriterion } from '@/components/base/smartSearch/types';
 
@@ -16,10 +16,7 @@ async function search(limit: number, offset: number, applicationId: string, filt
   return result.mapRight((r) => ({
     ...r,
     result: {
-      events: r.result.events.map(e => ({
-        ...e,
-        meta: e.meta instanceof Map ? e.meta : new Map<string, string>(Object.entries(e.meta || {})),
-      }))
+      events: r.result.events.map(e => eventMessageFromJson(e))
     }
   }));
 }

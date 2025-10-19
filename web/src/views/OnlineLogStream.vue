@@ -42,7 +42,7 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { wsStreams } from '@/api/wsStreams';
 import LogCard from '@/components/base/LogCard.vue';
-import type { EventMessage } from '@/model/event/eventMessage';
+import { eventMessageFromJson, type EventMessage } from '@/model/event/eventMessage';
 import { ArrowLeftIcon, WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon } from '@heroicons/vue/24/outline';
 import { WebsocketClient, type ConnectionStatus } from '@/websocketClient/websocketClient';
 import { applications, type ConnectedDevice } from '@/api/applications';
@@ -119,7 +119,7 @@ async function initializeEventsStream() {
         const msg = JSON.parse(message);
         if (msg) {
           if (msg.type === 3 && msg.payload) {
-            logs.value = [...logs.value, msg.payload];
+            logs.value = [...logs.value, eventMessageFromJson(msg.payload)];
           } else if (msg.type === 2 && msg.payload) {
             if (webUuid == null) {
               webUuid = msg.payload as string;

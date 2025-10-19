@@ -74,8 +74,6 @@
             <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" @click="emitSearch(SearchFieldKey.Tags, tag)" />
           </div>
         </section>
-
-
       </section>
     </transition>
   </div>
