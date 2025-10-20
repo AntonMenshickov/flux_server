@@ -1,15 +1,9 @@
-import Redis from 'ioredis';
+import Redis, { RedisOptions } from 'ioredis';
 import { EventMessageView } from '../model/eventMessageView';
 import { PostgresEventsRepository } from '../database/repository/postgresEventRepository';
 import { EventsStatsService } from '../services/eventsStatsService';
 import { container, singleton } from 'tsyringe';
 import { ConfigService } from '../services/configService';
-
-interface RedisConnectionParams {
-  host: string;
-  port: number;
-  password?: string;
-}
 
 @singleton()
 export class ReliableBatchQueue {
@@ -31,9 +25,15 @@ export class ReliableBatchQueue {
     this.processingName = 'processing';
     this.batchSize = configService.eventsBatchSize;
     this.flushIntervalMs = configService.flushIntervalMs;
-    let connectionParams: RedisConnectionParams = {
+    let connectionParams: RedisOptions = {
       host: configService.redisHost,
       port: configService.redisPort,
+      connectTimeout: 10000,
+      retryStrategy(times) {
+        const delay = Math.min(times * 200, 2000);
+        console.log(`Redis reconnect attempt #${times}, next try in ${delay}ms`);
+        return delay;
+      },
     };
     if (configService.redisPassword) {
       connectionParams = {
@@ -42,15 +42,7 @@ export class ReliableBatchQueue {
       };
     }
 
-    this.redis = new Redis({
-      ...connectionParams,
-      connectTimeout: 10000,
-      retryStrategy(times) {
-        const delay = Math.min(times * 200, 2000);
-        console.log(`Redis reconnect attempt #${times}, next try in ${delay}ms`);
-        return delay;
-      },
-    });
+    this.redis = new Redis(connectionParams);
     this.redis.on('error', async (err) => {
       console.error('Redis error:', err);
     });
