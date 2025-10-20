@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:17
+    image: postgres:17-alpine3.22
     container_name: flux-postgres
     restart: unless-stopped
     environment:

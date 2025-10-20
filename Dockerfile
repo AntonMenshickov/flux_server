@@ -1,7 +1,7 @@
 # Multi-stage build для оптимизации размера образа
 
 # Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app/web
 
@@ -18,7 +18,7 @@ COPY web/ ./
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM node:20-alpine AS backend-builder
+FROM node:22-alpine AS backend-builder
 
 WORKDIR /app/server
 
@@ -35,7 +35,7 @@ COPY server/ ./
 RUN npm run build
 
 # Stage 3: Production Image
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
