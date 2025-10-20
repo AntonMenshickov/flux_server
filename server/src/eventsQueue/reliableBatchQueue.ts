@@ -5,6 +5,12 @@ import { EventsStatsService } from '../services/eventsStatsService';
 import { container, singleton } from 'tsyringe';
 import { ConfigService } from '../services/configService';
 
+interface RedisConnectionParams {
+  host: string;
+  port: number;
+  password?: string;
+}
+
 @singleton()
 export class ReliableBatchQueue {
   private flushing = false;
@@ -25,9 +31,19 @@ export class ReliableBatchQueue {
     this.processingName = 'processing';
     this.batchSize = configService.eventsBatchSize;
     this.flushIntervalMs = configService.flushIntervalMs;
-    this.redis = new Redis({
+    let connectionParams: RedisConnectionParams = {
       host: configService.redisHost,
       port: configService.redisPort,
+    };
+    if (configService.redisPassword) {
+      connectionParams = {
+        ...connectionParams,
+        password: configService.redisPassword,
+      };
+    }
+
+    this.redis = new Redis({
+      ...connectionParams,
       connectTimeout: 10000,
       retryStrategy(times) {
         const delay = Math.min(times * 200, 2000);

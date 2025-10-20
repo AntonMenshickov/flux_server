@@ -3,10 +3,9 @@ import { useUserStore } from '@/stores/userStore';
 import { jwtDecode, type JwtPayload } from 'jwt-decode';
 import { left, right, type Either } from '@sweet-monads/either';
 import { auth } from './auth';
-import { CONFIG } from '@/config';
 
 
-const baseUrl = `${CONFIG.API_URL}/api`;
+const baseUrl = `${import.meta.env.VITE_API_HOST}/api`;
 
 const privateApi = axios.create({
   baseURL: baseUrl,

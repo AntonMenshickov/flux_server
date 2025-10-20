@@ -17,7 +17,8 @@ import { ConfigService } from './services/configService';
 export async function startServer() {
   const config = container.resolve(ConfigService);
   console.log('Connecting to MongoDB...');
-  await connect(`mongodb://${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}`);
+  const mongoCreds = config.mongoUser && config.mongoPassword ? `${config.mongoUser}:${config.mongoPassword}@` : '';
+  await connect(`mongodb://${mongoCreds}${config.mongoHost}:${config.mongoPort}/${config.mongoDatabase}?authSource=admin`);
   console.log('Connected to MongoDB');
 
   // Schedule Mongo ApplicationStats cleanup
@@ -36,8 +37,10 @@ export async function startServer() {
   wsApp.ws('/ws', websocket);
   app.use(cors());
 
+  
+
   // Serve static if a frontend build exists at ../web/dist
-  const frontendDist = path.join(__dirname, '../../web/dist');
+  const frontendDist = path.join(__dirname, container.resolve(ConfigService).webPath);
   app.use(express.static(frontendDist));
   app.use((req, res, next) => {
     const now = new Date();

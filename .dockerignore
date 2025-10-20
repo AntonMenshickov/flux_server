@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+*/node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+*/dist/
+*/build/
+
+# Development files
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment files (исключаем все кроме нужного)
+.env
+.env.*
+!config.env
+
+# Misc
+*.md
+!README.md
+.editorconfig
+.prettierrc*
+eslint.config.*
+tsconfig*.json
+vite.config.*

@@ -13,6 +13,8 @@ export interface AppConfig {
   mongoHost: string;
   mongoPort: number;
   mongoDatabase: string;
+  mongoUser: string | null;
+  mongoPassword: string | null;
 
   postgresHost: string;
   postgresPort: number;
@@ -25,9 +27,12 @@ export interface AppConfig {
 
   redisHost: string;
   redisPort: number;
+  redisPassword: string | null;
 
   eventsBatchSize: number;
   flushIntervalMs: number;
+
+  webPath: string;
 }
 
 @singleton()
@@ -36,7 +41,8 @@ export class ConfigService {
 
   constructor() {
     //Reading config from config.env
-    const environmentConfig = path.join(__dirname, '../config.env');
+    const configName = process.env.CONFIG_NAME ?? 'config.env';
+    const environmentConfig = path.join(__dirname, `../${configName}`);
     console.log('Loading config from file', environmentConfig);
     const configLoadResult = dotenv.config({ path: environmentConfig })
 
@@ -55,6 +61,8 @@ export class ConfigService {
       MONGO_HOST: z.string(),
       MONGO_PORT: z.coerce.number(),
       MONGO_DATABASE: z.string(),
+      MONGO_USER: z.string().optional().nullable().default(null),
+      MONGO_PASSWORD: z.string().optional().nullable().default(null),
 
       POSTGRES_HOST: z.string(),
       POSTGRES_PORT: z.coerce.number(),
@@ -67,12 +75,15 @@ export class ConfigService {
 
       REDIS_HOST: z.string(),
       REDIS_PORT: z.coerce.number(),
+      REDIS_PASSWORD: z.string().optional().nullable().default(null),
 
       EVENTS_BATCH_SIZE: z.coerce.number(),
       FLUSH_INTERVAL_MS: z.coerce.number(),
+      WEB_PATH: z.string(),
+      
     });
 
-    const result = schema.safeParse(configLoadResult.parsed);
+    const result = schema.safeParse(process.env);
 
     if (result.success) {
       const env = result.data;
@@ -88,6 +99,8 @@ export class ConfigService {
         mongoHost: env.MONGO_HOST,
         mongoPort: env.MONGO_PORT,
         mongoDatabase: env.MONGO_DATABASE,
+        mongoUser: env.MONGO_USER,
+        mongoPassword: env.MONGO_PASSWORD,
 
         postgresHost: env.POSTGRES_HOST,
         postgresPort: env.POSTGRES_PORT,
@@ -100,9 +113,12 @@ export class ConfigService {
 
         redisHost: env.REDIS_HOST,
         redisPort: env.REDIS_PORT,
+        redisPassword: env.REDIS_PASSWORD,
 
         eventsBatchSize: env.EVENTS_BATCH_SIZE,
         flushIntervalMs: env.FLUSH_INTERVAL_MS,
+
+        webPath: env.WEB_PATH,
       };
     } else {
       console.error(result.error);
@@ -119,6 +135,8 @@ export class ConfigService {
   get mongoHost() { return this.config.mongoHost; }
   get mongoPort() { return this.config.mongoPort; }
   get mongoDatabase() { return this.config.mongoDatabase; }
+  get mongoUser() { return this.config.mongoUser; }
+  get mongoPassword() { return this.config.mongoPassword; }
 
   get postgresHost() { return this.config.postgresHost; }
   get postgresPort() { return this.config.postgresPort; }
@@ -131,7 +149,10 @@ export class ConfigService {
 
   get redisHost() { return this.config.redisHost; }
   get redisPort() { return this.config.redisPort; }
+  get redisPassword() { return this.config.redisPassword; }
 
   get eventsBatchSize() { return this.config.eventsBatchSize; }
   get flushIntervalMs() { return this.config.flushIntervalMs; }
+
+  get webPath() { return this.config.webPath; }
 }
