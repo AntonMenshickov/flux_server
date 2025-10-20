@@ -1,4 +1,3 @@
-import { CONFIG } from '@/config';
 import { useUserStore } from '@/stores/userStore';
 
 export type ConnectionStatus = 'connecting' | 'open' | 'closed' | 'error';
@@ -19,7 +18,7 @@ export class WebsocketClient {
     const userStore = useUserStore();
     const tokenStr = userStore.token?.accessToken ?? '';
     if (this.ws) return;
-    const wsUrl = CONFIG.API_URL.replace(/^http/, 'ws') + '/ws?client=web&token=' + encodeURIComponent(tokenStr);
+    const wsUrl = import.meta.env.VITE_API_HOST.replace(/^http/, 'ws') + '/ws?client=web&token=' + encodeURIComponent(tokenStr);
     this.onStatusUpdate('connecting');
     this.ws = new WebSocket(wsUrl);
     this.ws.onopen = () => {

@@ -47,10 +47,10 @@ RUN npm ci --only=production && npm cache clean --force
 COPY --from=backend-builder /app/server/dist ./dist
 
 # Копируем собранный фронтенд из builder stage
-COPY --from=frontend-builder /app/web/dist ../web/dist
+COPY --from=frontend-builder /app/web/dist ./web/dist
 
 # Копируем конфигурационный файл в папку dist (откуда его ищет приложение)
-COPY server/src/config.env ./dist/config.env
+COPY server/src/docker.config.env ./dist/docker.config.env
 
 # Создаем непривилегированного пользователя для безопасности
 RUN addgroup -g 1001 -S nodejs && \
@@ -60,7 +60,7 @@ RUN addgroup -g 1001 -S nodejs && \
 USER nodejs
 
 # Экспонируем порт приложения
-EXPOSE 3000
+EXPOSE 4000
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production
