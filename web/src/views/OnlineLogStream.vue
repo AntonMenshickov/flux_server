@@ -34,8 +34,12 @@
     <div class="filter-section">
       <SmartSearch :options="fieldOptions" v-model="searchCriteria" placeholder="Filter logs..." />
     </div>
-    <div ref="scrollContainer" class="logs-list">
-      <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" />
+    <div class="logs-list-container">
+      <VList ref="virtualListRef" class="logs-list" :data="filteredLogs" @scroll="handleScroll">
+        <template #default="{ item, index }">
+          <LogCard :log="item" :key="index" />
+        </template>
+      </VList>
     </div>
   </div>
 </template>
@@ -54,13 +58,14 @@ import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import { SearchCriterion } from '@/components/base/smartSearch/types';
 import { filterLogs } from '@/utils/logFilter';
+import { VList } from 'virtua/vue';
 
 const route = useRoute();
 const router = useRouter();
 const deviceUuid = route.params.uuid as string;
 let webUuid: string | null = null;
 
-const scrollContainer = ref<HTMLElement | null>(null);
+const virtualListRef = ref<InstanceType<typeof VList> | null>(null);
 const isAtBottom = ref(true);
 const logs = ref<EventMessage[]>([]);
 const deviceConnected = ref(true);
@@ -79,17 +84,14 @@ const filteredLogs = computed(() => {
 
 
 onMounted(async () => {
-  const el = scrollContainer.value
-  el?.addEventListener('scroll', handleScroll)
-  nextTick(() => (el!.scrollTop = el!.scrollHeight))
-
+  await nextTick();
+  scrollToBottom();
   initializeEventsStream();
 });
 
 onBeforeUnmount(async () => {
-  scrollContainer.value?.removeEventListener('scroll', handleScroll)
   try {
-    if (webUuid) {
+    if (webUuid && deviceConnected.value) {
       await wsStreams.stopLogs(webUuid, deviceUuid);
     }
   } catch { }
@@ -100,13 +102,11 @@ watch(
   () => filteredLogs.value.length,
   async () => {
     if (!autoscrollEnabled.value) return;
-    await nextTick()
-    const el = scrollContainer.value
-    if (!el) return
+    await nextTick();
 
     if (isAtBottom.value) {
       // Автоматическая прокрутка вниз только если пользователь у низа
-      el.scrollTop = el.scrollHeight
+      scrollToBottom();
     }
   }
 )
@@ -158,21 +158,28 @@ async function initializeEventsStream() {
 
 }
 
+function scrollToBottom() {
+  if (virtualListRef.value && filteredLogs.value.length > 0) {
+    virtualListRef.value.scrollToIndex(filteredLogs.value.length - 1, { align: 'end' });
+  }
+}
+
 function toggleAutoScroll() {
-  const el = scrollContainer.value
-  if (el && !autoscrollEnabled.value) {
-    el.scrollTop = el.scrollHeight
+  if (!autoscrollEnabled.value) {
+    scrollToBottom();
   }
   autoscrollEnabled.value = !autoscrollEnabled.value;
 }
 
-function handleScroll() {
-  const el = scrollContainer.value
-  if (!el) return
+function handleScroll(offset: number) {
+  if (!virtualListRef.value) return;
+  
+  const scrollElement = virtualListRef.value.$el as HTMLElement;
+  if (!scrollElement) return;
 
-  const threshold = 5
-  const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-  isAtBottom.value = distanceFromBottom <= threshold
+  const threshold = 5;
+  const distanceFromBottom = scrollElement.scrollHeight - offset - scrollElement.clientHeight;
+  isAtBottom.value = distanceFromBottom <= threshold;
 }
 
 
@@ -315,14 +322,20 @@ function goBack() {
   margin: 1rem;
 }
 
-.logs-list {
+.logs-list-container {
   flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
+  overflow: hidden;
   margin: 1rem;
   margin-top: 0.5rem;
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
   background-color: white;
+}
+
+.logs-list {
+  height: 100%;
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 </style>

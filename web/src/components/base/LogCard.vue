@@ -27,13 +27,13 @@
             </div>
             <div class="extra-info-body">
               <div class="detail"><span class="detail-label">Device name:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceName, log.deviceName)">{{ log.deviceName }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceName, log.deviceName ?? '')">{{ log.deviceName }}</BaseCopyText>
               </div>
               <div class="detail"><span class="detail-label">Device ID:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceId, log.deviceId)">{{ log.deviceId }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceId, log.deviceId ?? '')">{{ log.deviceId }}</BaseCopyText>
               </div>
               <div class="detail"><span class="detail-label">OS name:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.OsName, log.osName)">{{ log.osName }}</BaseCopyText>
+                <BaseCopyText @click="emitSearch(SearchFieldKey.OsName, log.osName ?? '')">{{ log.osName }}</BaseCopyText>
               </div>
 
             </div>

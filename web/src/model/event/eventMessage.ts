@@ -8,8 +8,8 @@ export interface EventMessage {
   platform: string;
   bundleId: string;
   deviceId: string;
-  deviceName?: string;
-  osName?: string;
+  deviceName: string;
+  osName: string;
   message: string;
   tags?: string[];
   meta?: Map<string, string>;
