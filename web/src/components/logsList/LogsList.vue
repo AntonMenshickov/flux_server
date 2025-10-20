@@ -37,7 +37,7 @@ import type { ApplicationShortStats } from '@/model/application/applicationShort
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
 import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
-import { fieldOptions } from '@/components/logsList/searchCriterions';
+import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';

@@ -31,14 +31,17 @@
         <ChevronDoubleDownIcon class="auto-scroll-icon" />
       </BaseButton>
     </div>
+    <div class="filter-section">
+      <SmartSearch :options="fieldOptions" v-model="searchCriteria" placeholder="Filter logs..." />
+    </div>
     <div ref="scrollContainer" class="logs-list">
-      <LogCard v-for="(log, index) in logs" :key="index" :log="log" />
+      <LogCard v-for="(log, index) in filteredLogs" :key="index" :log="log" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { wsStreams } from '@/api/wsStreams';
 import LogCard from '@/components/base/LogCard.vue';
@@ -47,6 +50,10 @@ import { ArrowLeftIcon, WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon }
 import { WebsocketClient, type ConnectionStatus } from '@/websocketClient/websocketClient';
 import { applications, type ConnectedDevice } from '@/api/applications';
 import BaseButton from '@/components/base/BaseButton.vue';
+import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
+import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
+import { SearchCriterion } from '@/components/base/smartSearch/types';
+import { filterLogs } from '@/utils/logFilter';
 
 const route = useRoute();
 const router = useRouter();
@@ -59,9 +66,15 @@ const logs = ref<EventMessage[]>([]);
 const deviceConnected = ref(true);
 const connectedDevice = ref<ConnectedDevice | null>(null);
 const autoscrollEnabled = ref(true);
+const searchCriteria = ref<SearchCriterion[]>([]);
 
 let wsClient: WebsocketClient | null = null;
 const connectionStatus = ref<ConnectionStatus>('closed');
+
+// Computed property for filtered logs
+const filteredLogs = computed(() => {
+  return filterLogs(logs.value, searchCriteria.value);
+});
 
 
 
@@ -84,7 +97,7 @@ onBeforeUnmount(async () => {
 });
 
 watch(
-  () => logs.value.length,
+  () => filteredLogs.value.length,
   async () => {
     if (!autoscrollEnabled.value) return;
     await nextTick()
@@ -296,6 +309,10 @@ function goBack() {
   width: 1rem;
   height: 1rem;
   color: white;
+}
+
+.filter-section {
+  margin: 1rem;
 }
 
 .logs-list {

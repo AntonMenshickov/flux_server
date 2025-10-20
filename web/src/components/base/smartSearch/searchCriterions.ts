@@ -1,5 +1,5 @@
 import { LogLevel } from '@/model/event/logLevel';
-import { Operator, SearchFieldKey, ValueType, type FieldOption } from '../base/smartSearch/types';
+import { Operator, SearchFieldKey, ValueType, type FieldOption } from './types';
 
 export const fieldOptions: FieldOption[] = [
   {
