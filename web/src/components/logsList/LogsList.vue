@@ -19,7 +19,7 @@
       </BaseButton>
     </div>
     <div v-if="application != null" class="logs-list">
-      <LogCard v-for="(log, index) in logs" :key="index" :log="log" @search="addSearchCriterion" />
+      <LogCard v-for="(log) in logs" :key="log.id" :log="log" @search="addSearchCriterion" />
     </div>
   </div>
 </template>

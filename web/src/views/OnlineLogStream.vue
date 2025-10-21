@@ -36,8 +36,8 @@
     </div>
     <div class="logs-list-container">
       <VList ref="virtualListRef" class="logs-list" :data="filteredLogs" @scroll="handleScroll">
-        <template #default="{ item, index }">
-          <LogCard :log="item" :key="index" />
+        <template #default="{ item }">
+          <LogCard :log="item" :key="item.id" />
         </template>
       </VList>
     </div>
