@@ -90,7 +90,7 @@ export class PostgresEventsRepository {
       meta: 'event.meta',
     };
 
-    qb.andWhere(`LOWER(event."applicationId") = LOWER(:applicationId)`, {
+    qb.andWhere(`event."applicationId" = :applicationId`, {
       applicationId,
     });
 
@@ -250,6 +250,7 @@ export class PostgresEventsRepository {
       .take(limit)
       .skip(offset);
 
+    console.log(qb.getQueryAndParameters());
     const rows = await qb.getMany();
     return rows.map((r) => this.eventMessageFromDatabase(r));
   }
