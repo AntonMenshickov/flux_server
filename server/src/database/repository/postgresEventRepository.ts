@@ -2,7 +2,7 @@ import { EventMessageView } from '../../model/eventMessageView';
 import { EventFilter } from './eventsFilter';
 import { EventMessage } from '../../model/postgres/eventMessageDbView';
 import { Postgres } from '../postgres';
-import { Operator, SearchCriterion } from '../../model/searchCriterion';
+import { Operator, SearchCriterion, SearchFieldKey } from '../../model/searchCriterion';
 import { In, SelectQueryBuilder } from 'typeorm';
 import { injectable } from 'tsyringe';
 
@@ -75,19 +75,18 @@ export class PostgresEventsRepository {
       EventMessage.createQueryBuilder("event");
 
     // Белый список разрешённых полей -> соответствующие SQL-столбцы
-    const FIELD_TO_COLUMN: Record<string, string> = {
-      id: 'event.id',
-      timestamp: 'event.timestamp',
-      applicationId: 'event."applicationId"',
-      logLevel: 'event."logLevel"',
-      platform: 'event.platform',
-      bundleId: 'event."bundleId"',
-      deviceId: 'event."deviceId"',
-      deviceName: 'event."deviceName"',
-      osName: 'event."osName"',
-      message: 'event.message',
-      tags: 'event.tags',
-      meta: 'event.meta',
+    const FIELD_TO_COLUMN: Record<SearchFieldKey, string> = {
+      [SearchFieldKey.Message]: 'event.message',
+      [SearchFieldKey.LogLevel]: 'event."logLevel"',
+      [SearchFieldKey.Meta]: 'event.meta',
+      [SearchFieldKey.Tags]: 'event.tags',
+      [SearchFieldKey.DateFrom]: 'event.timestamp',
+      [SearchFieldKey.DateTo]: 'event.timestamp',
+      [SearchFieldKey.Platform]: 'event.platform',
+      [SearchFieldKey.BundleId]: 'event."bundleId"',
+      [SearchFieldKey.DeviceId]: 'event."deviceId"',
+      [SearchFieldKey.DeviceName]: 'event."deviceName"',
+      [SearchFieldKey.OsName]: 'event."osName"',
     };
 
     qb.andWhere(`event."applicationId" = :applicationId`, {
@@ -98,9 +97,9 @@ export class PostgresEventsRepository {
       const paramKey = `param_${index}`;
       let value: any = criterion.value;
 
-      if (criterion.field === "dateFrom" || criterion.field === "dateTo") {
+      if (criterion.field === SearchFieldKey.DateFrom || criterion.field === SearchFieldKey.DateTo) {
         value = new Date(value);
-        if (criterion.field === "dateFrom") {
+        if (criterion.field === SearchFieldKey.DateFrom) {
           qb.andWhere(`event.timestamp >= :${paramKey}`, { [paramKey]: value });
         } else {
           qb.andWhere(`event.timestamp <= :${paramKey}`, { [paramKey]: value });
@@ -109,8 +108,8 @@ export class PostgresEventsRepository {
       }
 
       // --- logLevel (всегда массив строк) ---
-      if (criterion.field === "logLevel" && Array.isArray(value)) {
-        const field = FIELD_TO_COLUMN['logLevel'];
+      if (criterion.field === SearchFieldKey.LogLevel && Array.isArray(value)) {
+        const field = FIELD_TO_COLUMN[SearchFieldKey.LogLevel];
         switch (criterion.operator) {
           case Operator.In:
             qb.andWhere(`${field} IN (:...${paramKey})`, {
@@ -129,8 +128,8 @@ export class PostgresEventsRepository {
       }
 
 
-      if (criterion.field === "meta" && Array.isArray(value)) {
-        const field = FIELD_TO_COLUMN['meta'];
+      if (criterion.field === SearchFieldKey.Meta && Array.isArray(value)) {
+        const field = FIELD_TO_COLUMN[SearchFieldKey.Meta];
         const metaFilters = value as Record<string, string>[];
 
         switch (criterion.operator) {
@@ -176,8 +175,8 @@ export class PostgresEventsRepository {
       }
 
       // --- tags ---
-      if (criterion.field === "tags") {
-        const field = FIELD_TO_COLUMN['tags'];
+      if (criterion.field === SearchFieldKey.Tags) {
+        const field = FIELD_TO_COLUMN[SearchFieldKey.Tags];
         const tagsArray = Array.isArray(value)
           ? value
           : String(value).split(",").map((t) => t.trim()).filter(Boolean);

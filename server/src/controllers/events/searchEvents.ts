@@ -2,14 +2,14 @@ import { Response, NextFunction, application } from 'express';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { EventMessageView } from '../../model/eventMessageView';
-import { Operator } from '../../model/searchCriterion';
+import { Operator, SearchFieldKey } from '../../model/searchCriterion';
 import { objectIdSchema } from '../../utils/zodUtil';
 import { container } from 'tsyringe';
 import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
 
 
 const searchCriterionsValidateSchema = z.array(z.object({
-  field: z.string().trim(),
+  field: z.enum(SearchFieldKey),
   operator: z.enum(Operator),
   value: z.union([
     z.string().trim(),
