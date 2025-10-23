@@ -3,7 +3,7 @@
   <div class="app-card">
     <div class="app-card-header">
       <div class="app-name">{{ appStats.name }}</div>
-      <div class="app-today-records">Today records: {{ totalRecords }}</div>
+      <div class="app-today-records">Today: {{ totalRecords }} events</div>
     </div>
     <canvas ref="chartRef"></canvas>
   </div>
@@ -19,6 +19,7 @@ const props = defineProps<{
   appStats: ApplicationShortStats
 }>()
 
+// Calculate total events for today (stats are filtered by today's date on the server)
 const totalRecords = computed(() => Object.values(props.appStats.stats).reduce((sum, count) => sum + count, 0));
 
 const chartRef = ref<HTMLCanvasElement | null>(null);

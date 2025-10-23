@@ -34,8 +34,19 @@ export async function searchAppStats(req: UserAuthRequest, res: Response, next: 
 
 
     const appIds = applications.map(app => app._id);
-    const latestStatsDocs = await ApplicationStats.aggregate([
-      { $match: { application: { $in: appIds } } },
+    
+    // Get today's date range (start and end of today)
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    
+    const todayStatsDocs = await ApplicationStats.aggregate([
+      { 
+        $match: { 
+          application: { $in: appIds },
+          date: { $gte: startOfToday, $lt: endOfToday }
+        } 
+      },
       { $sort: { date: -1 } },
       {
         $group: {
@@ -46,9 +57,9 @@ export async function searchAppStats(req: UserAuthRequest, res: Response, next: 
     ]);
 
 
-    const latestStatsMap = new Map<string, IApplicationStats & Document>();
-    for (const doc of latestStatsDocs) {
-      latestStatsMap.set(doc._id.toString(), doc.latestStats);
+    const todayStatsMap = new Map<string, IApplicationStats & Document>();
+    for (const doc of todayStatsDocs) {
+      todayStatsMap.set(doc._id.toString(), doc.latestStats);
     }
 
     return res.status(200).json({
@@ -58,7 +69,7 @@ export async function searchAppStats(req: UserAuthRequest, res: Response, next: 
         applications: applications.map(app => ({
           id: app._id.toString(),
           name: app.name,
-          stats: latestStatsMap.get(app._id.toString())?.logLevelStats || Object.values(LogLevel).reduce((acc, level) => {
+          stats: todayStatsMap.get(app._id.toString())?.logLevelStats || Object.values(LogLevel).reduce((acc, level) => {
             acc[level] = 0;
             return acc;
           }, {} as Record<LogLevel, number>),
