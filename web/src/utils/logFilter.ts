@@ -58,10 +58,10 @@ function matchesCriterion(log: EventMessage, criterion: SearchCriterion): boolea
       return matchString(log.osName ?? '', operator, value as string);
     
     case SearchFieldKey.DateFrom:
-      return log.timestamp / 1000 >= new Date(value as string).getTime();
+      return log.timestamp >= new Date(value as string).getTime();
     
     case SearchFieldKey.DateTo:
-      return log.timestamp / 1000 <= new Date(value as string).getTime();
+      return log.timestamp <= new Date(value as string).getTime();
     
     default:
       return true;

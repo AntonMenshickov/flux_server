@@ -32,12 +32,12 @@
       </BaseButton>
     </div>
     <div class="filter-section">
-      <SmartSearch :options="fieldOptions" v-model="searchCriteria" placeholder="Filter logs..." />
+      <SmartSearch :options="fieldOptions" v-model="criteria" placeholder="Filter logs..." />
     </div>
     <div class="logs-list-container">
       <VList ref="virtualListRef" class="logs-list" :data="filteredLogs" @scroll="handleScroll">
         <template #default="{ item }">
-          <LogCard :log="item" :key="item.id" />
+          <LogCard :log="item" :key="item.id" @search="addSearchCriterion"/>
         </template>
       </VList>
     </div>
@@ -71,14 +71,14 @@ const logs = ref<EventMessage[]>([]);
 const deviceConnected = ref(true);
 const connectedDevice = ref<ConnectedDevice | null>(null);
 const autoscrollEnabled = ref(true);
-const searchCriteria = ref<SearchCriterion[]>([]);
+const criteria = ref<SearchCriterion[]>([]);
 
 let wsClient: WebsocketClient | null = null;
 const connectionStatus = ref<ConnectionStatus>('closed');
 
 // Computed property for filtered logs
 const filteredLogs = computed(() => {
-  return filterLogs(logs.value, searchCriteria.value);
+  return filterLogs(logs.value, criteria.value);
 });
 
 
@@ -157,6 +157,11 @@ async function initializeEventsStream() {
   }
 
 }
+
+const addSearchCriterion = (criterion: SearchCriterion) => {
+  criteria.value = [...criteria.value, criterion];
+};
+
 
 function scrollToBottom() {
   if (virtualListRef.value && filteredLogs.value.length > 0) {

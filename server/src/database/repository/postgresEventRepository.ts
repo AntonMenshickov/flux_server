@@ -21,7 +21,7 @@ export class PostgresEventsRepository {
 
         const records: Partial<EventMessage>[] = chunk.map((e) => ({
           id: e.id,
-          timestamp: new Date(e.timestamp / 1000),
+          timestamp: new Date(e.timestamp),
           logLevel: e.logLevel,
           applicationId: e.applicationId,
           platform: e.platform,
@@ -193,6 +193,7 @@ export class PostgresEventsRepository {
 
           case Operator.Equals:
             qb.andWhere(`${field} @> :${paramKey}`, { [paramKey]: tagsArray });
+            qb.andWhere(`${field} <@ :${paramKey}`, { [paramKey]: tagsArray });
             break;
 
           default:
@@ -250,7 +251,6 @@ export class PostgresEventsRepository {
       .take(limit)
       .skip(offset);
 
-    console.log(qb.getQueryAndParameters());
     const rows = await qb.getMany();
     return rows.map((r) => this.eventMessageFromDatabase(r));
   }
@@ -260,7 +260,7 @@ export class PostgresEventsRepository {
     return {
       id: dbEntry.id,
       applicationId: dbEntry.applicationId,
-      timestamp: dbEntry.timestamp.getTime() * 1000,
+      timestamp: dbEntry.timestamp.getTime(),
       logLevel: dbEntry.logLevel,
       platform: dbEntry.platform,
       bundleId: dbEntry.bundleId,

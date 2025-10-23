@@ -112,7 +112,7 @@ function emitSearch(field: SearchFieldKey, value: string | { key: string; value:
 }
 
 function formatDate(ts: number) {
-  return new Date(ts / 1000).toLocaleString();
+  return new Date(ts).toLocaleString();
 }
 </script>
 
