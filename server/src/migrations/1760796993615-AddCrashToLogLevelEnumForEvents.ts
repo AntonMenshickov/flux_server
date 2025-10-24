@@ -6,12 +6,14 @@ export class AddCrashToLogLevelEnumForEvents1760796993615 implements MigrationIn
   
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    console.log(`[Migration] ${this.constructor.name} up`);
     await queryRunner.query(`
       ALTER TYPE log_level_enum ADD VALUE IF NOT EXISTS 'crash';
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    console.log(`[Migration] ${this.constructor.name} down`);
     const table = container.resolve(ConfigService).postgresEventsTable;
     await queryRunner.query(`
       ALTER TYPE log_level_enum RENAME TO log_level_enum_old;

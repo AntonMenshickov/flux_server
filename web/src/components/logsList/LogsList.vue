@@ -49,7 +49,8 @@ const logs = ref<EventMessage[]>([]);
 const application = ref<ApplicationStatsResponse | null>(null);
 const criteria = ref<SearchCriterion[]>([]);
 const pageSize = 100;
-let offset = 0;
+let lastTimestamp: number | undefined = undefined;
+let lastId: string | undefined = undefined;
 let isLoading = false;
 let hasMore = true;
 
@@ -127,7 +128,8 @@ const addLogLevelCriterion = (logLevel: LogLevel) => {
 async function fetchLogs(clear: boolean = false) {
   isLoading = true;
   if (clear) {
-    offset = 0;
+    lastTimestamp = undefined;
+    lastId = undefined;
     hasMore = true;
   }
 
@@ -135,7 +137,7 @@ async function fetchLogs(clear: boolean = false) {
     return;
   }
 
-  const eventsResult = await events.search(pageSize, offset, application.value.id, criteria.value);
+  const eventsResult = await events.search(pageSize, application.value.id, criteria.value, lastTimestamp, lastId);
   if (eventsResult.isRight()) {
     const events = eventsResult.value.result.events.map(e => ({
       ...e,
@@ -147,7 +149,13 @@ async function fetchLogs(clear: boolean = false) {
       logs.value = [...logs.value, ...events];
     }
     hasMore = events.length == pageSize;
-    offset += events.length;
+    
+    // Обновляем lastTimestamp и lastId для следующей страницы
+    if (events.length > 0) {
+      const lastEvent = events[events.length - 1];
+      lastTimestamp = lastEvent.timestamp;
+      lastId = lastEvent.id;
+    }
   } else {
     alert(eventsResult.value.message);
   }

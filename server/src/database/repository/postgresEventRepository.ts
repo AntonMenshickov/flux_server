@@ -67,8 +67,9 @@ export class PostgresEventsRepository {
 
   public async find(
     limit: number,
-    offset: number,
     applicationId: string,
+    lastTimestamp?: number,
+    lastId?: string,
     filters: SearchCriterion[] = [],
   ): Promise<EventMessageView[]> {
     const qb: SelectQueryBuilder<EventMessage> =
@@ -92,6 +93,13 @@ export class PostgresEventsRepository {
     qb.andWhere(`event."applicationId" = :applicationId`, {
       applicationId,
     });
+
+    if (lastTimestamp !== undefined && lastId !== undefined) {
+      qb.andWhere(`("timestamp", id) < (:lastTimestamp, :lastId)`, {
+        lastTimestamp: new Date(lastTimestamp),
+        lastId,
+      })
+    }
 
     filters.forEach((criterion, index) => {
       const paramKey = `param_${index}`;
@@ -247,8 +255,7 @@ export class PostgresEventsRepository {
     });
 
     qb.orderBy("event.timestamp", "DESC")
-      .take(limit)
-      .skip(offset);
+    .take(limit);
 
     const rows = await qb.getMany();
     return rows.map((r) => this.eventMessageFromDatabase(r));

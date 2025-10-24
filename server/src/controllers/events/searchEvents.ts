@@ -23,17 +23,18 @@ const searchCriterionsValidateSchema = z.array(z.object({
 export const searchEventsValidateSchema = z.object({
   body: z.object({
     limit: z.coerce.number().int().nonnegative().default(20),
-    offset: z.coerce.number().int().nonnegative().default(0),
+    lastTimestamp: z.coerce.number().int().nonnegative().optional(),
+    lastId: z.string().optional(),
     applicationId: objectIdSchema.nonoptional(),
     filter: searchCriterionsValidateSchema.nullable().optional(),
   })
 });
 
 export async function searchEvents(req: UserAuthRequest, res: Response, next: NextFunction) {
-  const { limit, offset, applicationId, filter } = searchEventsValidateSchema.parse(req).body;
+  const { limit, lastTimestamp, lastId, applicationId, filter } = searchEventsValidateSchema.parse(req).body;
 
 
-  const events: EventMessageView[] = await container.resolve(PostgresEventsRepository).find(limit, offset, applicationId.toString(), filter ?? []);
+  const events: EventMessageView[] = await container.resolve(PostgresEventsRepository).find(limit, applicationId.toString(), lastTimestamp, lastId, filter ?? []);
 
 
   return res.status(200).json({

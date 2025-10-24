@@ -4,6 +4,8 @@ import { ConfigService } from '../services/configService';
 
 export class CreateEventsTable1700000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    console.log(`[Migration] ${this.constructor.name} up`);
+
     const table = container.resolve(ConfigService).postgresEventsTable;
 
     await queryRunner.query(`
@@ -34,6 +36,8 @@ export class CreateEventsTable1700000000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    console.log(`[Migration] ${this.constructor.name} down`);
+    
     const table = container.resolve(ConfigService).postgresEventsTable;
     await queryRunner.query(`
       DROP TABLE IF EXISTS ${table};

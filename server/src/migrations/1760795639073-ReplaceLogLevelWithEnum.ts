@@ -5,6 +5,7 @@ import { ConfigService } from '../services/configService';
 export class ReplaceLogLevelWithEnum1760795639073 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    console.log(`[Migration] ${this.constructor.name} up`);
     const table = container.resolve(ConfigService).postgresEventsTable;
     
     await queryRunner.query(`
@@ -34,6 +35,7 @@ export class ReplaceLogLevelWithEnum1760795639073 implements MigrationInterface 
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    console.log(`[Migration] ${this.constructor.name} down`);
     const table = container.resolve(ConfigService).postgresEventsTable;
     
     // 1. Возвращаем обратно TEXT с CHECK

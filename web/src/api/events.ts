@@ -11,8 +11,8 @@ export const events = {
   search,
 }
 
-async function search(limit: number, offset: number, applicationId: string, filter: SearchCriterion[] | null = null) {
-  const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'post', url: '/events/search', data: { limit, offset, applicationId, filter } },);
+async function search(limit: number, applicationId: string, filter: SearchCriterion[] | null = null, lastTimestamp?: number, lastId?: string) {
+  const result = await request<EventsSearchResponse>({ authorized: true, 'method': 'post', url: '/events/search', data: { limit, lastTimestamp, lastId, applicationId, filter } },);
   return result.mapRight((r) => ({
     ...r,
     result: {
