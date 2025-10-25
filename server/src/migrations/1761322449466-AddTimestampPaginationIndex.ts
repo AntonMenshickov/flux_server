@@ -6,15 +6,18 @@ export class AddTimestampPaginationIndex1761322449466 implements MigrationInterf
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     console.log(`[Migration] ${this.constructor.name} up`);
+
     const table = container.resolve(ConfigService).postgresEventsTable;
     await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS idx_logs_app_ts_id
+      CREATE INDEX IF NOT EXISTS idx_${table}_ts_id
       ON ${table}("timestamp" DESC, id DESC);
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     console.log(`[Migration] ${this.constructor.name} down`);
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_logs_app_ts_id;`);
+
+    const table = container.resolve(ConfigService).postgresEventsTable;
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_${table}_ts_id;`);
   }
 }

@@ -255,7 +255,8 @@ export class PostgresEventsRepository {
     });
 
     qb.orderBy("event.timestamp", "DESC")
-    .take(limit);
+      .addOrderBy("event.id", "DESC")
+      .take(limit);
 
     const rows = await qb.getMany();
     return rows.map((r) => this.eventMessageFromDatabase(r));
