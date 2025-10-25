@@ -381,7 +381,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   display: flex;
   flex-direction: column;
   min-height: 40px;
-  padding: 0.35rem 0.6rem;
+  padding: 0.25rem 0.6rem;
   box-sizing: border-box;
   border-radius: 8px;
   border: 1px solid var(--color-border);

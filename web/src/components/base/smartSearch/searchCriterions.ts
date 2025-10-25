@@ -29,18 +29,18 @@ export const fieldOptions: FieldOption[] = [
     valueType: ValueType.String,
     placeholder: 'Comma separated tags',
   },
-  {
-    key: SearchFieldKey.DateFrom,
-    operators: [Operator.Equals],
-    valueType: ValueType.Date,
-    placeholder: 'From date',
-  },
-  {
-    key: SearchFieldKey.DateTo,
-    operators: [Operator.Equals],
-    valueType: ValueType.Date,
-    placeholder: 'To date',
-  },
+  // {
+  //   key: SearchFieldKey.DateFrom,
+  //   operators: [Operator.Equals],
+  //   valueType: ValueType.Date,
+  //   placeholder: 'From date',
+  // },
+  // {
+  //   key: SearchFieldKey.DateTo,
+  //   operators: [Operator.Equals],
+  //   valueType: ValueType.Date,
+  //   placeholder: 'To date',
+  // },
   {
     key: SearchFieldKey.Platform,
     operators: [Operator.Equals, Operator.Similar],

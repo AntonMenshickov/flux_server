@@ -86,8 +86,8 @@ export class ConfigService {
     const result = schema.safeParse(process.env);
 
     if (result.success) {
+      console.log('Config loaded successfully');
       const env = result.data;
-      console.log('Config loaded', env)
 
       this.config = {
         port: env.PORT,

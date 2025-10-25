@@ -14,8 +14,16 @@
     <div v-if="application != null" class="smart-search">
       <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
         class="smart-search-field" />
+      <VueDatePicker v-model="dateTimeFilter" @update:model-value="applyFilters" @cleared="applyFilters" range :multiCalendars="{ solo: true }" class="date-picker">
+        <template #dp-input="{ value }">
+          <BaseInput v-show="value.length" :value="value"  type="text" placeholder="Date and time filter" class="date-time-input"/>
+          <BaseButton v-show="!value.length" class="primary" title="Set date time filter">
+            <ClockIcon class="search-action-button" />
+          </BaseButton>
+        </template>
+      </VueDatePicker>
       <BaseButton @click="fetchLogs(true)" title="reload">
-        <ArrowPathIcon class="refresh-icon"/>
+        <ArrowPathIcon class="search-action-button" />
       </BaseButton>
     </div>
     <div v-if="application != null" class="logs-list">
@@ -35,18 +43,21 @@ import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/sma
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowPathIcon, ClockIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
 import BaseButton from '../base/BaseButton.vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import BaseInput from '../base/BaseInput.vue';
 
 
 const appsData = ref<ApplicationShortStats[]>([]);
 const logs = ref<EventMessage[]>([]);
 const application = ref<ApplicationStatsResponse | null>(null);
+const dateTimeFilter = ref<Date[]>([]);
 const criteria = ref<SearchCriterion[]>([]);
 const pageSize = 100;
 let lastTimestamp: number | undefined = undefined;
@@ -137,7 +148,15 @@ async function fetchLogs(clear: boolean = false) {
     return;
   }
 
-  const eventsResult = await events.search(pageSize, application.value.id, criteria.value, lastTimestamp, lastId);
+  const criteriaWithDateTime = [...criteria.value];
+  if (dateTimeFilter.value && dateTimeFilter.value.length == 2) {
+    const start = dateTimeFilter.value[0].getTime();
+    const end = dateTimeFilter.value[1].getTime();
+    criteriaWithDateTime.push(new SearchCriterion(SearchFieldKey.Timestamp, Operator.GreaterThan, start));
+    criteriaWithDateTime.push(new SearchCriterion(SearchFieldKey.Timestamp, Operator.LessThan, end));
+  }
+
+  const eventsResult = await events.search(pageSize, application.value.id, criteriaWithDateTime, lastTimestamp, lastId);
   if (eventsResult.isRight()) {
     const events = eventsResult.value.result.events.map(e => ({
       ...e,
@@ -149,7 +168,7 @@ async function fetchLogs(clear: boolean = false) {
       logs.value = [...logs.value, ...events];
     }
     hasMore = events.length == pageSize;
-    
+
     // Обновляем lastTimestamp и lastId для следующей страницы
     if (events.length > 0) {
       const lastEvent = events[events.length - 1];
@@ -244,7 +263,15 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   margin-bottom: 0;
 }
 
-.refresh-icon {
+.search-action-button {
   width: 1.1rem;
+}
+
+.date-picker {
+  width: auto;
+}
+
+.date-time-input {
+  padding-right: 2rem;
 }
 </style>

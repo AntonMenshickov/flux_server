@@ -32,37 +32,34 @@ function matchesCriterion(log: EventMessage, criterion: SearchCriterion): boolea
   switch (field) {
     case SearchFieldKey.Message:
       return matchString(log.message, operator, value as string);
-    
+
     case SearchFieldKey.LogLevel:
       return matchArray([log.logLevel], operator, value as string[] | string);
-    
+
     case SearchFieldKey.Meta:
       return matchMeta(log.meta, operator, value as Record<string, string>[]);
-    
+
     case SearchFieldKey.Tags:
       return matchArray(log.tags ?? [], operator, value as string[] | string);
-    
+
     case SearchFieldKey.Platform:
       return matchString(log.platform, operator, value as string);
-    
+
     case SearchFieldKey.BundleId:
       return matchString(log.bundleId, operator, value as string);
-    
+
     case SearchFieldKey.DeviceId:
       return matchString(log.deviceId, operator, value as string);
-    
+
     case SearchFieldKey.DeviceName:
       return matchString(log.deviceName ?? '', operator, value as string);
-    
+
     case SearchFieldKey.OsName:
       return matchString(log.osName ?? '', operator, value as string);
-    
-    case SearchFieldKey.DateFrom:
-      return log.timestamp >= new Date(value as string).getTime();
-    
-    case SearchFieldKey.DateTo:
-      return log.timestamp <= new Date(value as string).getTime();
-    
+
+    case SearchFieldKey.Timestamp:
+      return matchDate(new Date(log.timestamp), operator, value as Date);
+
     default:
       return true;
   }
@@ -78,13 +75,28 @@ function matchString(fieldValue: string, operator: Operator, criterionValue: str
   switch (operator) {
     case Operator.Equals:
       return fieldValue === criterionValue;
-    
+
     case Operator.NotEquals:
       return fieldValue !== criterionValue;
-    
+
     case Operator.Similar:
       return normalizedField.includes(normalizedCriterion);
-    
+
+    default:
+      return true;
+  }
+}
+
+/**
+ * Сравнивает дату с критерием
+ */
+function matchDate(fieldValue: Date, operator: Operator, criterionValue: Date): boolean {
+
+  switch (operator) {
+    case Operator.GreaterThan:
+      return fieldValue > criterionValue;
+    case Operator.LessThan:
+      return fieldValue < criterionValue;
     default:
       return true;
   }
@@ -96,7 +108,7 @@ function matchString(fieldValue: string, operator: Operator, criterionValue: str
 function matchArray(fieldValue: string[], operator: Operator, criterionValue: string[] | string): boolean {
   // Нормализуем criterionValue к массиву
   let criterionArray: string[];
-  
+
   if (Array.isArray(criterionValue)) {
     criterionArray = criterionValue;
   } else if (typeof criterionValue === 'string') {
@@ -105,7 +117,7 @@ function matchArray(fieldValue: string[], operator: Operator, criterionValue: st
   } else {
     return true; // Если тип неизвестен, пропускаем
   }
-  
+
   switch (operator) {
     case Operator.Equals:
       // Проверяем, что массивы содержат одинаковые элементы
@@ -115,15 +127,15 @@ function matchArray(fieldValue: string[], operator: Operator, criterionValue: st
       const sortedField = [...fieldValue].sort();
       const sortedCriterion = [...criterionArray].sort();
       return sortedField.every((val, idx) => val === sortedCriterion[idx]);
-    
+
     case Operator.In:
       // Хотя бы один элемент из criterionArray присутствует в fieldValue
       return criterionArray.some(val => fieldValue.includes(val));
-    
+
     case Operator.NotIn:
       // Ни один элемент из criterionArray не присутствует в fieldValue
       return !criterionArray.some(val => fieldValue.includes(val));
-    
+
     default:
       return true;
   }
@@ -133,12 +145,12 @@ function matchArray(fieldValue: string[], operator: Operator, criterionValue: st
  * Сравнивает meta объект с критерием
  */
 function matchMeta(
-  fieldValue: Map<string, string> | undefined, 
-  operator: Operator, 
+  fieldValue: Map<string, string> | undefined,
+  operator: Operator,
   criterionValue: Record<string, string>[]
 ): boolean {
   const metaObj = fieldValue ? Object.fromEntries(fieldValue) : {};
-  
+
   switch (operator) {
     case Operator.Equals: {
       // Все пары ключ-значение из критерия должны точно совпадать
@@ -148,7 +160,7 @@ function matchMeta(
         return metaObj[key] === val;
       });
     }
-    
+
     case Operator.NotEquals: {
       // Все пары ключ-значение из критерия должны НЕ совпадать
       return criterionValue.every(kv => {
@@ -157,7 +169,7 @@ function matchMeta(
         return metaObj[key] !== val;
       });
     }
-    
+
     case Operator.Similar: {
       // Все значения из критерия должны содержаться в соответствующих ключах (case-insensitive)
       return criterionValue.every(kv => {
@@ -170,7 +182,7 @@ function matchMeta(
         return metaVal.toLowerCase().includes(val.toLowerCase());
       });
     }
-    
+
     default:
       return true;
   }

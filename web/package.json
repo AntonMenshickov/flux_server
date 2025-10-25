@@ -18,6 +18,7 @@
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
     "@sweet-monads/either": "^3.3.1",
+    "@vuepic/vue-datepicker": "^11.0.3",
     "axios": "^1.11.0",
     "chart.js": "^4.5.0",
     "jwt-decode": "^4.0.0",
@@ -26,6 +27,7 @@
     "pinia-plugin-persistedstate": "^4.5.0",
     "virtua": "^0.46.2",
     "vue": "^3.5.18",
+    "vue-ctk-date-time-picker": "^2.1.1",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {

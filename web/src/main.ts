@@ -6,6 +6,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import './assets/variables.css';
 import { Chart, registerables } from 'chart.js';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 const pinia = createPinia()
 

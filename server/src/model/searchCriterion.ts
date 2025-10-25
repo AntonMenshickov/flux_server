@@ -8,8 +8,7 @@ export enum ValueType {
 }
 
 export enum SearchFieldKey {
-  DateFrom = 'dateFrom',
-  DateTo = 'dateTo',
+  Timestamp = 'timestamp',
   Meta = 'meta',
   Message = 'message',
   LogLevel = 'logLevel',

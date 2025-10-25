@@ -1,5 +1,4 @@
 import { EventMessageView } from '../../model/eventMessageView';
-import { EventFilter } from './eventsFilter';
 import { EventMessage } from '../../model/postgres/eventMessageDbView';
 import { Postgres } from '../postgres';
 import { Operator, SearchCriterion, SearchFieldKey } from '../../model/searchCriterion';
@@ -81,8 +80,7 @@ export class PostgresEventsRepository {
       [SearchFieldKey.LogLevel]: 'event."logLevel"',
       [SearchFieldKey.Meta]: 'event.meta',
       [SearchFieldKey.Tags]: 'event.tags',
-      [SearchFieldKey.DateFrom]: 'event.timestamp',
-      [SearchFieldKey.DateTo]: 'event.timestamp',
+      [SearchFieldKey.Timestamp]: 'event.timestamp',
       [SearchFieldKey.Platform]: 'event.platform',
       [SearchFieldKey.BundleId]: 'event."bundleId"',
       [SearchFieldKey.DeviceId]: 'event."deviceId"',
@@ -105,12 +103,17 @@ export class PostgresEventsRepository {
       const paramKey = `param_${index}`;
       let value: any = criterion.value;
 
-      if (criterion.field === SearchFieldKey.DateFrom || criterion.field === SearchFieldKey.DateTo) {
+      if (criterion.field === SearchFieldKey.Timestamp) {
         value = new Date(value);
-        if (criterion.field === SearchFieldKey.DateFrom) {
-          qb.andWhere(`event.timestamp >= :${paramKey}`, { [paramKey]: value });
-        } else {
-          qb.andWhere(`event.timestamp <= :${paramKey}`, { [paramKey]: value });
+        switch (criterion.operator) {
+          case Operator.GreaterThan:
+            qb.andWhere(`event.timestamp > :${paramKey}`, { [paramKey]: value });
+            break;
+          case Operator.LessThan:
+            qb.andWhere(`event.timestamp < :${paramKey}`, { [paramKey]: value });
+            break;
+          default:
+            throw new Error(`Unsupported operator for timestamp: ${criterion.operator}`);
         }
         return;
       }
