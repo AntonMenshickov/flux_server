@@ -1,31 +1,64 @@
 <template>
   <div class="logs-page" @scroll="handleScroll">
-    <div v-if="application != null" class="logs-page-header">
-      <ArrowLeftIcon @click="backToApps" class="go-to-apps" />
-      <div class="app-name">{{ application.name }}</div>
-      <OnlineDevices :applicationId="application?.id" @update:select="deviceSelected" />
-    </div>
-    <div v-if="application == null" class="apps">
-      <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
-    </div>
-    <div v-if="application != null" class="stats-wrapper">
-      <AppStatsChart :application="application" @search="addLogLevelCriterion" />
-    </div>
-    <div v-if="application != null" class="smart-search-wrapper">
-      <div class="smart-search-additional-options">
-        <EventsFilterSelector v-model="selectedFilter" :criteria="criteria" @filterApplied="onFilterApplied" />
-        <DateRangePicker v-model="dateTimeFilter" @update:model-value="applyFilters" />
-      </div>
-      <div  class="smart-search">
-        <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
-          class="smart-search-field" />
-        <BaseButton @click="fetchLogs(true)" title="reload">
-          <ArrowPathIcon class="search-action-button" />
-        </BaseButton>
+    <!-- Applications Grid View -->
+    <div v-if="application == null" class="apps-container">
+      <h2 class="page-title">Applications</h2>
+      <div class="apps-grid">
+        <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
       </div>
     </div>
-    <div v-if="application != null" class="logs-list">
-      <LogCard v-for="(log) in logs" :key="log.id" :log="log" @search="addSearchCriterion" />
+
+    <!-- Logs View -->
+    <div v-if="application != null" class="logs-container">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="header-main">
+          <ArrowLeftIcon @click="backToApps" class="back-button" />
+          <div class="header-info">
+            <h1 class="app-title">{{ application.name }}</h1>
+          </div>
+        </div>
+        <OnlineDevices :applicationId="application?.id" @update:select="deviceSelected" />
+      </div>
+
+      <!-- Statistics Section -->
+      <div class="stats-section">
+        <AppStatsChart :application="application" @search="addLogLevelCriterion" />
+      </div>
+
+      <!-- Search and Filters Section -->
+      <div class="filters-section">
+        <div class="filters-header">
+          <h3 class="section-title">Filters</h3>
+        </div>
+        <div class="filters-content">
+          <div class="filter-row">
+            <EventsFilterSelector v-model="selectedFilter" :criteria="criteria" @filterApplied="onFilterApplied" />
+            <DateRangePicker v-model="dateTimeFilter" @update:model-value="applyFilters" />
+          </div>
+          <div class="search-row">
+            <div class="search-container">
+              <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters" 
+                class="smart-search-field" />
+            </div>
+            <BaseButton @click="fetchLogs(true)" title="Reload">
+              <ArrowPathIcon class="reload-icon" />
+              Refresh
+            </BaseButton>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs List -->
+      <div class="logs-section">
+        <div class="logs-header">
+          <h3 class="section-title">Event Logs</h3>
+          <span class="logs-count" v-if="logs.length > 0">{{ logs.length }} events</span>
+        </div>
+        <div class="logs-list">
+          <LogCard v-for="(log) in logs" :key="log.id" :log="log" @search="addSearchCriterion" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -215,81 +248,203 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
 <style scoped>
 .logs-page {
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  font-family: sans-serif;
   overflow-y: auto;
+  background: var(--color-secondary);
 }
 
-.logs-page-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 1.5rem;
-  margin-bottom: 0;
-  margin-top: 1rem;
+/* Applications View */
+.apps-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
 }
 
-.go-to-apps {
-  width: 2rem;
-  height: 2rem;
-  cursor: pointer;
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 1.5rem 0;
 }
 
-.app-name {
-  margin-left: 1rem;
-  font-size: 2rem;
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
 }
 
-.logs-list {
-  margin: 1.5rem;
-  margin-top: 1rem;
-}
-
-.smart-search-wrapper {
+/* Logs View */
+.logs-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin: 1.5rem;
-  margin-bottom: 0;
-  margin-top: 1rem;
+  gap: 2rem;
 }
 
-.smart-search-additional-options {
+/* Header Section */
+.header-section {
   display: flex;
-  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.header-main {
+  display: flex;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.smart-search {
-  display: flex;
-  flex-direction: row;
-  align-items: start;
-  gap: 1rem;
-}
-
-.smart-search .smart-search-field {
   flex: 1;
 }
 
-.apps {
+.back-button {
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  color: var(--color-text-dimmed);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.back-button:hover {
+  color: var(--color-text);
+  transform: translateX(-2px);
+}
+
+.app-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Statistics Section */
+.stats-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+/* Filters Section */
+.filters-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.filters-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.filters-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.filter-row {
+  display: flex;
+  gap: 1rem;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  margin: 1.5rem;
-  margin-bottom: 0;
+  align-items: center;
 }
 
-.stats-wrapper {
-  margin: 1.5rem;
-  margin-bottom: 0;
+.search-row {
+  display: flex;
+  gap: 1rem;
+  align-items: start;
 }
 
-.search-action-button {
-  width: 1.1rem;
+.search-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.smart-search-field {
+  width: 100%;
+}
+
+.reload-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Logs Section */
+.logs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+}
+
+.logs-count {
+  font-size: 0.875rem;
+  color: var(--color-text-dimmed);
+  font-weight: 500;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .logs-container {
+    padding: 1.25rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-row,
+  .search-row {
+    flex-direction: column;
+  }
+
+  .search-container {
+    min-width: 100%;
+  }
+
+  .reload-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .app-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 </style>

@@ -8,6 +8,7 @@
       </div>
       <BaseButton v-show="!value.length" class="primary" title="Set date time filter">
         <CalendarDateRangeIcon class="search-action-button" />
+        Date filter
       </BaseButton>
     </template>
   </VueDatePicker>
@@ -43,7 +44,7 @@ function handleCleared() {
 
 <style scoped>
 .search-action-button {
-  width: 1.1rem;
+  width: 1.25rem;
 }
 
 .date-picker {

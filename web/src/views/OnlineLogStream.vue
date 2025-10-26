@@ -1,45 +1,83 @@
 <template>
   <div class="online-log-stream">
-    <div class="stream-header">
-      <ArrowLeftIcon @click="goBack" class="back-button" />
-      <span class="device-id">{{ connectedDevice?.deviceName }} ({{ connectedDevice?.deviceId }})</span>
-    </div>
-    <div class="row">
-      <div class="device-info">
-        <span :title="`Websocket ${connectionStatus}`">
-          <WifiIcon :class="'ws-status ws-' + connectionStatus" />
-        </span>
-        <span :title="deviceConnected ? 'Device online' : 'Device offline'">
-          <DevicePhoneMobileIcon :class="{ 'device-status': true, 'device-connected': deviceConnected }" />
-        </span>
-        <div v-if="connectedDevice" class="device-item">
-          <div class="device-name">{{ connectedDevice.deviceName }} {{ connectedDevice.deviceId }}</div>
-          <div class="device-params">{{ connectedDevice.platform }} • {{ connectedDevice.osName }} • {{
-            connectedDevice.bundleId }} • {{ connectedDevice.uuid }}</div>
-
+    <div class="stream-container">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="header-main">
+          <ArrowLeftIcon @click="goBack" class="back-button" />
+          <div class="header-info">
+            <h1 class="device-title">{{ connectedDevice?.deviceName }}</h1>
+            <p class="device-subtitle" v-if="connectedDevice">({{ connectedDevice.deviceId }})</p>
+          </div>
         </div>
-        <div v-if="connectedDevice" class="device-meta">
-          <div class="meta-values">
-            <div v-for="([key, value], i) in Object.entries(connectedDevice.meta)" :key="i" class="meta-item">
-              <span class="meta-key">{{ key }}</span>
-              <span class="meta-value">{{ value }}</span>
+        <div class="status-indicators">
+          <span :title="`Websocket ${connectionStatus}`" class="status-badge">
+            <WifiIcon :class="'ws-icon ws-' + connectionStatus" />
+            <span class="status-text">{{ connectionStatus }}</span>
+          </span>
+          <span :title="deviceConnected ? 'Device online' : 'Device offline'" class="status-badge">
+            <DevicePhoneMobileIcon :class="{ 'device-icon': true, 'device-connected': deviceConnected }" />
+            <span class="status-text">{{ deviceConnected ? 'online' : 'offline' }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Device Info Section -->
+      <div class="device-info-section">
+        <div v-if="connectedDevice" class="device-info-content">
+          <div class="info-compact-row">
+            <div class="info-compact-item">
+              <span class="info-compact-label">Platform:</span>
+              <span class="info-compact-value">{{ connectedDevice.platform }}</span>
+            </div>
+            <div class="info-compact-item">
+              <span class="info-compact-label">OS:</span>
+              <span class="info-compact-value">{{ connectedDevice.osName }}</span>
+            </div>
+            <div class="info-compact-item">
+              <span class="info-compact-label">Bundle ID:</span>
+              <span class="info-compact-value">{{ connectedDevice.bundleId }}</span>
+            </div>
+            <div class="info-compact-item">
+              <span class="info-compact-label">UUID:</span>
+              <span class="info-compact-value">{{ connectedDevice.uuid }}</span>
+            </div>
+            <div v-for="([key, value], i) in Object.entries(connectedDevice.meta || {})" :key="i" class="info-compact-item">
+              <span class="info-compact-label">{{ key }}:</span>
+              <span class="info-compact-value">{{ value }}</span>
             </div>
           </div>
         </div>
       </div>
-      <BaseButton :class="{ 'enabled': autoscrollEnabled }" @click="toggleAutoScroll" title="Toggle autoscroll">
-        <ChevronDoubleDownIcon class="auto-scroll-icon" />
-      </BaseButton>
-    </div>
-    <div class="filter-section">
-      <SmartSearch :options="fieldOptions" v-model="criteria" placeholder="Filter logs..." />
-    </div>
-    <div class="logs-list-container">
-      <VList ref="virtualListRef" class="logs-list" :data="filteredLogs" @scroll="handleScroll">
-        <template #default="{ item }">
-          <LogCard :log="item" :key="item.id" @search="addSearchCriterion"/>
-        </template>
-      </VList>
+
+      <!-- Controls Section -->
+      <div class="controls-section">
+        <div class="controls-row">
+          <SmartSearch :options="fieldOptions" v-model="criteria" placeholder="Filter logs..." class="filter-search" />
+          <BaseButton :class="{ 'enabled': autoscrollEnabled }" @click="toggleAutoScroll" title="Toggle autoscroll"
+            class="autoscroll-button">
+            <ChevronDoubleDownIcon class="auto-scroll-icon" />
+            Auto-scroll
+          </BaseButton>
+        </div>
+      </div>
+
+      <!-- Logs List -->
+      <div class="logs-section">
+        <div class="logs-header">
+          <h3 class="section-title">Live Log Stream</h3>
+          <span class="logs-count" v-if="filteredLogs.length > 0">{{ filteredLogs.length }} events</span>
+        </div>
+        <div class="logs-list-container">
+          <VList ref="virtualListRef" class="logs-list" :data="filteredLogs" @scroll="handleScroll">
+            <template #default="{ item }">
+              <div class="log-card-container">
+                <LogCard :log="item" :key="item.id" @search="addSearchCriterion" />
+              </div>
+            </template>
+          </VList>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -178,7 +216,7 @@ function toggleAutoScroll() {
 
 function handleScroll(offset: number) {
   if (!virtualListRef.value) return;
-  
+
   const scrollElement = virtualListRef.value.$el as HTMLElement;
   if (!scrollElement) return;
 
@@ -196,145 +234,234 @@ function goBack() {
 <style scoped>
 .online-log-stream {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  background: var(--color-secondary);
 }
 
-.stream-header {
+.stream-container {
+  height: 100%;
+  box-sizing: border-box;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 1.5rem;
-  margin-bottom: 1rem;
-  margin-top: 1rem;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Header Section */
+.header-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.header-main {
+  display: flex;
+  align-items: start;
+  gap: 1rem;
+  flex: 1;
 }
 
 .back-button {
   width: 2rem;
   height: 2rem;
   cursor: pointer;
+  color: var(--color-text-dimmed);
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.device-id {
-  display: inline-block;
-  max-width: 600px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-left: 1rem;
-  font-size: 2rem;
+.back-button:hover {
+  color: var(--color-text);
+  transform: translateX(-2px);
 }
 
-.ws-status {
-  width: 2rem;
-  height: 2rem;
+.header-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-.ws-connection {
-  color: yellowgreen;
+.device-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.device-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-dimmed);
+  margin: 0;
+  font-family: monospace;
+}
+
+.status-indicators {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  font-size: 0.875rem;
+}
+
+.ws-icon,
+.device-icon {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .ws-open {
-  color: green;
+  color: #10b981;
+}
+
+.ws-connection {
+  color: #84cc16;
 }
 
 .ws-error,
 .ws-closed {
-  color: red;
+  color: #ef4444;
 }
 
-.device-status {
-  width: 2rem;
-  height: 2rem;
-  margin-left: 0.5rem;
-  color: red;
+.device-icon {
+  color: #ef4444;
 }
 
 .device-connected {
-  color: green;
+  color: #10b981;
 }
 
-.row {
+.status-text {
+  text-transform: capitalize;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* Device Info Section */
+.device-info-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 0.875rem 1rem;
+}
+
+.device-info-content {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin: 0 1rem;
+  flex-direction: column;
 }
 
-.device-info {
+.info-compact-row {
   display: flex;
-  flex-direction: row;
-  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: center;
 }
 
-.device-item {
-  margin-left: 0.5rem;
-  background: var(--color-secondary);
-  text-align: start;
+.info-compact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
 }
 
-.device-name {
+.info-compact-label {
   font-weight: 600;
-  font-size: 1rem;
+  color: var(--color-text-dimmed);
+  white-space: nowrap;
 }
 
-.device-params {
-  color: var(--color-text-dimmed, #888);
-  font-size: 0.85rem;
+.info-compact-value {
+  color: var(--color-text);
+  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
 }
 
-.device-meta {
+/* Controls Section */
+.controls-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 0.75rem 1rem;
+}
+
+.controls-row {
   display: flex;
-  flex-direction: row;
-  justify-content: start;
-  margin-left: 2rem;
-  max-height: 2rem;
-  overflow-y: auto;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.meta-values {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 2px 1rem;
-  text-align: start;
+.autoscroll-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.meta-item {
-  display: contents;
-}
-
-.meta-key {
-  font-weight: bold;
-  font-size: 0.85rem;
-}
-
-.meta-value {
-  color: var(--color-text-dimmed, #888);
-  font-size: 0.85rem;
-}
-
-.enabled {
-  background-color: green;
+.autoscroll-button.enabled {
+  background-color: #10b981;
 }
 
 .auto-scroll-icon {
-  width: 1rem;
-  height: 1rem;
-  color: white;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-.filter-section {
-  margin: 1rem;
+.filter-search {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Logs Section */
+.logs-section {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-title {
+  margin: 0;
+}
+
+.logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+}
+
+.logs-count {
+  font-size: 0.875rem;
+  color: var(--color-text-dimmed);
+  font-weight: 500;
 }
 
 .logs-list-container {
-  flex: 1;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  margin: 1rem;
-  margin-top: 0.5rem;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
-  background-color: white;
+  flex: 1;
 }
 
 .logs-list {
@@ -342,5 +469,63 @@ function goBack() {
   width: 100%;
   padding: 1rem;
   box-sizing: border-box;
+}
+
+.log-card-container {
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stream-container {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .status-indicators {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .status-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .info-compact-row {
+    gap: 0.5rem 1rem;
+  }
+
+  .info-compact-value {
+    max-width: 200px;
+  }
+
+  .controls-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .autoscroll-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filter-search {
+    width: 100%;
+  }
+
+  .device-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Smooth transitions */
+* {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 </style>

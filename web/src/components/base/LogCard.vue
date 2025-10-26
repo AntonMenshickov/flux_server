@@ -118,20 +118,21 @@ function formatDate(ts: number) {
 
 <style scoped>
 .log-card {
-  margin-bottom: 0.2rem;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: #f9f9f9;
-  border-left: 3px solid #ccc;
-  border-radius: 4px;
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+  background: #ffffff;
+  border-left: 4px solid #e5e7eb;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .log-card.expanded {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border-left-width: 4px;
 }
 
@@ -162,8 +163,8 @@ function formatDate(ts: number) {
   display: flex;
   justify-content: start;
   align-items: start;
-  padding: 0.5rem;
-
+  padding: 1rem;
+  gap: 0.75rem;
 }
 
 .expand-chevron {
@@ -188,41 +189,45 @@ function formatDate(ts: number) {
 }
 
 .log-card.log-message.info {
-  background-color: rgba(2, 132, 199, 0.078);
-  border-left-color: rgba(2, 132, 199, 0.2);
+  background-color: rgba(59, 130, 246, 0.04);
+  border-left-color: #3b82f6;
+  border-left-width: 4px;
 }
 
 .log-card.log-message.warn {
-  background-color: rgba(199, 146, 2, 0.078);
-  border-left-color: rgba(199, 146, 2, 0.2);
+  background-color: rgba(245, 158, 11, 0.04);
+  border-left-color: #f59e0b;
+  border-left-width: 4px;
 }
 
 .log-card.log-message.error {
-  border-left-color: rgba(255, 0, 0, 0.2);
-  background-color: rgba(255, 0, 0, 0.078);
+  border-left-color: #ef4444;
+  border-left-width: 4px;
+  background-color: rgba(239, 68, 68, 0.04);
 }
 
 .log-card.log-message.crash {
-  border-top: 1px solid;
-  border-bottom: 1px solid;
-  border-right: 1px solid;
-  border-color: rgba(138, 0, 0, 0.2);
-  border-left-color: rgba(138, 0, 0, 0.4);
-  background-color: rgba(255, 0, 0, 0.078);
+  border-color: #dc2626;
+  border-left-color: #991b1b;
+  border-left-width: 5px;
+  background-color: rgba(220, 38, 38, 0.06);
+  border-width: 1px 1px 1px 5px;
 }
 
 .log-card.log-message.debug {
-  border-left-color: rgba(163, 111, 173, 0.2);
-  background-color: rgba(163, 111, 173, 0.1);
+  border-left-color: #a36fad;
+  border-left-width: 4px;
+  background-color: rgba(163, 111, 173, 0.05);
 }
 
 .logs-extra-info {
   display: flex;
   flex-direction: column;
-  padding-bottom: 1rem;
+  padding: 0 1rem 1rem 1rem;
   gap: 1rem;
-  padding: 0 1.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 1rem;
 }
 
 .row {
@@ -254,9 +259,10 @@ function formatDate(ts: number) {
 }
 
 .extra-info-body {
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  background-color: #ffffff55;
+  padding: 0.875rem;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .detail {

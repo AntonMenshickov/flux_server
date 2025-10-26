@@ -12,9 +12,14 @@ defineEmits<{
 
 <style scoped>
 .base-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  height: 40px;
+  padding: 0 1.25rem;
   min-height: 40px;
   box-sizing: border-box;
-  padding: 0.6rem 1rem;
   border: none;
   border-radius: 8px;
   background-color: var(--color-primary);

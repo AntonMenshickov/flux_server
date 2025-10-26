@@ -308,10 +308,7 @@ function emitSearch(value: LogLevel) {
   flex-direction: row;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
-  background-color: white;
+  padding: 1.5rem;
 }
 
 .title {
