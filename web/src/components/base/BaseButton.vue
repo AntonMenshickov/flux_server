@@ -14,6 +14,7 @@ defineEmits<{
 .base-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   white-space: nowrap;
   height: 40px;
