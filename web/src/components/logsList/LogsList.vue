@@ -18,7 +18,7 @@
         <template #dp-input="{ value }">
           <BaseInput v-show="value.length" :value="value"  type="text" placeholder="Date and time filter" class="date-time-input"/>
           <BaseButton v-show="!value.length" class="primary" title="Set date time filter">
-            <ClockIcon class="search-action-button" />
+            <CalendarDateRangeIcon class="search-action-button" />
           </BaseButton>
         </template>
       </VueDatePicker>
@@ -43,7 +43,7 @@ import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/sma
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
-import { ArrowLeftIcon, ArrowPathIcon, ClockIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowPathIcon, CalendarDateRangeIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import router from '@/router';

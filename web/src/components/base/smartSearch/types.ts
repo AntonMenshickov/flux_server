@@ -38,10 +38,31 @@ export enum Operator {
   NotIn = '!in',
 }
 
+export interface Criterion {
+  field: SearchFieldKey;
+  operator: Operator;
+  value: string | number | Date | Record<string, string>[] | string[];
+}
+
 export class SearchCriterion {
   constructor(
     public field: SearchFieldKey | null = null,
     public operator: Operator | null = null,
     public value: string | number | Date | Record<string, string>[] | string[] | null = null
   ) { }
+
+  static fromCriterion(criterion: Criterion): SearchCriterion {
+    return new SearchCriterion(criterion.field, criterion.operator, criterion.value);
+  }
+
+  toCriterion(): Criterion | null {
+    if (this.field !== null && this.operator !== null && this.value !== null) {
+      return {
+        field: this.field,
+        operator: this.operator,
+        value: this.value
+      };
+    }
+    return null;
+  }
 }

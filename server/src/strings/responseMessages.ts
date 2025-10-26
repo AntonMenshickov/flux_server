@@ -23,4 +23,6 @@ export const responseMessages = {
   USER_INFO_VALIDATION_FAILED: 'User info validation failed',
   DEVICE_NOT_FOUND: 'Device not found',
   INTERNAL_SERVER_ERROR: 'Internal server error',
+  EVENTS_FILTER_NOT_FOUND: 'Events filter not found',
+  EVENTS_FILTER_NAME_ALREADY_EXISTS: 'Events filter with this name already exists',
 }
