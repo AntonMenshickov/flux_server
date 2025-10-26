@@ -1,6 +1,6 @@
 <template>
   <BasePage :isLoading="!application" loaderText="Loading application..." compact @scroll="handleScroll">
-    <div v-if="application" class="logs-container">
+    <div v-if="application" class="logs-content">
       <!-- Header Section -->
       <PageHeader :title="application.name" @back="backToApps">
         <template #right>
@@ -231,10 +231,7 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
 </script>
 
 <style scoped>
-.logs-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 1.5rem;
+.logs-content {
   display: flex;
   flex-direction: column;
   gap: 2rem;

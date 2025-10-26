@@ -1,5 +1,5 @@
 <template>
-  <BasePage :isLoading="isLoading" loaderText="Loading applications..." title="Logs" :maxWidth="1400">
+  <BasePage :isLoading="isLoading" loaderText="Loading applications..." title="Logs">
     <div class="apps-grid">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
     </div>

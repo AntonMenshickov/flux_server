@@ -1,6 +1,6 @@
 <template>
   <BasePage :isLoading="isLoading" loaderText="Loading device..." compact>
-    <div class="stream-container">
+    <div class="stream-content">
       <!-- Header Section -->
       <PageHeader 
         :title="connectedDevice?.deviceName || ''" 
@@ -237,12 +237,9 @@ function goBack() {
 </script>
 
 <style scoped>
-.stream-container {
+.stream-content {
   height: 100%;
   box-sizing: border-box;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;

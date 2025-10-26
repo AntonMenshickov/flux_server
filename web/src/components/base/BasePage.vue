@@ -8,7 +8,7 @@
       <div v-if="compact" class="content-wrapper">
         <slot />
       </div>
-      <div v-else :class="['page-container', { 'with-title': title }]" :style="{ maxWidth: maxWidth + 'px' }">
+      <div v-else :class="['page-container', { 'with-title': title }]">
         <h2 v-if="title" class="page-title">{{ title }}</h2>
         <slot />
       </div>
@@ -24,7 +24,6 @@ interface Props {
   isLoading?: boolean;
   loaderText?: string;
   title?: string;
-  maxWidth?: number;
   compact?: boolean;
 }
 
@@ -32,7 +31,6 @@ withDefaults(defineProps<Props>(), {
   isLoading: false,
   loaderText: 'Loading...',
   title: '',
-  maxWidth: 1600,
   compact: false
 });
 
@@ -50,10 +48,14 @@ defineEmits<{
 
 .content-wrapper {
   height: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 1.5rem;
+  box-sizing: border-box;
 }
 
 .page-container {
-  max-width: 1600px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
   padding: 1.5rem;
   display: flex;
