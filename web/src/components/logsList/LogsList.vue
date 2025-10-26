@@ -11,15 +11,11 @@
     <!-- Logs View -->
     <div v-if="application != null" class="logs-container">
       <!-- Header Section -->
-      <div class="header-section">
-        <div class="header-main">
-          <ArrowLeftIcon @click="backToApps" class="back-button" />
-          <div class="header-info">
-            <h1 class="app-title">{{ application.name }}</h1>
-          </div>
-        </div>
-        <OnlineDevices :applicationId="application?.id" @update:select="deviceSelected" />
-      </div>
+      <PageHeader :title="application.name" @back="backToApps">
+        <template #right>
+          <OnlineDevices :applicationId="application?.id" @update:select="deviceSelected" />
+        </template>
+      </PageHeader>
 
       <!-- Statistics Section -->
       <div class="stats-section">
@@ -74,7 +70,7 @@ import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/sma
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { ArrowPathIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import EventsFilterSelector from './EventsFilterSelector.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
@@ -83,6 +79,7 @@ import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
 import BaseButton from '@/components/base/BaseButton.vue';
 import DateRangePicker from '@/components/base/DateRangePicker.vue';
+import PageHeader from '@/components/base/PageHeader.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
 
 interface EventsFilter {
@@ -282,45 +279,6 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
   gap: 2rem;
 }
 
-/* Header Section */
-.header-section {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.header-main {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-}
-
-.back-button {
-  width: 2rem;
-  height: 2rem;
-  cursor: pointer;
-  color: var(--color-text-dimmed);
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.back-button:hover {
-  color: var(--color-text);
-  transform: translateX(-2px);
-}
-
-.app-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
-  line-height: 1.2;
-}
-
 /* Statistics Section */
 .stats-section {
   background: white;
@@ -417,11 +375,6 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
   .logs-container {
     padding: 1.25rem 1rem;
     gap: 1.5rem;
-  }
-
-  .header-section {
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .filter-row,

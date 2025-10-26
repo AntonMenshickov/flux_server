@@ -2,25 +2,24 @@
   <div class="online-log-stream">
     <div class="stream-container">
       <!-- Header Section -->
-      <div class="header-section">
-        <div class="header-main">
-          <ArrowLeftIcon @click="goBack" class="back-button" />
-          <div class="header-info">
-            <h1 class="device-title">{{ connectedDevice?.deviceName }}</h1>
-            <p class="device-subtitle" v-if="connectedDevice">({{ connectedDevice.deviceId }})</p>
+      <PageHeader 
+        :title="connectedDevice?.deviceName || ''" 
+        :subtitle="connectedDevice ? `(${connectedDevice.deviceId})` : undefined"
+        :subtitleInline="true"
+        @back="goBack">
+        <template #right>
+          <div class="status-indicators">
+            <span :title="`Websocket ${connectionStatus}`" class="status-badge">
+              <WifiIcon :class="'ws-icon ws-' + connectionStatus" />
+              <span class="status-text">{{ connectionStatus }}</span>
+            </span>
+            <span :title="deviceConnected ? 'Device online' : 'Device offline'" class="status-badge">
+              <DevicePhoneMobileIcon :class="{ 'device-icon': true, 'device-connected': deviceConnected }" />
+              <span class="status-text">{{ deviceConnected ? 'online' : 'offline' }}</span>
+            </span>
           </div>
-        </div>
-        <div class="status-indicators">
-          <span :title="`Websocket ${connectionStatus}`" class="status-badge">
-            <WifiIcon :class="'ws-icon ws-' + connectionStatus" />
-            <span class="status-text">{{ connectionStatus }}</span>
-          </span>
-          <span :title="deviceConnected ? 'Device online' : 'Device offline'" class="status-badge">
-            <DevicePhoneMobileIcon :class="{ 'device-icon': true, 'device-connected': deviceConnected }" />
-            <span class="status-text">{{ deviceConnected ? 'online' : 'offline' }}</span>
-          </span>
-        </div>
-      </div>
+        </template>
+      </PageHeader>
 
       <!-- Device Info Section -->
       <div class="device-info-section">
@@ -88,12 +87,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { wsStreams } from '@/api/wsStreams';
 import LogCard from '@/components/base/LogCard.vue';
 import { eventMessageFromJson, type EventMessage } from '@/model/event/eventMessage';
-import { ArrowLeftIcon, WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon } from '@heroicons/vue/24/outline';
+import { WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon } from '@heroicons/vue/24/outline';
 import { WebsocketClient, type ConnectionStatus } from '@/websocketClient/websocketClient';
 import { applications, type ConnectedDevice } from '@/api/applications';
 import BaseButton from '@/components/base/BaseButton.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
+import PageHeader from '@/components/base/PageHeader.vue';
 import { SearchCriterion } from '@/components/base/smartSearch/types';
 import { filterLogs } from '@/utils/logFilter';
 import { VList } from 'virtua/vue';
@@ -247,59 +247,6 @@ function goBack() {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-/* Header Section */
-.header-section {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.header-main {
-  display: flex;
-  align-items: start;
-  gap: 1rem;
-  flex: 1;
-}
-
-.back-button {
-  width: 2rem;
-  height: 2rem;
-  cursor: pointer;
-  color: var(--color-text-dimmed);
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.back-button:hover {
-  color: var(--color-text);
-  transform: translateX(-2px);
-}
-
-.header-info {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.device-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.device-subtitle {
-  font-size: 0.875rem;
-  color: var(--color-text-dimmed);
-  margin: 0;
-  font-family: monospace;
 }
 
 .status-indicators {
@@ -482,11 +429,6 @@ function goBack() {
     gap: 0.75rem;
   }
 
-  .header-section {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .status-indicators {
     width: 100%;
     flex-direction: column;
@@ -517,10 +459,6 @@ function goBack() {
 
   .filter-search {
     width: 100%;
-  }
-
-  .device-title {
-    font-size: 1.5rem;
   }
 }
 
