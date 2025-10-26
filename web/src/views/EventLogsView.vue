@@ -25,7 +25,7 @@
           </div>
           <div class="search-row">
             <div class="search-container">
-              <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters" 
+              <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
                 class="smart-search-field" />
             </div>
             <BaseButton @click="fetchLogs(true)" title="Reload">
@@ -40,10 +40,22 @@
       <div class="logs-section">
         <div class="logs-header">
           <h3 class="section-title">Event Logs</h3>
-          <span class="logs-count" v-if="logs.length > 0">{{ logs.length }} events</span>
+          <span class="logs-count" v-if="logs.length > 0 && !isInitialLoading">{{ logs.length }} events</span>
         </div>
-        <div class="logs-list">
+
+        <!-- Initial Loading -->
+        <div v-if="isInitialLoading" class="initial-loader">
+          <BaseLoader text="Loading logs..." />
+        </div>
+
+        <!-- Logs List -->
+        <div v-else class="logs-list">
           <LogCard v-for="(log) in logs" :key="log.id" :log="log" @search="addSearchCriterion" />
+
+          <!-- Pagination Loading -->
+          <div v-if="isLoading && hasMore" class="pagination-loader">
+            <BaseLoader :size="32" :min-height="100" :border-width="3" text="Loading more..." />
+          </div>
         </div>
       </div>
     </div>
@@ -68,6 +80,7 @@ import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BasePage from '@/components/base/BasePage.vue';
+import BaseLoader from '@/components/base/BaseLoader.vue';
 import DateRangePicker from '@/components/base/DateRangePicker.vue';
 import PageHeader from '@/components/base/PageHeader.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
@@ -86,9 +99,10 @@ const dateTimeFilter = ref<Date[] | null>(null);
 const criteria = ref<SearchCriterion[]>([]);
 const selectedFilter = ref<EventsFilter | null>(null);
 const pageSize = 100;
+const isInitialLoading = ref(false);
+const isLoading = ref(false);
 let lastTimestamp: number | undefined = undefined;
 let lastId: string | undefined = undefined;
-let isLoading = false;
 let hasMore = true;
 
 const route = useRoute();
@@ -118,7 +132,7 @@ function handleScroll(event: Event) {
   if (!application.value) return;
   const target = event.target as HTMLDivElement;
   const { scrollTop, clientHeight, scrollHeight } = target;
-  if (scrollTop + clientHeight >= scrollHeight - 50 && !isLoading && hasMore) {
+  if (scrollTop + clientHeight >= scrollHeight - 50 && !isLoading.value && hasMore) {
     fetchLogs();
   }
 }
@@ -152,14 +166,17 @@ const addLogLevelCriterion = (logLevel: LogLevel) => {
 };
 
 async function fetchLogs(clear: boolean = false) {
-  isLoading = true;
+  isLoading.value = true;
   if (clear) {
+    isInitialLoading.value = true;
     lastTimestamp = undefined;
     lastId = undefined;
     hasMore = true;
   }
 
   if (!application.value) {
+    isInitialLoading.value = false;
+    isLoading.value = false;
     return;
   }
 
@@ -194,7 +211,8 @@ async function fetchLogs(clear: boolean = false) {
     alert(eventsResult.value.message);
   }
 
-  isLoading = false;
+  isLoading.value = false;
+  isInitialLoading.value = false;
 }
 
 async function fetchAppStats(applicationId: string): Promise<ApplicationStatsResponse | null> {
@@ -313,6 +331,15 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
   gap: 0.5rem;
 }
 
+.initial-loader {
+  margin: 2rem 0;
+}
+
+.pagination-loader {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .logs-container {
@@ -344,4 +371,3 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 </style>
-
