@@ -20,6 +20,7 @@ export const events = {
   addFilter,
   updateFilter,
   deleteFilter,
+  searchFilters,
 }
 
 async function search(limit: number, applicationId: string, filter: SearchCriterion[] | null = null, lastTimestamp?: number, lastId?: string) {
@@ -74,4 +75,23 @@ async function deleteFilter(id: string) {
     params: { id }
   });
   return result;
+}
+
+async function searchFilters(search: string) {
+  const result = await request<{ filters: EventsFilterResponse[] }>({
+    authorized: true,
+    method: 'get',
+    url: '/events-filter/search',
+    params: { search }
+  });
+  return result.mapRight((r) => ({
+    ...r,
+    result: {
+      filters: r.result.filters.map(f => ({
+        ...f,
+        createdAt: new Date(f.createdAt),
+        updatedAt: f.updatedAt ? new Date(f.updatedAt) : undefined,
+      }))
+    }
+  }));
 }

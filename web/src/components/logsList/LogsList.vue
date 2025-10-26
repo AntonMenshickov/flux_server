@@ -11,20 +11,18 @@
     <div v-if="application != null" class="stats-wrapper">
       <AppStatsChart :application="application" @search="addLogLevelCriterion" />
     </div>
-    <div v-if="application != null" class="smart-search">
-      <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
-        class="smart-search-field" />
-      <VueDatePicker v-model="dateTimeFilter" @update:model-value="applyFilters" @cleared="applyFilters" range :multiCalendars="{ solo: true }" class="date-picker">
-        <template #dp-input="{ value }">
-          <BaseInput v-show="value.length" :value="value"  type="text" placeholder="Date and time filter" class="date-time-input"/>
-          <BaseButton v-show="!value.length" class="primary" title="Set date time filter">
-            <CalendarDateRangeIcon class="search-action-button" />
-          </BaseButton>
-        </template>
-      </VueDatePicker>
-      <BaseButton @click="fetchLogs(true)" title="reload">
-        <ArrowPathIcon class="search-action-button" />
-      </BaseButton>
+    <div v-if="application != null" class="smart-search-wrapper">
+      <div class="smart-search-additional-options">
+        <EventsFilterSelector v-model="selectedFilter" :criteria="criteria" @filterApplied="onFilterApplied" />
+        <DateRangePicker v-model="dateTimeFilter" @update:model-value="applyFilters" />
+      </div>
+      <div  class="smart-search">
+        <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
+          class="smart-search-field" />
+        <BaseButton @click="fetchLogs(true)" title="reload">
+          <ArrowPathIcon class="search-action-button" />
+        </BaseButton>
+      </div>
     </div>
     <div v-if="application != null" class="logs-list">
       <LogCard v-for="(log) in logs" :key="log.id" :log="log" @search="addSearchCriterion" />
@@ -43,22 +41,31 @@ import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/sma
 import AppCard from './AppCard.vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
-import { ArrowLeftIcon, ArrowPathIcon, CalendarDateRangeIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/vue/24/outline';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
+import EventsFilterSelector from './EventsFilterSelector.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import router from '@/router';
 import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
-import BaseButton from '../base/BaseButton.vue';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import BaseInput from '../base/BaseInput.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import DateRangePicker from '@/components/base/DateRangePicker.vue';
+import type { Criterion } from '@/components/base/smartSearch/types';
 
+interface EventsFilter {
+  id: string;
+  name: string;
+  criteria: Criterion[];
+  createdAt: Date;
+  updatedAt?: Date;
+}
 
 const appsData = ref<ApplicationShortStats[]>([]);
 const logs = ref<EventMessage[]>([]);
 const application = ref<ApplicationStatsResponse | null>(null);
-const dateTimeFilter = ref<Date[]>([]);
+const dateTimeFilter = ref<Date[] | null>(null);
 const criteria = ref<SearchCriterion[]>([]);
+const selectedFilter = ref<EventsFilter | null>(null);
 const pageSize = 100;
 let lastTimestamp: number | undefined = undefined;
 let lastId: string | undefined = undefined;
@@ -198,6 +205,11 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   return null;
 }
 
+function onFilterApplied(newCriteria: SearchCriterion[]) {
+  criteria.value = newCriteria;
+  applyFilters();
+}
+
 </script>
 
 <style scoped>
@@ -235,14 +247,28 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   margin-top: 1rem;
 }
 
+.smart-search-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem;
+  margin-bottom: 0;
+  margin-top: 1rem;
+}
+
+.smart-search-additional-options {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .smart-search {
   display: flex;
   flex-direction: row;
   align-items: start;
   gap: 1rem;
-  margin: 1.5rem;
-  margin-bottom: 0;
-  margin-top: 1rem;
 }
 
 .smart-search .smart-search-field {
@@ -265,13 +291,5 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
 
 .search-action-button {
   width: 1.1rem;
-}
-
-.date-picker {
-  width: auto;
-}
-
-.date-time-input {
-  padding-right: 2rem;
 }
 </style>
