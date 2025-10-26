@@ -1,14 +1,10 @@
 <template>
-  <div class="logs-page" @scroll="handleScroll">
-    <!-- Loader -->
-    <BaseLoader v-if="!application" text="Loading application..." />
-
-    <!-- Content -->
-    <div v-else class="logs-container">
+  <BasePage :isLoading="!application" loaderText="Loading application..." compact @scroll="handleScroll">
+    <div v-if="application" class="logs-container">
       <!-- Header Section -->
       <PageHeader :title="application.name" @back="backToApps">
         <template #right>
-          <OnlineDevices :applicationId="application?.id" @update:select="deviceSelected" />
+          <OnlineDevices :applicationId="application.id" @update:select="deviceSelected" />
         </template>
       </PageHeader>
 
@@ -51,7 +47,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
@@ -71,7 +67,7 @@ import router from '@/router';
 import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
 import BaseButton from '@/components/base/BaseButton.vue';
-import BaseLoader from '@/components/base/BaseLoader.vue';
+import BasePage from '@/components/base/BasePage.vue';
 import DateRangePicker from '@/components/base/DateRangePicker.vue';
 import PageHeader from '@/components/base/PageHeader.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
@@ -217,11 +213,6 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
 </script>
 
 <style scoped>
-.logs-page {
-  overflow-y: auto;
-  background: var(--color-secondary);
-}
-
 .logs-container {
   max-width: 1600px;
   margin: 0 auto;

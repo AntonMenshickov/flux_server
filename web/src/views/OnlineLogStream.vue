@@ -1,10 +1,6 @@
 <template>
-  <div class="online-log-stream">
-    <!-- Loader -->
-    <BaseLoader v-if="isLoading" text="Loading device..." />
-
-    <!-- Content -->
-    <div v-else class="stream-container">
+  <BasePage :isLoading="isLoading" loaderText="Loading device..." compact>
+    <div class="stream-container">
       <!-- Header Section -->
       <PageHeader 
         :title="connectedDevice?.deviceName || ''" 
@@ -82,7 +78,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
@@ -95,7 +91,7 @@ import { WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon } from '@heroico
 import { WebsocketClient, type ConnectionStatus } from '@/websocketClient/websocketClient';
 import { applications, type ConnectedDevice } from '@/api/applications';
 import BaseButton from '@/components/base/BaseButton.vue';
-import BaseLoader from '@/components/base/BaseLoader.vue';
+import BasePage from '@/components/base/BasePage.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import PageHeader from '@/components/base/PageHeader.vue';
@@ -241,12 +237,6 @@ function goBack() {
 </script>
 
 <style scoped>
-.online-log-stream {
-  height: 100%;
-  overflow-y: auto;
-  background: var(--color-secondary);
-}
-
 .stream-container {
   height: 100%;
   box-sizing: border-box;
