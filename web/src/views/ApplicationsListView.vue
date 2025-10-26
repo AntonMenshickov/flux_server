@@ -1,7 +1,10 @@
 <template>
   <div class="apps-container">
     <h2 class="page-title">Logs</h2>
-    <div class="apps-grid">
+    <!-- Loader -->
+    <BaseLoader v-if="isLoading" text="Loading applications..." />
+    <!-- Content -->
+    <div v-else class="apps-grid">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
     </div>
   </div>
@@ -12,12 +15,16 @@ import { applications } from '@/api/applications';
 import { ref, onMounted } from 'vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppCard from '@/components/logsList/AppCard.vue';
+import BaseLoader from '@/components/base/BaseLoader.vue';
 import router from '@/router';
 
 const appsData = ref<ApplicationShortStats[]>([]);
+const isLoading = ref(true);
 
 onMounted(async () => {
+  isLoading.value = true;
   appsData.value = await fetchApps('');
+  isLoading.value = false;
 });
 
 async function fetchApps(search: string): Promise<ApplicationShortStats[]> {
@@ -35,9 +42,11 @@ async function selectApp(app: ApplicationShortStats) {
 
 <style scoped>
 .apps-container {
+  height: 100%;
+  box-sizing: border-box;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   overflow-y: auto;
   background: var(--color-secondary);
 }

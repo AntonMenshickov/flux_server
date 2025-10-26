@@ -1,10 +1,7 @@
 <template>
   <div class="logs-page" @scroll="handleScroll">
     <!-- Loader -->
-    <div v-if="!application" class="loader-container">
-      <div class="loader"></div>
-      <p class="loader-text">Loading application...</p>
-    </div>
+    <BaseLoader v-if="!application" text="Loading application..." />
 
     <!-- Content -->
     <div v-else class="logs-container">
@@ -74,6 +71,7 @@ import router from '@/router';
 import { useRoute } from 'vue-router';
 import type { LogLevel } from '@/model/event/logLevel';
 import BaseButton from '@/components/base/BaseButton.vue';
+import BaseLoader from '@/components/base/BaseLoader.vue';
 import DateRangePicker from '@/components/base/DateRangePicker.vue';
 import PageHeader from '@/components/base/PageHeader.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
@@ -347,37 +345,6 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
 
   .app-title {
     font-size: 1.5rem;
-  }
-}
-
-/* Loader */
-.loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 1.5rem;
-}
-
-.loader {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--color-border);
-  border-top-color: var(--color-accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.loader-text {
-  font-size: 1rem;
-  color: var(--color-text-dimmed);
-  margin: 0;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 

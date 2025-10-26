@@ -1,6 +1,10 @@
 <template>
   <div class="online-log-stream">
-    <div class="stream-container">
+    <!-- Loader -->
+    <BaseLoader v-if="isLoading" text="Loading device..." />
+
+    <!-- Content -->
+    <div v-else class="stream-container">
       <!-- Header Section -->
       <PageHeader 
         :title="connectedDevice?.deviceName || ''" 
@@ -91,6 +95,7 @@ import { WifiIcon, DevicePhoneMobileIcon, ChevronDoubleDownIcon } from '@heroico
 import { WebsocketClient, type ConnectionStatus } from '@/websocketClient/websocketClient';
 import { applications, type ConnectedDevice } from '@/api/applications';
 import BaseButton from '@/components/base/BaseButton.vue';
+import BaseLoader from '@/components/base/BaseLoader.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
 import PageHeader from '@/components/base/PageHeader.vue';
@@ -110,6 +115,7 @@ const deviceConnected = ref(true);
 const connectedDevice = ref<ConnectedDevice | null>(null);
 const autoscrollEnabled = ref(true);
 const criteria = ref<SearchCriterion[]>([]);
+const isLoading = ref(true);
 
 let wsClient: WebsocketClient | null = null;
 const connectionStatus = ref<ConnectionStatus>('closed');
@@ -150,10 +156,12 @@ watch(
 )
 
 async function initializeEventsStream() {
+  isLoading.value = true;
   const deviceResult = await applications.getOnlineDevice(deviceUuid);
   if (deviceResult.isLeft()) {
     console.error(deviceResult.value);
     deviceConnected.value = false;
+    isLoading.value = false;
   } else {
     connectedDevice.value = deviceResult.value.result.device;
     // ensure websocket is open before requesting start
@@ -192,6 +200,7 @@ async function initializeEventsStream() {
     wsClient.connect();
     const opened = await ensureOpen();
     if (!opened) console.warn('WebSocket not open!');
+    isLoading.value = false;
   }
 
 }
