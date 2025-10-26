@@ -6,9 +6,9 @@
         <UserIcon class="icon" />
         <span>Users</span>
       </router-link>
-      <router-link :to="{ name: 'apps' }" :class="{ active: activeItem == SidebarItemEnum.apps }">
+      <router-link :to="{ name: 'applications' }" :class="{ active: activeItem == SidebarItemEnum.apps }">
         <CommandLineIcon class="icon" />
-        <span>Apps</span>
+        <span>Applications</span>
       </router-link>
       <router-link :to="{ name: 'logs' }" :class="{ active: activeItem == SidebarItemEnum.logs }">
         <DocumentTextIcon class="icon" />
@@ -26,28 +26,54 @@ import { SidebarItemEnum } from '@/model/sidebarItemEnum';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-
-onMounted(async () => {
-  const path = route.path.split('/').pop();
-  if (path) {
-    activeItem.value = path as SidebarItemEnum;
-  }
-});
-
-watch<string>(
-  () => route.path,
-  (newPath: string) => {
-    const path = newPath.split('/').pop();
-    if (!path) return;
-    activeItem.value = path as SidebarItemEnum;
-  }
-)
-
-
-const activeItem = ref<SidebarItemEnum>(SidebarItemEnum.logs)
+const activeItem = ref<SidebarItemEnum>(SidebarItemEnum.logs);
 const userStore = useUserStore();
 
 const showUsers = computed(() => userStore.profile?.isOwner || false);
+
+function getActiveItem(): SidebarItemEnum {
+  // Определяем активный элемент на основе имени роута или пути
+  const routeName = route.name?.toString();
+  
+  if (routeName === 'users') {
+    return SidebarItemEnum.users;
+  }
+  
+  // 'applications' теперь это управление приложениями
+  if (routeName === 'applications') {
+    return SidebarItemEnum.apps;
+  }
+  
+  // Для роутов logs, event-logs и online-log-stream используем logs
+  if (routeName === 'logs' || routeName === 'event-logs' || routeName === 'online-log-stream') {
+    return SidebarItemEnum.logs;
+  }
+  
+  // Fallback: проверяем путь
+  const path = route.path;
+  if (path.includes('/users')) {
+    return SidebarItemEnum.users;
+  }
+  if (path.includes('/applications')) {
+    return SidebarItemEnum.apps;
+  }
+  if (path.includes('/logs')) {
+    return SidebarItemEnum.logs;
+  }
+  
+  return SidebarItemEnum.logs;
+}
+
+onMounted(() => {
+  activeItem.value = getActiveItem();
+});
+
+watch(
+  () => [route.path, route.name],
+  () => {
+    activeItem.value = getActiveItem();
+  }
+);
 
 </script>
 

@@ -4,7 +4,8 @@ import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import ApplicationsList from '@/components/ApplicationsList.vue'
 import UsersList from '@/components/UsersList.vue'
-import LogsList from '@/components/logsList/LogsList.vue'
+import ApplicationsListView from '@/views/ApplicationsListView.vue'
+import EventLogsView from '@/views/EventLogsView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -30,14 +31,19 @@ const routes: Array<RouteRecordRaw> = [
         component: UsersList
       },
       {
-        path: 'apps',
-        name: 'apps',
+        path: 'applications',
+        name: 'applications',
         component: ApplicationsList
       },
       {
-        path: 'logs/:applicationId?',
+        path: 'logs',
         name: 'logs',
-        component: LogsList
+        component: ApplicationsListView
+      },
+      {
+        path: 'logs/:applicationId',
+        name: 'event-logs',
+        component: EventLogsView
       },
       {
         path: 'logs/online/:uuid',
