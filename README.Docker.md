@@ -19,33 +19,16 @@
 
 ```bash
 # Собрать и запустить все сервисы
-docker-compose up -d
+docker compose up -d
 
 # Просмотр логов
-docker-compose logs -f
+docker compose logs -f
 
 # Остановить сервисы
-docker-compose down
+docker compose down
 
 # Остановить и удалить volumes (данные)
-docker-compose down -v
-```
-
-### Development режим
-
-Для разработки используйте `docker-compose.dev.yml` - он запускает только зависимости (БД), а приложение запускается локально:
-
-```bash
-# Запустить только БД для разработки
-docker-compose -f docker-compose.dev.yml up -d
-
-# В другом терминале запустите бэкенд локально
-cd server
-npm run dev
-
-# В третьем терминале запустите фронтенд локально
-cd web
-npm run dev
+docker compose down -v
 ```
 
 ## Команды
@@ -53,49 +36,61 @@ npm run dev
 ### Сборка образа
 
 ```bash
-#отдельно сбилдить сервер
-DOCKER_BUILDKIT=1 docker build --progress=plain --memory=512m  -t flux-app .
+# Собрать сервер для маломощной конфигурации
+DOCKER_BUILDKIT=1 docker build --progress=plain --memory=512m --no-cache -t flux-app .
 
 # Собрать образ приложения
-docker-compose build
+docker compose build
+
+# Собрать только контейнер приложения
+docker compose build app
 
 # Пересобрать образ без кеша
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ### Управление контейнерами
 
 ```bash
 # Запустить сервисы
-docker-compose up -d
+docker compose up -d
 
 # Остановить сервисы
-docker-compose stop
+docker compose stop
 
 # Перезапустить конкретный сервис
-docker-compose restart app
+docker compose restart app
 
 # Удалить контейнеры
-docker-compose down
+docker compose down
+
+# Остановить контейнер приложения
+docker compose stop app
+
+# Удалить контейнер приложения
+docker compose rm -f app
+
+# Запустить контейнер приложения
+docker compose up -d app
 ```
 
 ### Логи и отладка
 
 ```bash
 # Просмотр логов всех сервисов
-docker-compose logs -f
+docker compose logs -f
 
 # Логи конкретного сервиса
-docker-compose logs -f app
-docker-compose logs -f postgres
-docker-compose logs -f mongodb
-docker-compose logs -f redis
+docker compose logs -f app
+docker compose logs -f postgres
+docker compose logs -f mongodb
+docker compose logs -f redis
 
 # Войти в контейнер
-docker-compose exec app sh
-docker-compose exec postgres psql -U flux_user -d flux_db
-docker-compose exec mongodb mongosh -u flux_user -p flux_password
-docker-compose exec redis redis-cli -a flux_password
+docker compose exec app sh
+docker compose exec postgres psql -U flux_user -d flux_db
+docker compose exec mongodb mongosh -u flux_user -p flux_password
+docker compose exec redis redis-cli -a flux_password
 ```
 
 ### Управление данными
@@ -105,21 +100,21 @@ docker-compose exec redis redis-cli -a flux_password
 docker volume ls
 
 # Удалить все данные (volumes)
-docker-compose down -v
+docker compose down -v
 
 # Создать бэкап PostgreSQL
-docker-compose exec postgres pg_dump -U flux_user flux_db > backup.sql
+docker compose exec postgres pg_dump -U flux_user flux_db > backup.sql
 
 # Восстановить бэкап PostgreSQL
-docker-compose exec -T postgres psql -U flux_user -d flux_db < backup.sql
+docker compose exec -T postgres psql -U flux_user -d flux_db < backup.sql
 
 # Создать бэкап MongoDB
-docker-compose exec mongodb mongodump --username=flux_user --password=flux_password --authenticationDatabase=admin --db=flux_db --out=/tmp/backup
+docker compose exec mongodb mongodump --username=flux_user --password=flux_password --authenticationDatabase=admin --db=flux_db --out=/tmp/backup
 docker cp flux-mongodb:/tmp/backup ./mongodb-backup
 
 # Восстановить бэкап MongoDB
 docker cp ./mongodb-backup flux-mongodb:/tmp/backup
-docker-compose exec mongodb mongorestore --username=flux_user --password=flux_password --authenticationDatabase=admin --db=flux_db /tmp/backup/flux_db
+docker compose exec mongodb mongorestore --username=flux_user --password=flux_password --authenticationDatabase=admin --db=flux_db /tmp/backup/flux_db
 
 # удалить кэш билдов
 docker builder prune --all --force
@@ -127,7 +122,7 @@ docker builder prune --all --force
 
 ## Переменные окружения
 
-Основные переменные окружения настроены в `docker-compose.yml`. Для кастомизации создайте файл `.env`:
+Основные переменные окружения настроены в `docker compose.yml`. Для кастомизации создайте файл `.env`:
 
 ```env
 # PostgreSQL
@@ -179,20 +174,20 @@ PORT=3000
 
 ```bash
 # Проверьте статус контейнеров
-docker-compose ps
+docker compose ps
 
 # Проверьте логи
-docker-compose logs postgres
-docker-compose logs mongodb
-docker-compose logs redis
+docker compose logs postgres
+docker compose logs mongodb
+docker compose logs redis
 ```
 
 ### Проблемы с правами доступа
 
 ```bash
 # Пересоздать volumes
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 ```
 
 ### Медленная сборка
@@ -202,7 +197,7 @@ docker-compose up -d
 docker system prune -a
 
 # Пересобрать с нуля
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 ## Дополнительная информация
