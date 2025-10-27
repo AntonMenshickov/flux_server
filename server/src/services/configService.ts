@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 export interface AppConfig {
   port: number;
+  host: string;
 
   jwtSecret: string;
   jwtAtExpiresIn: string;
@@ -53,6 +54,7 @@ export class ConfigService {
 
     const schema = z.object({
       PORT: z.coerce.number(),
+      HOST: z.string(),
 
       JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
       JWT_AT_EXPIRES_IN: z.string(),
@@ -91,6 +93,7 @@ export class ConfigService {
 
       this.config = {
         port: env.PORT,
+        host: env.HOST,
 
         jwtSecret: env.JWT_SECRET,
         jwtAtExpiresIn: env.JWT_AT_EXPIRES_IN,
@@ -127,6 +130,7 @@ export class ConfigService {
   }
 
   get port() { return this.config.port; }
+  get host() { return this.config.host; }
 
   get jwtSecret() { return this.config.jwtSecret; }
   get jwtAtExpiresIn() { return this.config.jwtAtExpiresIn; }

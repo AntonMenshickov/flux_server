@@ -73,7 +73,8 @@ export async function startServer() {
   app.use(errorHandler);
 
   const port = config.port;
-  app.listen(port, 'localhost', () => {
+  const host = config.host;
+  app.listen(port, host, () => {
     console.log(`Server listening on http://localhost:${port}`);
   });
 }

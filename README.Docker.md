@@ -53,6 +53,9 @@ npm run dev
 ### Сборка образа
 
 ```bash
+#отдельно сбилдить сервер
+DOCKER_BUILDKIT=1 docker build --progress=plain --memory=512m  -t flux-app .
+
 # Собрать образ приложения
 docker-compose build
 
