@@ -73,7 +73,7 @@ export async function startServer() {
   app.use(errorHandler);
 
   const port = config.port;
-  app.listen(port, '127.0.0.1', () => {
+  app.listen(port, 'localhost', () => {
     console.log(`Server listening on http://localhost:${port}`);
   });
 }
