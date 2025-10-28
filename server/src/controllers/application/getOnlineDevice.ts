@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';
-import { objectIdSchema } from '../../utils/zodUtil';
 import { DeviceClientInfo } from '../../websocket/deviceClient/deviceWsClient';
 import { responseMessages } from '../../strings/responseMessages';
 
