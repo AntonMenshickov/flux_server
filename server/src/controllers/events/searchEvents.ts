@@ -2,23 +2,10 @@ import { Response, NextFunction, application } from 'express';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
 import { EventMessageView } from '../../model/eventMessageView';
-import { Operator, SearchFieldKey } from '../../model/searchCriterion';
-import { objectIdSchema } from '../../utils/zodUtil';
+import { objectIdSchema, criteriaArraySchema } from '../../utils/zodUtil';
 import { container } from 'tsyringe';
 import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
 
-
-const searchCriterionsValidateSchema = z.array(z.object({
-  field: z.enum(SearchFieldKey),
-  operator: z.enum(Operator),
-  value: z.union([
-    z.string().trim(),
-    z.number(),
-    z.coerce.date(),
-    z.array(z.string().trim().nonempty()),
-    z.array(z.record(z.string().trim().nonempty(), z.string().trim().nonempty())),
-  ]),
-})).nullable().optional();
 
 export const searchEventsValidateSchema = z.object({
   body: z.object({
@@ -26,7 +13,7 @@ export const searchEventsValidateSchema = z.object({
     lastTimestamp: z.coerce.number().int().nonnegative().optional(),
     lastId: z.string().optional(),
     applicationId: objectIdSchema.nonoptional(),
-    filter: searchCriterionsValidateSchema.nullable().optional(),
+    filter: criteriaArraySchema.nullable().optional(),
   })
 });
 

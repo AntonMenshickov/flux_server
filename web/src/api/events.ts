@@ -15,12 +15,40 @@ interface EventsFilterResponse {
   updatedAt?: string;
 }
 
+interface ShareFilterRequest {
+  filterId?: string;
+  criteria?: Criterion[];
+  dateTimeRange?: {
+    start: number;
+    end: number;
+  };
+  applicationId: string;
+}
+
+interface ShareFilterResponse {
+  shareToken: string;
+  applicationId: string;
+}
+
+interface GetSharedFilterResponse {
+  criteria: Criterion[];
+  dateTimeRange?: {
+    start: number;
+    end: number;
+  };
+  applicationId: string;
+}
+
+
+
 export const events = {
   search,
   addFilter,
   updateFilter,
   deleteFilter,
   searchFilters,
+  shareFilter,
+  getSharedFilter,
 }
 
 async function search(limit: number, applicationId: string, filter: SearchCriterion[] | null = null, lastTimestamp?: number, lastId?: string) {
@@ -33,12 +61,12 @@ async function search(limit: number, applicationId: string, filter: SearchCriter
   }));
 }
 
-async function addFilter(name: string, criteria: Criterion[]) {
+async function addFilter(name: string, criteria: Criterion[], applicationId: string) {
   const result = await request<EventsFilterResponse>({
     authorized: true,
     method: 'post',
     url: '/events-filter/add',
-    data: { name, criteria }
+    data: { name, criteria, applicationId }
   });
   return result.mapRight((r) => ({
     ...r,
@@ -77,12 +105,13 @@ async function deleteFilter(id: string) {
   return result;
 }
 
-async function searchFilters(search: string) {
+async function searchFilters(search: string, applicationId: string) {
+  const params: Record<string, string> = { search, applicationId };
   const result = await request<{ filters: EventsFilterResponse[] }>({
     authorized: true,
     method: 'get',
     url: '/events-filter/search',
-    params: { search }
+    params
   });
   return result.mapRight((r) => ({
     ...r,
@@ -94,4 +123,24 @@ async function searchFilters(search: string) {
       }))
     }
   }));
+}
+
+
+async function shareFilter(data: ShareFilterRequest) {
+  const result = await request<ShareFilterResponse>({
+    authorized: true,
+    method: 'post',
+    url: '/events-filter/share',
+    data
+  });
+  return result;
+}
+
+async function getSharedFilter(shareToken: string) {
+  const result = await request<GetSharedFilterResponse>({
+    authorized: false,
+    method: 'get',
+    url: `/events-filter/shared/${shareToken}`
+  });
+  return result;
 }

@@ -65,6 +65,7 @@ interface EventsFilter {
 const props = defineProps<{
   modelValue: EventsFilter | null;
   criteria: SearchCriterion[];
+  applicationId: string;
 }>();
 
 const emit = defineEmits<{
@@ -79,7 +80,7 @@ const newFilterName = ref('');
 const updateFilterName = ref('');
 
 async function fetchFilters(search: string): Promise<EventsFilter[]> {
-  const searchResult = await events.searchFilters(search);
+  const searchResult = await events.searchFilters(search, props.applicationId);
   if (searchResult.isRight()) {
     return searchResult.value.result.filters;
   }
@@ -124,7 +125,7 @@ async function saveAsFilter() {
     return;
   }
 
-  const result = await events.addFilter(newFilterName.value, criteriaList);
+  const result = await events.addFilter(newFilterName.value, criteriaList, props.applicationId);
 
   if (result.isRight()) {
     const newFilter = result.value.result;

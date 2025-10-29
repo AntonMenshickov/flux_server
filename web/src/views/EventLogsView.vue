@@ -20,7 +20,7 @@
         </div>
         <div class="filters-content">
           <div class="filter-row">
-            <EventsFilterSelector v-model="selectedFilter" :criteria="criteria" @filterApplied="onFilterApplied" />
+            <EventsFilterSelector v-if="application" v-model="selectedFilter" :criteria="criteria" :applicationId="application.id" @filterApplied="onFilterApplied" />
             <DateRangePicker v-model="dateTimeFilter" @update:model-value="applyFilters" />
           </div>
           <div class="search-row">
@@ -28,6 +28,10 @@
               <SmartSearch :options="fieldOptions" v-model="criteria" @update:modelValue="applyFilters"
                 class="smart-search-field" />
             </div>
+            <BaseButton v-if="criteria.length > 0 || dateTimeFilter" @click="shareFilters" title="Share filters">
+              <LinkIcon class="reload-icon" />
+              Share
+            </BaseButton>
             <BaseButton @click="fetchLogs(true)" title="Reload">
               <ArrowPathIcon class="reload-icon" />
               Refresh
@@ -35,6 +39,21 @@
           </div>
         </div>
       </div>
+
+      <!-- Share Link Dialog -->
+      <ModalDialog :show="showShareDialog" cancel-text="Close" :confirm-text="null" :is-danger="false"
+        @cancel="closeShareDialog">
+        <div class="share-dialog-content">
+          <p>Share this filter with a link:</p>
+          <div class="share-link-container">
+            <input ref="shareLinkInput" :value="shareLink" readonly class="share-link-input" />
+            <BaseButton @click="copyShareLink" title="Copy link">
+              <DocumentDuplicateIcon class="action-icon" />
+              {{ isCopied ? 'Copied!' : 'Copy' }}
+            </BaseButton>
+          </div>
+        </div>
+      </ModalDialog>
 
       <!-- Logs List -->
       <div class="logs-section">
@@ -70,7 +89,7 @@ import type { EventMessage } from '@/model/event/eventMessage';
 import LogCard from '@/components/base/LogCard.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/smartSearch/types';
-import { ArrowPathIcon } from '@heroicons/vue/24/outline';
+import { ArrowPathIcon, LinkIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
 import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import EventsFilterSelector from '@/components/logsList/EventsFilterSelector.vue';
@@ -83,6 +102,7 @@ import BasePage from '@/components/base/BasePage.vue';
 import BaseLoader from '@/components/base/BaseLoader.vue';
 import DateRangePicker from '@/components/base/DateRangePicker.vue';
 import PageHeader from '@/components/base/PageHeader.vue';
+import ModalDialog from '@/components/ModalDialog.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
 
 interface EventsFilter {
@@ -106,10 +126,21 @@ let lastId: string | undefined = undefined;
 let hasMore = true;
 
 const route = useRoute();
+const showShareDialog = ref(false);
+const shareLink = ref('');
+const shareLinkInput = ref<HTMLInputElement | null>(null);
+const currentShareToken = ref<string | null>(null);
+const isCopied = ref(false);
 
 onMounted(async () => {
   const appId = route.params.applicationId?.toString();
-  if (appId) {
+  const shareToken = route.query.shareToken?.toString();
+  
+  if (shareToken) {
+    // Load shared filter
+    currentShareToken.value = shareToken;
+    await loadSharedFilter(shareToken, appId);
+  } else if (appId) {
     onAppIdChanged(appId);
   }
 });
@@ -118,10 +149,25 @@ watch<string>(
   () => route.params.applicationId?.toString(),
   async (newId?: string) => {
     if (newId) {
+      // Clear shareToken when navigating to different application
+      currentShareToken.value = null;
       onAppIdChanged(newId);
     }
   }
-)
+);
+
+watch(
+  () => route.query.shareToken?.toString(),
+  async (shareToken?: string) => {
+    if (shareToken && shareToken !== currentShareToken.value) {
+      const appId = route.params.applicationId?.toString();
+      currentShareToken.value = shareToken;
+      await loadSharedFilter(shareToken, appId);
+    } else if (!shareToken) {
+      currentShareToken.value = null;
+    }
+  }
+);
 
 async function onAppIdChanged(appId: string) {
   application.value = await fetchAppStats(appId);
@@ -227,6 +273,141 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
   criteria.value = newCriteria;
   applyFilters();
 }
+
+async function shareFilters() {
+  if (!application.value) {
+    alert('Application is required to share filter');
+    return;
+  }
+
+  isLoading.value = true;
+  
+  try {
+    let result;
+    
+    // Если выбран сохраненный фильтр, используем его ID
+    if (selectedFilter.value) {
+      result = await events.shareFilter({
+        filterId: selectedFilter.value.id,
+        applicationId: application.value.id,
+      });
+    } else {
+      // Иначе создаем новый фильтр из текущих критериев
+      if (criteria.value.length === 0 && !dateTimeFilter.value) {
+        alert('Please add at least one filter criterion or date range');
+        isLoading.value = false;
+        return;
+      }
+
+      // Convert SearchCriterion[] to Criterion[]
+      const criteriaList = criteria.value
+        .map(c => c.toCriterion())
+        .filter(c => c !== null) as Criterion[];
+
+      // Prepare dateTimeRange if exists
+      const dateTimeRange = dateTimeFilter.value && dateTimeFilter.value.length === 2 ? {
+        start: dateTimeFilter.value[0].getTime(),
+        end: dateTimeFilter.value[1].getTime(),
+      } : undefined;
+
+      result = await events.shareFilter({
+        criteria: criteriaList,
+        dateTimeRange,
+        applicationId: application.value.id,
+      });
+    }
+
+    if (result.isRight()) {
+      const shareToken = result.value.result.shareToken;
+      const appId = application.value.id;
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
+      const shareUrl = `${baseUrl}#/dashboard/logs/${appId}?shareToken=${shareToken}`;
+      shareLink.value = shareUrl;
+      showShareDialog.value = true;
+    } else {
+      alert(`Failed to create share link: ${result.value.message}`);
+    }
+  } catch (error) {
+    alert(`Failed to create share link: ${error}`);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+function closeShareDialog() {
+  showShareDialog.value = false;
+  shareLink.value = '';
+  isCopied.value = false;
+}
+
+async function copyShareLink() {
+  if (shareLinkInput.value) {
+    shareLinkInput.value.select();
+    try {
+      await navigator.clipboard.writeText(shareLink.value);
+    } catch {
+      // Fallback for older browsers
+      document.execCommand('copy');
+    }
+    isCopied.value = true;
+    setTimeout(() => {
+      isCopied.value = false;
+    }, 2000);
+  }
+}
+
+async function loadSharedFilter(shareToken: string, appId?: string) {
+  isLoading.value = true;
+  isInitialLoading.value = true;
+
+  try {
+    const result = await events.getSharedFilter(shareToken);
+
+    if (result.isRight()) {
+      const filterData = result.value.result;
+      
+      // Convert Criterion[] to SearchCriterion[]
+      const searchCriteria = filterData.criteria
+        .map(c => SearchCriterion.fromCriterion(c))
+        .filter(c => c !== null) as SearchCriterion[];
+      
+      criteria.value = searchCriteria;
+
+      // Set dateTimeRange if exists
+      if (filterData.dateTimeRange) {
+        dateTimeFilter.value = [
+          new Date(filterData.dateTimeRange.start),
+          new Date(filterData.dateTimeRange.end),
+        ];
+      }
+
+      // Load application if appId provided or from filter data
+      const targetAppId = appId || filterData.applicationId;
+      if (targetAppId) {
+        application.value = await fetchAppStats(targetAppId);
+        if (application.value) {
+          applyFilters();
+        }
+      } else if (application.value) {
+        applyFilters();
+      }
+    } else {
+      alert(`Failed to load shared filter: ${result.value.message}`);
+      if (appId) {
+        onAppIdChanged(appId);
+      }
+    }
+  } catch (error) {
+    alert(`Failed to load shared filter: ${error}`);
+    if (appId) {
+      onAppIdChanged(appId);
+    }
+  } finally {
+    isLoading.value = false;
+    isInitialLoading.value = false;
+  }
+}
+
 
 </script>
 
@@ -361,6 +542,39 @@ function onFilterApplied(newCriteria: SearchCriterion[]) {
   .app-title {
     font-size: 1.5rem;
   }
+}
+
+/* Share Dialog Styles */
+.share-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.share-link-container {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.share-link-input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+}
+
+.share-link-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.action-icon {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Smooth transitions */

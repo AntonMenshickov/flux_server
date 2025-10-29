@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import z, { nullable, ZodNumber } from 'zod';
 import { LogLevel } from '../model/eventMessageDto';
+import { SearchFieldKey, Operator } from '../model/searchCriterion';
 
 export const objectIdSchema = z
   .string()
@@ -11,6 +12,27 @@ export const objectIdSchema = z
   export const numberFromStringSchema = z
   .string()
   .transform((val: string) => Number(val)).refine((val) => !isNaN(val), { message: 'Invalid number', });
+
+/**
+ * Схема валидации для одного критерия поиска
+ * Используется для валидации критериев в фильтрах событий
+ */
+export const criterionItemSchema = z.object({
+  field: z.enum(Object.values(SearchFieldKey) as [SearchFieldKey, ...SearchFieldKey[]]),
+  operator: z.enum(Object.values(Operator) as [Operator, ...Operator[]]),
+  value: z.union([
+    z.string().trim(),
+    z.number(),
+    z.coerce.date(),
+    z.array(z.string()),
+    z.array(z.record(z.string(), z.string())),
+  ]),
+});
+
+/**
+ * Схема валидации для массива критериев поиска
+ */
+export const criteriaArraySchema = z.array(criterionItemSchema);
 
 export const eventMessageDtoSchema = z.object({
   message: z.string().trim(),

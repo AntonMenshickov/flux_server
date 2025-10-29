@@ -4,26 +4,13 @@ import { Document } from 'mongoose';
 import { EventsFilter, IEventsFilter } from '../../model/mongo/eventsFilter';
 import z from 'zod';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
-import { SearchFieldKey, Operator } from '../../model/searchCriterion';
-import { objectIdSchema } from '../../utils/zodUtil';
-
-const criteriaItemSchema = z.object({
-  field: z.enum(Object.values(SearchFieldKey) as [SearchFieldKey, ...SearchFieldKey[]]),
-  operator: z.enum(Object.values(Operator) as [Operator, ...Operator[]]),
-  value: z.union([
-    z.string().trim(),
-    z.number(),
-    z.coerce.date(),
-    z.array(z.string()),
-    z.array(z.record(z.string(), z.string())),
-  ]),
-});
+import { objectIdSchema, criteriaArraySchema } from '../../utils/zodUtil';
 
 export const updateEventsFilterValidateSchema = z.object({
   body: z.object({
     id: objectIdSchema,
     name: z.string().trim().min(1, responseMessages.NAME_IS_REQUIRED),
-    criteria: z.array(criteriaItemSchema).min(1, 'At least one criterion is required'),
+    criteria: criteriaArraySchema.min(1, 'At least one criterion is required'),
   })
 });
 
@@ -37,11 +24,14 @@ export async function updateEventsFilter(req: UserAuthRequest, res: Response, ne
     return res.status(400).json({ error: responseMessages.EVENTS_FILTER_NOT_FOUND });
   }
 
-  const existFilterWithSameName = await EventsFilter.findOne({ 
+  const existingFilterQuery = { 
     _id: { $ne: id }, 
     user: userId, 
-    name 
-  }).exec();
+    name,
+    applicationId: filter.applicationId
+  };
+  
+  const existFilterWithSameName = await EventsFilter.findOne(existingFilterQuery).exec();
 
   if (existFilterWithSameName) {
     return res.status(400).json({ error: responseMessages.EVENTS_FILTER_NAME_ALREADY_EXISTS });

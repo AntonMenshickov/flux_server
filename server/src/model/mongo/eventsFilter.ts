@@ -7,6 +7,9 @@ export interface IEventsFilter extends IBaseSchema {
   user: Types.ObjectId;
   name: string;
   criteria: ICriteriaItem[];
+  shareToken?: string;
+  applicationId: Types.ObjectId;
+  isSharedOnly?: boolean; // true - создан только для шаринга, false - постоянный фильтр пользователя
 }
 
 export interface ICriteriaItem {
@@ -47,9 +50,27 @@ export const eventsFilterSchema = baseSchema<IEventsFilter>({
     required: true,
     default: []
   },
+  shareToken: {
+    type: String,
+    required: false,
+    unique: true,
+    sparse: true
+  },
+  applicationId: {
+    type: Types.ObjectId,
+    required: true,
+    ref: 'Application'
+  },
+  isSharedOnly: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
 });
 
-eventsFilterSchema.index({ user: 1, name: 1 }, { unique: true });
+eventsFilterSchema.index({ user: 1, name: 1, applicationId: 1 }, { unique: true });
+eventsFilterSchema.index({ shareToken: 1 });
+eventsFilterSchema.index({ user: 1, applicationId: 1 });
 
 export const EventsFilter = model<IEventsFilter>('EventsFilter', eventsFilterSchema);
 
