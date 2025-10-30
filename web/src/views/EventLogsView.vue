@@ -84,6 +84,7 @@
 <script setup lang="ts">
 import { applications, type ApplicationStatsResponse, type ConnectedDevice } from '@/api/applications';
 import { events } from '@/api/events';
+import { eventFilters } from '@/api/eventFilters';
 import { ref, onMounted, watch } from 'vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import LogCard from '@/components/base/LogCard.vue';
@@ -287,7 +288,7 @@ async function shareFilters() {
     
     // Если выбран сохраненный фильтр, используем его ID
     if (selectedFilter.value) {
-      result = await events.shareFilter({
+      result = await eventFilters.share({
         filterId: selectedFilter.value.id,
         applicationId: application.value.id,
       });
@@ -310,7 +311,7 @@ async function shareFilters() {
         end: dateTimeFilter.value[1].getTime(),
       } : undefined;
 
-      result = await events.shareFilter({
+      result = await eventFilters.share({
         criteria: criteriaList,
         dateTimeRange,
         applicationId: application.value.id,
@@ -361,7 +362,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   isInitialLoading.value = true;
 
   try {
-    const result = await events.getSharedFilter(shareToken);
+    const result = await eventFilters.getShared(shareToken);
 
     if (result.isRight()) {
       const filterData = result.value.result;

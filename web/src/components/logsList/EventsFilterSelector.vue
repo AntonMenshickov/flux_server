@@ -50,7 +50,7 @@ import BaseSelector from '@/components/base/BaseSelector.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseInput from '@/components/base/BaseInput.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
-import { events } from '@/api/events';
+import { eventFilters } from '@/api/eventFilters';
 import { SearchCriterion } from '@/components/base/smartSearch/types';
 import type { Criterion } from '@/components/base/smartSearch/types';
 
@@ -80,7 +80,7 @@ const newFilterName = ref('');
 const updateFilterName = ref('');
 
 async function fetchFilters(search: string): Promise<EventsFilter[]> {
-  const searchResult = await events.searchFilters(search, props.applicationId);
+  const searchResult = await eventFilters.search(search, props.applicationId);
   if (searchResult.isRight()) {
     return searchResult.value.result.filters;
   }
@@ -125,7 +125,7 @@ async function saveAsFilter() {
     return;
   }
 
-  const result = await events.addFilter(newFilterName.value, criteriaList, props.applicationId);
+  const result = await eventFilters.add(newFilterName.value, criteriaList, props.applicationId);
 
   if (result.isRight()) {
     const newFilter = result.value.result;
@@ -178,7 +178,7 @@ async function updateFilter() {
     return;
   }
 
-  const result = await events.updateFilter(props.modelValue.id, updateFilterName.value, criteriaList);
+  const result = await eventFilters.update(props.modelValue.id, updateFilterName.value, criteriaList);
 
   if (result.isRight()) {
     const updatedFilter: EventsFilter = {
@@ -205,7 +205,7 @@ async function deleteFilter() {
     return;
   }
 
-  const result = await events.deleteFilter(props.modelValue.id);
+  const result = await eventFilters.remove(props.modelValue.id);
   
   if (result.isRight()) {
     emit('update:modelValue', null);

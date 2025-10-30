@@ -50,3 +50,4 @@ export async function searchEventsFilter(req: UserAuthRequest, res: Response, ne
   });
 }
 
+

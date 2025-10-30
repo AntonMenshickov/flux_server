@@ -54,3 +54,4 @@ export async function updateEventsFilter(req: UserAuthRequest, res: Response, ne
   });
 }
 
+
