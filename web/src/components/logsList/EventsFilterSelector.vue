@@ -16,7 +16,7 @@
     <div v-else class="filter-actions">
       <BaseButton v-if="criteria.length > 0" @click="showCreateFilterDialog = true" class="save-filter-btn">
         <BookmarkIcon class="action-icon" />
-        Save as filter
+        Save filter
       </BaseButton>
       <BaseSelector v-model="tempSelectedFilter" :fetch-options="fetchFilters" :label-key="filterLabelKey"
         :value-key="filterValueKey" placeholder="Select an events filter..." class="events-filter-selector"
