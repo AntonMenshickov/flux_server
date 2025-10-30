@@ -4,6 +4,9 @@ import { container } from 'tsyringe';
 import { DeviceWsClientService } from '../../services/deviceWsClientsService';
 import { objectIdSchema } from '../../utils/zodUtil';
 import { DeviceClientInfo } from '../../websocket/deviceClient/deviceWsClient';
+import { Application } from '../../model/mongo/application';
+import { responseMessages } from '../../strings/responseMessages';
+import { UserAuthRequest } from '../../middleware/authorizationRequired';
 
 export const searchOnlineDevicesValidateSchema = z.object({
   query: z.object({
@@ -12,8 +15,14 @@ export const searchOnlineDevicesValidateSchema = z.object({
   })
 });
 
-export async function searchOnlineDevices(req: Request, res: Response) {
+export async function searchOnlineDevices(req: UserAuthRequest, res: Response) {
   const { applicationId, search } = searchOnlineDevicesValidateSchema.parse(req).query;
+
+  // access check: only maintainers can view devices of the application
+  const app = await Application.findOne({ _id: applicationId, maintainers: req.user._id }).exec();
+  if (!app) {
+    return res.status(403).json({ success: false, message: responseMessages.NOT_ALLOWED_TO_VIEW_APP });
+  }
   const service = container.resolve(DeviceWsClientService);
 
   const clients: DeviceClientInfo[] = service.clients

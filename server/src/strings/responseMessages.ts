@@ -25,4 +25,5 @@ export const responseMessages = {
   INTERNAL_SERVER_ERROR: 'Internal server error',
   EVENTS_FILTER_NOT_FOUND: 'Events filter not found',
   EVENTS_FILTER_NAME_ALREADY_EXISTS: 'Events filter with this name already exists',
+  NOT_ALLOWED_TO_VIEW_APP: 'Not allowed to view this application',
 }

@@ -1,6 +1,9 @@
 <template>
-  <BasePage :isLoading="!application" loaderText="Loading application..." compact @scroll="handleScroll">
-    <div v-if="application" class="logs-content">
+  <BasePage :isLoading="!application && !accessDenied" loaderText="Loading application..." compact @scroll="handleScroll">
+    <div v-if="accessDenied" class="access-denied">
+      You are not allowed to view events for this application.
+    </div>
+    <div v-else-if="application" class="logs-content">
       <!-- Header Section -->
       <PageHeader :title="application.name" @back="backToApps">
         <template #right>
@@ -125,6 +128,7 @@ const isLoading = ref(false);
 let lastTimestamp: number | undefined = undefined;
 let lastId: string | undefined = undefined;
 let hasMore = true;
+const accessDenied = ref(false);
 
 const route = useRoute();
 const showShareDialog = ref(false);
@@ -172,8 +176,14 @@ watch(
 );
 
 async function onAppIdChanged(appId: string) {
+  accessDenied.value = false;
   application.value = await fetchAppStats(appId);
-  applyFilters();
+  if (application.value) {
+    applyFilters();
+  } else {
+    // если нет доступа, список очищаем
+    logs.value = [];
+  }
 }
 
 function handleScroll(event: Event) {
@@ -190,6 +200,7 @@ function backToApps() {
 }
 
 function applyFilters() {
+  accessDenied.value = false;
   fetchLogs(true);
 }
 
@@ -256,7 +267,13 @@ async function fetchLogs(clear: boolean = false) {
       lastId = lastEvent.id;
     }
   } else {
-    alert(eventsResult.value.message);
+    if (eventsResult.value.code === 403) {
+      accessDenied.value = true;
+      logs.value = [];
+      hasMore = false;
+    } else {
+      alert(eventsResult.value.message);
+    }
   }
 
   isLoading.value = false;
@@ -267,6 +284,11 @@ async function fetchAppStats(applicationId: string): Promise<ApplicationStatsRes
   const searchResult = await applications.getAppStats(applicationId);
   if (searchResult.isRight()) {
     return searchResult.value.result;
+  }
+  if (searchResult.value.code === 403) {
+    accessDenied.value = true;
+  } else {
+    alert(searchResult.value.message);
   }
   return null;
 }
@@ -521,6 +543,16 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 .pagination-loader {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+/* Access denied message */
+.access-denied {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #c53030;
 }
 
 /* Responsive Design */

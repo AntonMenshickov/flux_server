@@ -21,6 +21,10 @@ export async function getAppStats(req: UserAuthRequest, res: Response, next: Nex
     if (!application) {
       return res.status(400).json({ error: responseMessages.APPLICATION_NOT_FOUND });
     }
+    // Check user is a maintainer of the application
+    if (!application.maintainers.find(m => m.toString() === req.user._id.toString())) {
+      return res.status(403).json({ success: false, message: responseMessages.NOT_ALLOWED_TO_VIEW_APP });
+    }
     const stats = await ApplicationStats.find({ application: application._id }).sort({ date: 1 }).exec();
 
     return res.status(200).json({

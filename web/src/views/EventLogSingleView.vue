@@ -1,6 +1,9 @@
 <template>
   <BasePage :isLoading="isLoading" loaderText="Loading event..." compact>
-    <div v-if="event" class="single-log-container">
+    <div v-if="accessDenied" class="access-denied">
+      You are not allowed to view this event.
+    </div>
+    <div v-else-if="event" class="single-log-container">
       <PageHeader :title="'Event ' + event.id" @back="goBack" />
       <LogCard :log="event" :defaultExpanded="true" />
       <div class="open-in-list">
@@ -24,12 +27,19 @@ const route = useRoute();
 const router = useRouter();
 const isLoading = ref(true);
 const event = ref<EventMessage | null>(null);
+const accessDenied = ref(false);
 
 onMounted(async () => {
   const id = route.params.id as string;
   const res = await events.getById(id);
   if (res.isRight()) {
     event.value = res.value.result as unknown as EventMessage;
+  } else {
+    if (res.value.code === 403) {
+      accessDenied.value = true;
+    } else {
+      alert(res.value.message);
+    }
   }
   isLoading.value = false;
 });
@@ -54,5 +64,15 @@ function openInList() {
 .open-in-list {
   display: flex;
   justify-content: flex-end;
+}
+
+/* Access denied message */
+.access-denied {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #c53030;
 }
 </style>
