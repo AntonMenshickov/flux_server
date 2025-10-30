@@ -14,8 +14,6 @@ pinia.use(piniaPluginPersistedstate);
 
 Chart.register(...registerables);
 
-document.title = 'Flux logs'
-
 createApp(App)
   .use(pinia)
   .use(router)
