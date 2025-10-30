@@ -53,14 +53,7 @@ import ModalDialog from '@/components/ModalDialog.vue';
 import { eventFilters } from '@/api/eventFilters';
 import { SearchCriterion } from '@/components/base/smartSearch/types';
 import type { Criterion } from '@/components/base/smartSearch/types';
-
-interface EventsFilter {
-  id: string;
-  name: string;
-  criteria: Criterion[];
-  createdAt: Date;
-  updatedAt?: Date;
-}
+import type { EventsFilter } from '@/model/eventsFilter';
 
 const props = defineProps<{
   modelValue: EventsFilter | null;

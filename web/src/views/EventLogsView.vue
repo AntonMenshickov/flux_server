@@ -44,14 +44,19 @@
       <ModalDialog :show="showShareDialog" cancel-text="Close" :confirm-text="null" :is-danger="false"
         @cancel="closeShareDialog">
         <div class="share-dialog-content">
-          <p>Share this filter with a link:</p>
-          <div class="share-link-container">
-            <input ref="shareLinkInput" :value="shareLink" readonly class="share-link-input" />
-            <BaseButton @click="copyShareLink" title="Copy link">
-              <DocumentDuplicateIcon class="action-icon" />
-              {{ isCopied ? 'Copied!' : 'Copy' }}
-            </BaseButton>
-          </div>
+          <template v-if="shareLoading">
+            <BaseLoader text="Generating share link..." :min-height="80" />
+          </template>
+          <template v-else>
+            <p>Share this filter with a link:</p>
+            <div class="share-link-container">
+              <input ref="shareLinkInput" :value="shareLink" readonly class="share-link-input" />
+              <BaseButton @click="copyShareLink" title="Copy link">
+                <DocumentDuplicateIcon class="action-icon" />
+                {{ isCopied ? 'Copied!' : 'Copy' }}
+              </BaseButton>
+            </div>
+          </template>
         </div>
       </ModalDialog>
 
@@ -105,14 +110,9 @@ import DateRangePicker from '@/components/base/DateRangePicker.vue';
 import PageHeader from '@/components/base/PageHeader.vue';
 import ModalDialog from '@/components/ModalDialog.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
+import type { EventsFilter } from '@/model/eventsFilter';
 
-interface EventsFilter {
-  id: string;
-  name: string;
-  criteria: Criterion[];
-  createdAt: Date;
-  updatedAt?: Date;
-}
+// using shared model EventsFilter
 
 const logs = ref<EventMessage[]>([]);
 const application = ref<ApplicationStatsResponse | null>(null);
@@ -132,6 +132,7 @@ const shareLink = ref('');
 const shareLinkInput = ref<HTMLInputElement | null>(null);
 const currentShareToken = ref<string | null>(null);
 const isCopied = ref(false);
+const shareLoading = ref(false);
 
 onMounted(async () => {
   const appId = route.params.applicationId?.toString();
@@ -281,8 +282,12 @@ async function shareFilters() {
     return;
   }
 
-  isLoading.value = true;
-  
+  // Открываем модал сразу и показываем спиннер в нем
+  showShareDialog.value = true;
+  shareLoading.value = true;
+  shareLink.value = '';
+  isCopied.value = false;
+
   try {
     let result;
     
@@ -296,7 +301,7 @@ async function shareFilters() {
       // Иначе создаем новый фильтр из текущих критериев
       if (criteria.value.length === 0 && !dateTimeFilter.value) {
         alert('Please add at least one filter criterion or date range');
-        isLoading.value = false;
+        shareLoading.value = false;
         return;
       }
 
@@ -324,14 +329,13 @@ async function shareFilters() {
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
       const shareUrl = `${baseUrl}#/dashboard/logs/${appId}?shareToken=${shareToken}`;
       shareLink.value = shareUrl;
-      showShareDialog.value = true;
     } else {
       alert(`Failed to create share link: ${result.value.message}`);
     }
   } catch (error) {
     alert(`Failed to create share link: ${error}`);
   } finally {
-    isLoading.value = false;
+    shareLoading.value = false;
   }
 }
 
