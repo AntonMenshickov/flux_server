@@ -6,6 +6,9 @@
       <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
       <span :class="{ 'log-text': true, 'expanded': expanded }">{{ log.message }}</span>
       <LogLevelBadge :level="log.logLevel" />
+    <a v-if="showLink" class="log-link-icon" :href="`#/dashboard/logs/message/${log.id}`" :title="'Permanent link'">
+      <LinkIcon class="icon-link" />
+    </a>
     </section>
 
     <transition name="expand">
@@ -85,7 +88,7 @@ import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
 import BaseCopyText from '@/components/base/BaseCopyText.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
-import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon } from '@heroicons/vue/24/outline';
+import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon, LinkIcon } from '@heroicons/vue/24/outline';
 import { ref } from 'vue';
 import { SearchFieldKey, SearchCriterion, Operator } from '@/components/base/smartSearch/types';
 
@@ -93,11 +96,13 @@ const emit = defineEmits<{
   (e: 'search', criterion: SearchCriterion): void
 }>();
 
-defineProps<{
-  log: EventMessage
+const props = defineProps<{
+  log: EventMessage,
+  showLink?: boolean,
+  defaultExpanded?: boolean,
 }>();
 
-const expanded = ref<boolean>(false);
+const expanded = ref<boolean>(props.defaultExpanded ?? false);
 
 function toggle() {
   expanded.value = !expanded.value;
@@ -114,6 +119,8 @@ function emitSearch(field: SearchFieldKey, value: string | { key: string; value:
 function formatDate(ts: number) {
   return new Date(ts).toLocaleString();
 }
+
+// removed click handler: using a regular anchor link now
 </script>
 
 <style scoped>
@@ -287,5 +294,22 @@ function formatDate(ts: number) {
 .stack-trace {
   text-align: start;
   margin: 0;
+}
+
+.log-link-icon {
+  margin-left: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.icon-link {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.icon-link:hover {
+  opacity: 1;
+  color: var(--color-primary, #3b82f6);
 }
 </style>

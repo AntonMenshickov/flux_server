@@ -51,6 +51,12 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('@/views/OnlineLogStream.vue'),
         props: true
       },
+      {
+        path: 'logs/message/:id',
+        name: 'event-log-single',
+        component: () => import('@/views/EventLogSingleView.vue'),
+        props: true
+      },
     ]
   }
 ]

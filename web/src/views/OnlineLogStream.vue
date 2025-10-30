@@ -71,7 +71,7 @@
           <VList ref="virtualListRef" class="logs-list" :data="filteredLogs" @scroll="handleScroll">
             <template #default="{ item }">
               <div class="log-card-container">
-                <LogCard :log="item" :key="item.id" @search="addSearchCriterion" />
+                <LogCard :log="item" :key="item.id" :id="'log-' + item.id" :showLink="false" @search="addSearchCriterion" />
               </div>
             </template>
           </VList>

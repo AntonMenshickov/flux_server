@@ -69,7 +69,7 @@
 
         <!-- Logs List -->
         <div v-else class="logs-list">
-          <LogCard v-for="(log) in logs" :key="log.id" :log="log" @search="addSearchCriterion" />
+          <LogCard v-for="(log) in logs" :key="log.id" :log="log" :showLink="true" @search="addSearchCriterion" />
 
           <!-- Pagination Loading -->
           <div v-if="isLoading && hasMore" class="pagination-loader">

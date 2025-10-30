@@ -49,6 +49,7 @@ export const events = {
   searchFilters,
   shareFilter,
   getSharedFilter,
+  getById,
 }
 
 async function search(limit: number, applicationId: string, filter: SearchCriterion[] | null = null, lastTimestamp?: number, lastId?: string) {
@@ -143,4 +144,13 @@ async function getSharedFilter(shareToken: string) {
     url: `/events-filter/shared/${shareToken}`
   });
   return result;
+}
+
+async function getById(id: string) {
+  const result = await request<{ result: EventMessage }>({
+    authorized: true,
+    method: 'get',
+    url: `/events/${id}`,
+  });
+  return result.mapRight(r => ({ ...r, result: eventMessageFromJson(r.result) }));
 }
