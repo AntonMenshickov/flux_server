@@ -387,6 +387,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   font-size: var(--font-size-md);
   background: var(--color-panel-bg);
   color: var(--color-text);
+  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 }
 
 /* Highlight on focus */
@@ -420,6 +421,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   font-size: var(--font-size-base);
   text-align: start;
   color: var(--color-tag-text);
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 .tag button {
@@ -461,6 +463,7 @@ input::placeholder {
   box-shadow: var(--box-shadow-md);
   z-index: var(--z-index-suggestions);
   list-style: none;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .suggestions-list li {

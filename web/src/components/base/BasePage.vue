@@ -44,6 +44,7 @@ defineEmits<{
   height: 100%;
   overflow-y: auto;
   background: var(--color-secondary);
+  transition: background-color var(--transition-base);
 }
 
 .content-wrapper {
@@ -75,6 +76,7 @@ defineEmits<{
   margin: 0 0 var(--spacing-xl) 0;
   padding: 0 var(--spacing-xl);
   box-sizing: border-box;
+  transition: color var(--transition-base);
 }
 
 </style>

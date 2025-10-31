@@ -126,7 +126,7 @@ watch(() => themeStore.effectiveTheme, () => {
   border-radius: var(--border-radius);
   background-color: var(--color-panel-bg);
   box-shadow: var(--box-shadow);
-  transition: box-shadow var(--transition-base);
+  transition: box-shadow var(--transition-base), background-color var(--transition-base), color var(--transition-base);
   cursor: pointer;
   color: var(--color-text);
 }
@@ -145,10 +145,12 @@ watch(() => themeStore.effectiveTheme, () => {
 .app-name {
   font-weight: bolder;
   color: var(--color-text);
+  transition: color var(--transition-base);
 }
 
 .app-today-records {
   color: var(--color-text-dimmed);
+  transition: color var(--transition-base);
 }
 
 </style>

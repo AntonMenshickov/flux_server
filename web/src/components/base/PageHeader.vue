@@ -36,6 +36,7 @@ defineEmits<{
   flex-wrap: wrap;
   padding-bottom: var(--spacing-sm);
   border-bottom: 1px solid var(--color-border-subtle);
+  transition: border-color var(--transition-base);
 }
 
 .header-main {
@@ -81,6 +82,7 @@ defineEmits<{
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-base);
 }
 
 .header-subtitle {
@@ -92,6 +94,7 @@ defineEmits<{
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-base);
 }
 
 .header-right {

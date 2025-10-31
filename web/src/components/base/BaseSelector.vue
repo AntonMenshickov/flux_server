@@ -120,6 +120,7 @@ const selectOption = (item: T) => {
   font-size: var(--font-size-md);
   background-color: var(--color-panel-bg);
   color: var(--color-text);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base), color var(--transition-base);
 }
 
 .selector-input:focus {
@@ -147,6 +148,7 @@ const selectOption = (item: T) => {
   max-height: 200px;
   overflow-y: auto;
   z-index: var(--z-index-dropdown);
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .dropdown li {
@@ -157,6 +159,7 @@ const selectOption = (item: T) => {
   box-sizing: border-box;
   cursor: pointer;
   color: var(--color-text);
+  transition: color var(--transition-base), background var(--transition-base);
 }
 
 .dropdown li:hover {
@@ -168,5 +171,6 @@ const selectOption = (item: T) => {
   padding: 0.4rem 0.6rem;
   color: var(--color-text-dimmed);
   font-style: italic;
+  transition: color var(--transition-base);
 }
 </style>

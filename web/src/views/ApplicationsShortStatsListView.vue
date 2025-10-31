@@ -58,6 +58,7 @@ async function selectApp(app: ApplicationShortStats) {
 .no-apps-message p {
   color: var(--color-text-dimmed);
   font-size: var(--font-size-xl);
+  transition: color var(--transition-base);
 }
 </style>
 

@@ -444,6 +444,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   overflow: hidden;
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 /* Filters Section */
@@ -455,6 +456,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .filters-header {
@@ -468,6 +470,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   margin: 0;
+  transition: color var(--transition-base);
 }
 
 .filters-content {
@@ -521,6 +524,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
   font-weight: var(--font-weight-medium);
+  transition: color var(--transition-base);
 }
 
 .logs-list {
@@ -546,6 +550,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   border-radius: var(--border-radius-md);
   background: var(--color-error-bg);
   color: var(--color-danger-dark);
+  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 }
 
 /* Responsive Design */

@@ -135,7 +135,7 @@ watch(() => props.applicationId, (v) => load(v));
   border: 1px solid var(--color-border-light);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all var(--transition-base), background var(--transition-base), border-color var(--transition-base);
 }
 
 .toggle-wrapper.open {
@@ -201,6 +201,7 @@ watch(() => props.applicationId, (v) => load(v));
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .device-item {
@@ -208,21 +209,25 @@ watch(() => props.applicationId, (v) => load(v));
   border-radius: var(--border-radius-xs);
   background: var(--color-secondary);
   cursor: pointer;
+  transition: background var(--transition-base);
 }
 
 .device-name {
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-md);
+  transition: color var(--transition-base);
 }
 
 .device-meta {
   color: var(--color-text-dimmed);
   font-size: var(--font-size-base);
+  transition: color var(--transition-base);
 }
 
 .device-empty {
   color: var(--color-text-dimmed);
   font-style: italic;
+  transition: color var(--transition-base);
 }
 
 .fade-enter-active,

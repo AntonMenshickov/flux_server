@@ -85,5 +85,6 @@ const onEnter = async () => {
   background-color: var(--color-panel-bg);
   box-shadow: var(--box-shadow-strong);
   z-index: 1000;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 </style>

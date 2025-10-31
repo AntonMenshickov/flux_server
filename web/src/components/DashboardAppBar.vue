@@ -48,6 +48,7 @@ function doLogout() {
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-white);
   box-sizing: border-box;
+  transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base);
 }
 
 .logo img {

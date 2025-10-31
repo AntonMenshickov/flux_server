@@ -136,7 +136,7 @@ function formatDate(ts: number) {
   border-left: 4px solid var(--color-border-light);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border-subtle);
-  transition: box-shadow var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
+  transition: all var(--transition-slow);
   color: var(--color-text);
 }
 
@@ -168,6 +168,7 @@ function formatDate(ts: number) {
 .timestamp {
   font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
+  transition: color var(--transition-base);
 }
 
 .log-part-card {
@@ -184,6 +185,7 @@ function formatDate(ts: number) {
   height: var(--icon-size-sm);
   margin-right: var(--spacing-sm);
   color: var(--color-text-dimmed);
+  transition: color var(--transition-base);
 }
 
 .log-text {

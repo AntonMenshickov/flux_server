@@ -260,6 +260,7 @@ function goBack() {
   border-radius: var(--border-radius-badge);
   font-size: var(--font-size-base);
   color: var(--color-text);
+  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 }
 
 .ws-icon,
@@ -281,6 +282,7 @@ function goBack() {
   text-transform: capitalize;
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
+  transition: color var(--transition-base);
 }
 
 /* Device Info Section */
@@ -289,6 +291,7 @@ function goBack() {
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   padding: 0.875rem var(--spacing-lg);
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .device-info-content {
@@ -314,6 +317,7 @@ function goBack() {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-dimmed);
   white-space: nowrap;
+  transition: color var(--transition-base);
 }
 
 .info-compact-value {
@@ -323,6 +327,7 @@ function goBack() {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 300px;
+  transition: color var(--transition-base);
 }
 
 /* Controls Section */
@@ -331,6 +336,7 @@ function goBack() {
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   padding: var(--spacing-md) var(--spacing-lg);
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .controls-row {
@@ -374,6 +380,7 @@ function goBack() {
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   margin: 0;
+  transition: color var(--transition-base);
 }
 
 .logs-header {
@@ -387,6 +394,7 @@ function goBack() {
   font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
   font-weight: var(--font-weight-medium);
+  transition: color var(--transition-base);
 }
 
 .logs-list-container {
@@ -395,6 +403,7 @@ function goBack() {
   border: 1px solid var(--color-border-subtle);
   overflow: hidden;
   flex: 1;
+  transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .logs-list {

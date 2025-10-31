@@ -144,6 +144,7 @@ async function createUser() {
   margin: 2rem auto;
   font-family: sans-serif;
   color: var(--color-text);
+  transition: color var(--transition-base);
 }
 
 .user-list ul {
@@ -153,6 +154,7 @@ async function createUser() {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-sm);
   background-color: var(--color-panel-bg);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .user-list li {
@@ -162,7 +164,7 @@ async function createUser() {
   padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--color-border);
   cursor: default;
-  transition: background var(--transition-base);
+  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
   color: var(--color-text);
 }
 

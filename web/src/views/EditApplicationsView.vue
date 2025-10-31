@@ -157,6 +157,7 @@ function closeCreateModal() {
   margin: 2rem auto;
   font-family: sans-serif;
   color: var(--color-text);
+  transition: color var(--transition-base);
 }
 
 /* Top bar */
@@ -187,7 +188,7 @@ function closeCreateModal() {
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--spacing-lg);
-  transition: box-shadow var(--transition-base);
+  transition: box-shadow var(--transition-base), background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
   color: var(--color-text);
 }
 
@@ -229,6 +230,7 @@ function closeCreateModal() {
   gap: 0.4em;
   font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
+  transition: color var(--transition-base);
 }
 </style>
 

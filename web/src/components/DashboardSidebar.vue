@@ -87,6 +87,7 @@ watch(
   position: fixed;
   height: calc(100% - var(--appbar-height));
   bottom: 0;
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 

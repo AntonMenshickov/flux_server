@@ -45,6 +45,7 @@ function onConfirm() {
   justify-content: center;
   align-items: center;
   z-index: var(--z-index-modal);
+  transition: background-color var(--transition-base);
 }
 
 .modal {
@@ -55,6 +56,7 @@ function onConfirm() {
   border-radius: var(--border-radius-md);
   text-align: center;
   min-width: 300px;
+  transition: background-color var(--transition-base);
 }
 
 .modal-buttons {

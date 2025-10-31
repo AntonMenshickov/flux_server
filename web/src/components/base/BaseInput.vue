@@ -36,7 +36,7 @@ const localValue = computed<string>({
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
   font-size: var(--font-size-md);
-  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base), color var(--transition-base);
   background-color: var(--color-panel-bg);
   color: var(--color-text);
 }
