@@ -74,7 +74,7 @@ router.beforeEach((to) => {
     return { name: ROUTE_NAMES.LOGIN }
   }
   if (to.name === ROUTE_NAMES.HOME && auth.isAuthenticated) {
-    return { name: ROUTE_NAMES.DASHBOARD }
+    return { name: ROUTE_NAMES.LOGS }
   }
 })
 
