@@ -102,6 +102,9 @@ docker volume ls
 # Удалить все данные (volumes)
 docker compose down -v
 
+# удалить кэш билдов
+docker builder prune --all --force
+
 # Создать бэкап PostgreSQL
 docker compose exec postgres pg_dump -U flux_user flux_db > backup.sql
 
@@ -115,9 +118,6 @@ docker cp flux-mongodb:/tmp/backup ./mongodb-backup
 # Восстановить бэкап MongoDB
 docker cp ./mongodb-backup flux-mongodb:/tmp/backup
 docker compose exec mongodb mongorestore --username=flux_user --password=flux_password --authenticationDatabase=admin --db=flux_db /tmp/backup/flux_db
-
-# удалить кэш билдов
-docker builder prune --all --force
 ```
 
 ## Переменные окружения
