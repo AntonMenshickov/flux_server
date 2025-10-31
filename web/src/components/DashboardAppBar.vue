@@ -16,9 +16,10 @@
 <script setup lang="ts">
 import { ArrowLeftEndOnRectangleIcon, UserCircleIcon } from '@heroicons/vue/24/outline';
 import { useUserStore } from '@/stores/userStore';
-import router from '@/router';
+import { useRouterUtils } from '@/utils/routerUtils';
 
 const userStore = useUserStore();
+const routerUtils = useRouterUtils();
 
 function userName() {
   return userStore.profile?.login || 'Guest';
@@ -26,7 +27,7 @@ function userName() {
 
 function doLogout() {
   userStore.logout();
-  router.push({ path: '/' });
+  routerUtils.navigateToHome();
 }
 </script>
 

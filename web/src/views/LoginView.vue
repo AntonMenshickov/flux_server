@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/userStore';
 import FluxLogo from '@/components/FluxLogo.vue';
-import router from '@/router';
+import { useRouterUtils } from '@/utils/routerUtils';
 import { users } from '@/api/users';
 import { auth } from '@/api/auth';
 import { ref } from 'vue';
@@ -24,6 +24,7 @@ import BaseButton from '@/components/base/BaseButton.vue';
 const username = ref<string>('');
 const password = ref<string>('');
 const userStore = useUserStore();
+const routerUtils = useRouterUtils();
 
 async function doLogin() {
   const authResult = await auth.login(username.value, password.value);
@@ -40,7 +41,7 @@ async function doLogin() {
     return;
   }
   userStore.setProfile(profileResult.value.result);
-  router.push({ path: '/dashboard' });
+  routerUtils.navigateToDashboard();
 }
 
 </script>

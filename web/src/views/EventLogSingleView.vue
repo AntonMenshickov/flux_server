@@ -15,16 +15,17 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import BasePage from '@/components/base/BasePage.vue';
 import PageHeader from '@/components/base/PageHeader.vue';
 import LogCard from '@/components/base/LogCard.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import { events } from '@/api/events';
 import type { EventMessage } from '@/model/event/eventMessage';
+import { useRouterUtils } from '@/utils/routerUtils';
 
 const route = useRoute();
-const router = useRouter();
+const routerUtils = useRouterUtils();
 const isLoading = ref(true);
 const event = ref<EventMessage | null>(null);
 const accessDenied = ref(false);
@@ -45,12 +46,12 @@ onMounted(async () => {
 });
 
 function goBack() {
-  router.back();
+  routerUtils.goBack();
 }
 
 function openInList() {
   if (!event.value) return;
-  router.push({ name: 'event-logs', params: { applicationId: event.value.applicationId }, query: { focus: event.value.id } });
+  routerUtils.navigateToEventLogs(event.value.applicationId);
 }
 </script>
 

@@ -2,15 +2,15 @@
   <aside class="sidebar">
 
     <nav class="menu">
-      <router-link v-if="showUsers" :to="{ name: 'users' }" :class="{ active: activeItem == SidebarItemEnum.users }">
+      <router-link v-if="showUsers" :to="{ name: ROUTE_NAMES.USERS }" :class="{ active: activeItem == SidebarItemEnum.users }">
         <UserIcon class="icon" />
         <span>Users</span>
       </router-link>
-      <router-link :to="{ name: 'applications' }" :class="{ active: activeItem == SidebarItemEnum.apps }">
+      <router-link :to="{ name: ROUTE_NAMES.APPLICATIONS }" :class="{ active: activeItem == SidebarItemEnum.apps }">
         <CommandLineIcon class="icon" />
         <span>Applications</span>
       </router-link>
-      <router-link :to="{ name: 'logs' }" :class="{ active: activeItem == SidebarItemEnum.logs }">
+      <router-link :to="{ name: ROUTE_NAMES.LOGS }" :class="{ active: activeItem == SidebarItemEnum.logs }">
         <DocumentTextIcon class="icon" />
         <span>Logs</span>
       </router-link>
@@ -24,6 +24,7 @@ import { useUserStore } from '@/stores/userStore';
 import { computed, onMounted, ref, watch } from 'vue';
 import { SidebarItemEnum } from '@/model/sidebarItemEnum';
 import { useRoute } from 'vue-router';
+import { ROUTE_NAMES } from '@/router/routes';
 
 const route = useRoute();
 const activeItem = ref<SidebarItemEnum>(SidebarItemEnum.logs);
@@ -35,17 +36,17 @@ function getActiveItem(): SidebarItemEnum {
   // Определяем активный элемент на основе имени роута или пути
   const routeName = route.name?.toString();
   
-  if (routeName === 'users') {
+  if (routeName === ROUTE_NAMES.USERS) {
     return SidebarItemEnum.users;
   }
   
   // 'applications' теперь это управление приложениями
-  if (routeName === 'applications') {
+  if (routeName === ROUTE_NAMES.APPLICATIONS) {
     return SidebarItemEnum.apps;
   }
   
   // Для роутов logs, event-logs и online-log-stream используем logs
-  if (routeName === 'logs' || routeName === 'event-logs' || routeName === 'online-log-stream') {
+  if (routeName === ROUTE_NAMES.LOGS || routeName === ROUTE_NAMES.EVENT_LOGS || routeName === ROUTE_NAMES.ONLINE_LOG_STREAM) {
     return SidebarItemEnum.logs;
   }
   

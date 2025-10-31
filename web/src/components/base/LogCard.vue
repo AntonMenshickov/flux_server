@@ -6,7 +6,7 @@
       <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
       <span :class="{ 'log-text': true, 'expanded': expanded }">{{ log.message }}</span>
       <LogLevelBadge :level="log.logLevel" />
-    <a v-if="showLink" class="log-link-icon" :href="`#/dashboard/logs/message/${log.id}`" :title="'Permanent link'">
+    <a v-if="showLink" class="log-link-icon" :href="logUrl" :title="'Permanent link'">
       <LinkIcon class="icon-link" />
     </a>
     </section>
@@ -89,8 +89,9 @@ import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
 import BaseCopyText from '@/components/base/BaseCopyText.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon, LinkIcon } from '@heroicons/vue/24/outline';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { SearchFieldKey, SearchCriterion, Operator } from '@/components/base/smartSearch/types';
+import { useRouterUtils } from '@/utils/routerUtils';
 
 const emit = defineEmits<{
   (e: 'search', criterion: SearchCriterion): void
@@ -103,6 +104,9 @@ const props = defineProps<{
 }>();
 
 const expanded = ref<boolean>(props.defaultExpanded ?? false);
+const routerUtils = useRouterUtils();
+
+const logUrl = computed(() => routerUtils.getEventLogSingleUrl(props.log.id));
 
 function toggle() {
   expanded.value = !expanded.value;

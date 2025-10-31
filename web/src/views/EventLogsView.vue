@@ -103,8 +103,8 @@ import AppStatsChart from '@/components/logsList/AppStatsChart.vue';
 import OnlineDevices from '@/components/logsList/OnlineDevices.vue';
 import EventsFilterSelector from '@/components/logsList/EventsFilterSelector.vue';
 import { fieldOptions } from '@/components/base/smartSearch/searchCriterions';
-import router from '@/router';
 import { useRoute } from 'vue-router';
+import { useRouterUtils } from '@/utils/routerUtils';
 import type { LogLevel } from '@/model/event/logLevel';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BasePage from '@/components/base/BasePage.vue';
@@ -131,6 +131,7 @@ let hasMore = true;
 const accessDenied = ref(false);
 
 const route = useRoute();
+const routerUtils = useRouterUtils();
 const showShareDialog = ref(false);
 const shareLink = ref('');
 const shareLinkInput = ref<HTMLInputElement | null>(null);
@@ -196,7 +197,7 @@ function handleScroll(event: Event) {
 }
 
 function backToApps() {
-  router.push({ name: 'logs' });
+  routerUtils.navigateToLogs();
 }
 
 function applyFilters() {
@@ -205,7 +206,7 @@ function applyFilters() {
 }
 
 function deviceSelected(device: ConnectedDevice) {
-  router.push({ name: 'online-log-stream', params: { uuid: device.uuid } });
+  routerUtils.navigateToOnlineLogStream(device.uuid);
 }
 
 const addSearchCriterion = (criterion: SearchCriterion) => {
@@ -349,7 +350,8 @@ async function shareFilters() {
       const shareToken = result.value.result.shareToken;
       const appId = application.value.id;
       const baseUrl = window.location.origin + window.location.pathname.replace(/\/$/, '');
-      const shareUrl = `${baseUrl}#/dashboard/logs/${appId}?shareToken=${shareToken}`;
+      const relativeUrl = routerUtils.getEventLogsUrl(appId, shareToken);
+      const shareUrl = `${baseUrl}${relativeUrl}`;
       shareLink.value = shareUrl;
     } else {
       alert(`Failed to create share link: ${result.value.message}`);

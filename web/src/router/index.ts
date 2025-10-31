@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
+import { ROUTE_NAMES } from './routes'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import ApplicationsList from '@/components/ApplicationsList.vue'
@@ -10,50 +11,50 @@ import EventLogsView from '@/views/EventLogsView.vue'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'home',
+    name: ROUTE_NAMES.HOME,
     component: LoginView,
     meta: { requiresAuth: true }
   },
   {
     path: '/login',
-    name: 'login',
+    name: ROUTE_NAMES.LOGIN,
     component: LoginView
   },
   {
     path: '/dashboard',
-    name: 'dashboard',
+    name: ROUTE_NAMES.DASHBOARD,
     component: DashboardView,
     meta: { requiresAuth: true },
     children: [
       {
         path: 'users',
-        name: 'users',
+        name: ROUTE_NAMES.USERS,
         component: UsersList
       },
       {
         path: 'applications',
-        name: 'applications',
+        name: ROUTE_NAMES.APPLICATIONS,
         component: ApplicationsList
       },
       {
         path: 'logs',
-        name: 'logs',
+        name: ROUTE_NAMES.LOGS,
         component: ApplicationsListView
       },
       {
         path: 'logs/:applicationId',
-        name: 'event-logs',
+        name: ROUTE_NAMES.EVENT_LOGS,
         component: EventLogsView
       },
       {
         path: 'logs/online/:uuid',
-        name: 'online-log-stream',
+        name: ROUTE_NAMES.ONLINE_LOG_STREAM,
         component: () => import('@/views/OnlineLogStream.vue'),
         props: true
       },
       {
         path: 'logs/message/:id',
-        name: 'event-log-single',
+        name: ROUTE_NAMES.EVENT_LOG_SINGLE,
         component: () => import('@/views/EventLogSingleView.vue'),
         props: true
       },
@@ -70,10 +71,10 @@ router.beforeEach((to) => {
   const auth = useUserStore()
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return { name: 'login' }
+    return { name: ROUTE_NAMES.LOGIN }
   }
-  if (to.name === 'home' && auth.isAuthenticated) {
-    return { name: 'dashboard' }
+  if (to.name === ROUTE_NAMES.HOME && auth.isAuthenticated) {
+    return { name: ROUTE_NAMES.DASHBOARD }
   }
 })
 

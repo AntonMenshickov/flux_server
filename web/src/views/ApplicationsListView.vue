@@ -1,7 +1,10 @@
 <template>
   <BasePage :isLoading="isLoading" loaderText="Loading applications..." title="Logs">
-    <div class="apps-grid">
+    <div v-if="appsData.length > 0" class="apps-grid">
       <AppCard v-for="(app, index) in appsData" :key="index" @click="selectApp(app)" :appStats="app" />
+    </div>
+    <div v-else class="no-apps-message">
+      <p>No applications found</p>
     </div>
   </BasePage>
 </template>
@@ -12,10 +15,11 @@ import { ref, onMounted } from 'vue';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import AppCard from '@/components/logsList/AppCard.vue';
 import BasePage from '@/components/base/BasePage.vue';
-import router from '@/router';
+import { useRouterUtils } from '@/utils/routerUtils';
 
 const appsData = ref<ApplicationShortStats[]>([]);
 const isLoading = ref(true);
+const routerUtils = useRouterUtils();
 
 onMounted(async () => {
   isLoading.value = true;
@@ -32,7 +36,7 @@ async function fetchApps(search: string): Promise<ApplicationShortStats[]> {
 }
 
 async function selectApp(app: ApplicationShortStats) {
-  router.push({ name: 'event-logs', params: { applicationId: app.id } });
+  routerUtils.navigateToEventLogs(app.id);
 }
 </script>
 
@@ -41,6 +45,19 @@ async function selectApp(app: ApplicationShortStats) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+}
+
+.no-apps-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.no-apps-message p {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 1.1rem;
 }
 </style>
 
