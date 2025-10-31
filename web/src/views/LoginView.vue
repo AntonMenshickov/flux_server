@@ -63,17 +63,17 @@ async function doLogin() {
 }
 
 .login .input {
-  padding: 8px;
-  font-size: 16px;
-  border-radius: 8px;
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-lg);
+  border-radius: var(--border-radius-md);
 }
 
 .login .button {
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 8px;
+  padding: var(--spacing-md);
+  font-size: var(--font-size-lg);
+  border-radius: var(--border-radius-md);
   background-color: var(--color-accent);
-  color: white;
+  color: var(--color-white);
   border: none;
   cursor: pointer;
 }

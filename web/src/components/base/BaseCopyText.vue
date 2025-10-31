@@ -46,9 +46,9 @@ const copyText = async (event: MouseEvent) => {
 .decorated {
   padding: 1px 4px;
   border-bottom: 1px dashed var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   display: inline-block;
-  transition: background-color 0.3s ease;
+  transition: background-color var(--transition-slow);
   user-select: none;
 }
 

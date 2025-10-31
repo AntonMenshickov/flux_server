@@ -550,11 +550,6 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .logs-container {
-    padding: 1.25rem 1rem;
-    gap: 1.5rem;
-  }
-
   .filter-row,
   .search-row {
     flex-direction: column;
@@ -562,15 +557,6 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
   .search-container {
     min-width: 100%;
-  }
-
-  .reload-button {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .app-title {
-    font-size: 1.5rem;
   }
 }
 
@@ -607,8 +593,4 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
   height: var(--icon-size-sm);
 }
 
-/* Smooth transitions */
-* {
-  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
-}
 </style>

@@ -137,19 +137,19 @@ async function save() {
   max-height: 40px;
   box-sizing: border-box;
   padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
 }
 
 
 .action-icon {
-  width: 20px;
-  height: 20px;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
   color: var(--color-accent);
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: opacity var(--transition-base), transform var(--transition-base);
 }
 
 .action-icon.delete {

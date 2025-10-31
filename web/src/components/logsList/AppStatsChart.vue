@@ -308,11 +308,6 @@ function emitSearch(value: LogLevel) {
   padding: var(--spacing-xl);
 }
 
-.title {
-  font-weight: bolder;
-  margin-bottom: 0.5rem;
-}
-
 .subtitle {
   font-weight: var(--font-weight-semibold);
   margin-bottom: var(--spacing-sm);
@@ -423,7 +418,7 @@ function emitSearch(value: LogLevel) {
 .level-chip {
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--border-radius-xs);
   display: inline-block;
 }
 

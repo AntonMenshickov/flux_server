@@ -135,7 +135,7 @@ watch(() => props.applicationId, (v) => load(v));
   border: 1px solid var(--color-border-light);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all var(--transition-base) var(--transition-ease);
+  transition: all var(--transition-base);
 }
 
 .toggle-wrapper.open {

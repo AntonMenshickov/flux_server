@@ -136,7 +136,7 @@ function formatDate(ts: number) {
   border-left: 4px solid var(--color-border-light);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border-subtle);
-  transition: box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease), border-color var(--transition-base) var(--transition-ease);
+  transition: box-shadow var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .log-card.expanded {
@@ -148,7 +148,7 @@ function formatDate(ts: number) {
 
 .expand-enter-active,
 .expand-leave-active {
-  transition: all var(--transition-slow) var(--transition-ease);
+  transition: all var(--transition-slow);
   overflow: hidden;
 }
 

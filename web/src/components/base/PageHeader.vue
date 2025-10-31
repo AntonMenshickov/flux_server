@@ -51,7 +51,7 @@ defineEmits<{
   height: var(--icon-size-xxl);
   cursor: pointer;
   color: var(--color-text-dimmed);
-  transition: color var(--transition-base) var(--transition-ease), transform var(--transition-base) var(--transition-ease);
+  transition: color var(--transition-base), transform var(--transition-base);
 }
 
 .back-button:hover {
@@ -113,9 +113,5 @@ defineEmits<{
   }
 }
 
-/* Smooth transitions */
-* {
-  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
-}
 </style>
 

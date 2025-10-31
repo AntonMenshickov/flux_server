@@ -81,7 +81,7 @@ watch(
 .sidebar {
   width: 250px;
   background-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-white);
   display: flex;
   flex-direction: column;
   position: fixed;

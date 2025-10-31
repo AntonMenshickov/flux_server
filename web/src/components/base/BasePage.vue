@@ -77,9 +77,5 @@ defineEmits<{
   box-sizing: border-box;
 }
 
-/* Smooth transitions */
-* {
-  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
-}
 </style>
 

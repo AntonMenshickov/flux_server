@@ -227,11 +227,11 @@ async function deleteFilter() {
   box-sizing: border-box;
   align-items: center;
   padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
   color: var(--color-text-dimmed);
-  background-color: white;
+  background-color: var(--color-white);
 }
 
 .filter-name-icon,
@@ -260,8 +260,8 @@ async function deleteFilter() {
 }
 
 .action-icon {
-  width: 1rem;
-  height: 1rem;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
 }
 
 .events-filter-selector {

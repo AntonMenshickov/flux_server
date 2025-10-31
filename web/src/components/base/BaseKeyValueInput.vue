@@ -79,10 +79,10 @@ const onEnter = async () => {
   position: absolute;
   top: 100%;
   width: auto;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   margin-top: 0.1rem;
   border: 1px solid var(--color-border);
-  background-color: white;
+  background-color: var(--color-white);
   box-shadow: var(--box-shadow-strong);
   z-index: 1000;
 }

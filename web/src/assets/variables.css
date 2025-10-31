@@ -78,7 +78,6 @@
   --transition-fast: 0.1s;
   --transition-base: 0.2s;
   --transition-slow: 0.25s;
-  --transition-ease: ease;
   
   /* Component heights */
   --input-height: 40px;
@@ -119,9 +118,16 @@ body {
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: var(--color-secondary);
   color: var(--color-text);
   margin: 0;
   padding: 0;
+}
+
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
 }

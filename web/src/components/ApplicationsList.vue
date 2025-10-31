@@ -184,7 +184,7 @@ function closeCreateModal() {
 .applications-list li {
   background: var(--color-white);
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   padding: var(--spacing-lg);
   transition: box-shadow var(--transition-base);
 }
@@ -202,8 +202,8 @@ function closeCreateModal() {
 }
 
 .action-icon {
-  width: 20px;
-  height: 20px;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
   color: var(--color-accent);
   cursor: pointer;
   opacity: 0.6;
