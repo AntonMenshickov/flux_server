@@ -56,6 +56,7 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { Chart } from 'chart.js';
 import { LogLevel } from '@/model/event/logLevel';
 import type { ApplicationStatsResponse } from '@/api/applications';
+import { useThemeStore } from '@/stores/themeStore';
 
 onMounted(() => {
   renderCharts();
@@ -66,6 +67,15 @@ const emit = defineEmits<{
 
 const props = defineProps<{ application: ApplicationStatsResponse }>();
 const logLevels = Object.values(LogLevel);
+const themeStore = useThemeStore();
+
+function getChartTextColor(): string {
+  return getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim() || '#111827';
+}
+
+function getChartGridColor(): string {
+  return getComputedStyle(document.documentElement).getPropertyValue('--color-border').trim() || '#ccc';
+}
 
 const lastSevenDaysStats = computed(() => props.application.stats.slice(-7));
 
@@ -87,6 +97,10 @@ const totalByLevel = computed<Record<LogLevel, number>>(() => {
 watch(() => props.application, () => {
   renderCharts();
 }, { deep: true });
+
+watch(() => themeStore.effectiveTheme, () => {
+  renderCharts();
+});
 
 
 const totalAll = computed(() => Object.values(totalByLevel.value).reduce((a, b) => a + b, 0));
@@ -183,7 +197,26 @@ const renderCharts = () => {
           responsive: true,
           animation: { duration: 0 },
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 }, } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0,
+                color: getChartTextColor(),
+              },
+              grid: {
+                color: getChartGridColor(),
+              },
+            },
+            x: {
+              ticks: {
+                color: getChartTextColor(),
+              },
+              grid: {
+                color: getChartGridColor(),
+              },
+            },
+          },
           interaction: {
             mode: 'nearest',
             axis: 'x',
@@ -226,14 +259,27 @@ const renderCharts = () => {
             animation: { duration: 0 },
             plugins: { legend: { display: false } },
             scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0,
+                  color: getChartTextColor(),
+                },
+                grid: {
+                  color: getChartGridColor(),
+                },
+              },
               x: {
                 ticks: {
+                  color: getChartTextColor(),
                   callback: function (value) {
                     const label = typeof value === 'string' ? `${value}` : this.getLabelForValue(value);
                     return label.length > 10 ? label.slice(0, 10) + '...' : label;
                   }
-                }
+                },
+                grid: {
+                  color: getChartGridColor(),
+                },
               }
             },
           },
@@ -273,13 +319,27 @@ const renderCharts = () => {
             animation: { duration: 0 },
             plugins: { legend: { display: false } },
             scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0,
+                  color: getChartTextColor(),
+                },
+                grid: {
+                  color: getChartGridColor(),
+                },
+              },
               x: {
                 ticks: {
+                  color: getChartTextColor(),
                   callback: function (value) {
                     const label = typeof value === 'string' ? `${value}` : this.getLabelForValue(value);
                     return label.length > 10 ? label.slice(0, 10) + '...' : label;
                   }
-                }
+                },
+                grid: {
+                  color: getChartGridColor(),
+                },
               }
             }
           },
@@ -311,6 +371,7 @@ function emitSearch(value: LogLevel) {
 .subtitle {
   font-weight: var(--font-weight-semibold);
   margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
 }
 
 .chart-section {
@@ -351,6 +412,7 @@ function emitSearch(value: LogLevel) {
 .totals-title {
   font-weight: var(--font-weight-bold);
   align-self: flex-start;
+  color: var(--color-text);
 }
 
 /* bundles-title removed in favor of consistent totals-row styling */
@@ -373,6 +435,7 @@ function emitSearch(value: LogLevel) {
 
 .bundle-platform {
   font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
 }
 
 .bundle-sep {
@@ -383,6 +446,7 @@ function emitSearch(value: LogLevel) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--color-text);
 }
 
 .totals-body {
@@ -409,6 +473,7 @@ function emitSearch(value: LogLevel) {
 
 .totals-value {
   font-weight: var(--font-weight-bold);
+  color: var(--color-text);
 }
 
 .log-level-value {

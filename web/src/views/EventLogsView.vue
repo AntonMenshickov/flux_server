@@ -440,7 +440,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
 /* Statistics Section */
 .stats-section {
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   overflow: hidden;
@@ -448,7 +448,7 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
 /* Filters Section */
 .filters-section {
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   padding: var(--spacing-xl);

@@ -255,10 +255,11 @@ function goBack() {
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--border-radius-badge);
   font-size: var(--font-size-base);
+  color: var(--color-text);
 }
 
 .ws-icon,
@@ -284,7 +285,7 @@ function goBack() {
 
 /* Device Info Section */
 .device-info-section {
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   padding: 0.875rem var(--spacing-lg);
@@ -326,7 +327,7 @@ function goBack() {
 
 /* Controls Section */
 .controls-section {
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   padding: var(--spacing-md) var(--spacing-lg);
@@ -389,7 +390,7 @@ function goBack() {
 }
 
 .logs-list-container {
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border-subtle);
   overflow: hidden;

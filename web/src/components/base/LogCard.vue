@@ -132,16 +132,17 @@ function formatDate(ts: number) {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-  background: var(--color-white);
+  background: var(--log-card-bg);
   border-left: 4px solid var(--color-border-light);
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border-subtle);
   transition: box-shadow var(--transition-base), background-color var(--transition-base), border-color var(--transition-base);
+  color: var(--color-text);
 }
 
 .log-card.expanded {
   margin-bottom: var(--spacing-sm);
-  background: var(--color-white);
+  background: var(--log-card-bg);
   box-shadow: var(--box-shadow-sm);
   border-left-width: 4px;
 }
@@ -309,7 +310,8 @@ function formatDate(ts: number) {
   width: var(--icon-size-sm);
   height: var(--icon-size-sm);
   opacity: 0.7;
-  transition: opacity var(--transition-base);
+  transition: opacity var(--transition-base), color var(--transition-base);
+  color: var(--color-text-dimmed);
 }
 .icon-link:hover {
   opacity: 1;

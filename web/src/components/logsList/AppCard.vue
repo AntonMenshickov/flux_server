@@ -14,6 +14,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Chart, type ChartData, type ChartOptions } from 'chart.js';
 import type { ApplicationShortStats } from '@/model/application/applicationShortStats';
 import { LogLevel } from '@/model/event/logLevel';
+import { useThemeStore } from '@/stores/themeStore';
 
 const props = defineProps<{
   appStats: ApplicationShortStats
@@ -24,6 +25,15 @@ const totalRecords = computed(() => Object.values(props.appStats.stats).reduce((
 
 const chartRef = ref<HTMLCanvasElement | null>(null);
 let chartInstance: Chart | null = null;
+const themeStore = useThemeStore();
+
+function getChartTextColor(): string {
+  return getComputedStyle(document.documentElement).getPropertyValue('--color-text').trim() || '#111827';
+}
+
+function getChartGridColor(): string {
+  return getComputedStyle(document.documentElement).getPropertyValue('--color-border').trim() || '#ccc';
+}
 
 const renderChart = () => {
   if (!chartRef.value) return;
@@ -65,6 +75,26 @@ const renderChart = () => {
         display: false,
       },
     },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+          color: getChartTextColor(),
+        },
+        grid: {
+          color: getChartGridColor(),
+        },
+      },
+      x: {
+        ticks: {
+          color: getChartTextColor(),
+        },
+        grid: {
+          color: getChartGridColor(),
+        },
+      },
+    },
   };
 
   if (chartInstance) {
@@ -82,6 +112,10 @@ onMounted(() => renderChart());
 
 watch(() => props.appStats, () => renderChart(), { deep: true });
 
+watch(() => themeStore.effectiveTheme, () => {
+  renderChart();
+});
+
 </script>
 
 <style scoped>
@@ -90,10 +124,11 @@ watch(() => props.appStats, () => renderChart(), { deep: true });
   height: auto;
   padding: var(--spacing-lg);
   border-radius: var(--border-radius);
-  background-color: var(--color-white);
+  background-color: var(--color-panel-bg);
   box-shadow: var(--box-shadow);
   transition: box-shadow var(--transition-base);
   cursor: pointer;
+  color: var(--color-text);
 }
 
 .app-card:hover {
@@ -109,6 +144,7 @@ watch(() => props.appStats, () => renderChart(), { deep: true });
 
 .app-name {
   font-weight: bolder;
+  color: var(--color-text);
 }
 
 .app-today-records {

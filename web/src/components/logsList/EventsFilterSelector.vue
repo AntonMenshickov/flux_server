@@ -230,8 +230,8 @@ async function deleteFilter() {
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
-  color: var(--color-text-dimmed);
-  background-color: var(--color-white);
+  color: var(--color-text);
+  background-color: var(--color-panel-bg);
 }
 
 .filter-name-icon,

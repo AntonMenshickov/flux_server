@@ -82,7 +82,7 @@ const onEnter = async () => {
   border-radius: var(--border-radius-md);
   margin-top: 0.1rem;
   border: 1px solid var(--color-border);
-  background-color: var(--color-white);
+  background-color: var(--color-panel-bg);
   box-shadow: var(--box-shadow-strong);
   z-index: 1000;
 }

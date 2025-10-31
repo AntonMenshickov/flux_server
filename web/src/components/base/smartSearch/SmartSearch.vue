@@ -20,8 +20,8 @@
           </li>
         </ul>
         <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'date'"
-          class="suggestions-list">
-          <input type="datetime-local" v-model="inputText" @change="applyDate" />
+          class="suggestions-list date-picker-wrapper">
+          <input type="datetime-local" v-model="inputText" @change="applyDate" class="datetime-input" />
         </div>
         <div v-else-if="suggestionsVisible && currentStage === 'value' && selectedField?.valueType === 'keyValue'"
           class="suggestions-list">
@@ -385,7 +385,8 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
   font-size: var(--font-size-md);
-  background: var(--color-white);
+  background: var(--color-panel-bg);
+  color: var(--color-text);
 }
 
 /* Highlight on focus */
@@ -410,7 +411,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 }
 
 .tag {
-  background-color: var(--color-tag-bg-alt);
+  background-color: var(--color-tag-bg);
   padding: 4px 8px;
   border-radius: var(--border-radius-sm);
   display: flex;
@@ -418,6 +419,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   gap: 6px;
   font-size: var(--font-size-base);
   text-align: start;
+  color: var(--color-tag-text);
 }
 
 .tag button {
@@ -426,6 +428,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   cursor: pointer;
   font-weight: 700;
   line-height: 1;
+  color: var(--color-text);
 }
 
 input {
@@ -435,6 +438,12 @@ input {
   min-width: 160px;
   padding: 6px 4px;
   font-size: var(--font-size-md);
+  background: transparent;
+  color: var(--color-text);
+}
+
+input::placeholder {
+  color: var(--color-label-placeholder);
 }
 
 /* Dropdown - absolute positioning, doesn't affect parent size */
@@ -447,7 +456,7 @@ input {
   border-radius: var(--border-radius-md);
   margin: 0;
   border: 1px solid var(--color-border);
-  background-color: var(--color-white);
+  background-color: var(--color-panel-bg);
   box-sizing: border-box;
   box-shadow: var(--box-shadow-md);
   z-index: var(--z-index-suggestions);
@@ -458,10 +467,15 @@ input {
   padding: 6px 8px;
   cursor: pointer;
   border-radius: var(--border-radius-sm);
+  color: var(--color-text);
+}
+
+.suggestions-list li:hover {
+  background-color: var(--color-hover-bg);
 }
 
 .suggestions-list li.selected {
-  background-color: var(--color-primary);
+  background-color: var(--color-accent);
   color: var(--color-white);
 }
 
@@ -478,5 +492,20 @@ input {
 
 .multiselect-option span {
   flex: 1;
+  color: var(--color-text);
+}
+
+.datetime-input {
+  background-color: var(--color-panel-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: 6px 8px;
+  font-size: var(--font-size-md);
+}
+
+.datetime-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
 }
 </style>

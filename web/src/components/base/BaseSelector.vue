@@ -118,6 +118,8 @@ const selectOption = (item: T) => {
   border-radius: var(--border-radius-sm);
   border: 1px solid var(--color-border);
   font-size: var(--font-size-md);
+  background-color: var(--color-panel-bg);
+  color: var(--color-text);
 }
 
 .selector-input:focus {
@@ -135,7 +137,7 @@ const selectOption = (item: T) => {
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border: 1px solid var(--color-border);
   border-top: none;
   border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
@@ -154,6 +156,7 @@ const selectOption = (item: T) => {
   padding: 0.4rem 0.6rem;
   box-sizing: border-box;
   cursor: pointer;
+  color: var(--color-text);
 }
 
 .dropdown li:hover {

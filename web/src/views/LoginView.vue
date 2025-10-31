@@ -8,6 +8,7 @@
       <BaseButton class="button" @click="doLogin">Login</BaseButton>
     </form>
   </div>
+  <ThemeToggle  class="theme-toggle"/>
 </template>
 
 <script setup lang="ts">
@@ -19,6 +20,7 @@ import { auth } from '@/api/auth';
 import { ref } from 'vue';
 import BaseInput from '@/components/base/BaseInput.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
+import ThemeToggle from '@/components/ThemeToggle.vue';
 
 
 const username = ref<string>('');
@@ -49,16 +51,20 @@ async function doLogin() {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .login {
+  height: 100vh;
   max-width: 300px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
   gap: 10px;
 }
 
 .login form {
   display: flex;
   flex-direction: column;
+  margin-bottom: 150px;
   gap: 10px;
 }
 
@@ -76,5 +82,11 @@ async function doLogin() {
   color: var(--color-white);
   border: none;
   cursor: pointer;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 25px;
+  right: 25px;
 }
 </style>

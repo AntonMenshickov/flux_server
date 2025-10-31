@@ -37,6 +37,12 @@ const localValue = computed<string>({
   border: 1px solid var(--color-border);
   font-size: var(--font-size-md);
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  background-color: var(--color-panel-bg);
+  color: var(--color-text);
+}
+
+.base-input::placeholder {
+  color: var(--color-label-placeholder);
 }
 
 .base-input:focus {

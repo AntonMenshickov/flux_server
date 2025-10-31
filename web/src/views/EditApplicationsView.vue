@@ -52,7 +52,7 @@ import BaseButton from '@/components/base/BaseButton.vue';
 import { onMounted, ref } from 'vue';
 import { applications } from '@/api/applications';
 import { debounce } from 'lodash';
-import EditApplication from './base/EditApplication.vue';
+import EditApplication from '@/components/base/EditApplication.vue';
 import type { Application } from '@/model/application/application';
 import type { Bundle } from '@/model/application/bundle';
 import type { User } from '@/model/user';
@@ -156,6 +156,7 @@ function closeCreateModal() {
   max-width: 600px;
   margin: 2rem auto;
   font-family: sans-serif;
+  color: var(--color-text);
 }
 
 /* Top bar */
@@ -182,11 +183,12 @@ function closeCreateModal() {
 }
 
 .applications-list li {
-  background: var(--color-white);
+  background: var(--color-panel-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   padding: var(--spacing-lg);
   transition: box-shadow var(--transition-base);
+  color: var(--color-text);
 }
 
 .applications-list li:hover {
@@ -229,3 +231,4 @@ function closeCreateModal() {
   color: var(--color-text-dimmed);
 }
 </style>
+

@@ -3,9 +3,9 @@ import { useUserStore } from '@/stores/userStore'
 import { ROUTE_NAMES } from './routes'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
-import ApplicationsList from '@/components/ApplicationsList.vue'
+import EditApplicationsView from '@/views/EditApplicationsView.vue'
 import UsersList from '@/components/UsersList.vue'
-import ApplicationsListView from '@/views/ApplicationsListView.vue'
+import ApplicationsShortStatsListView from '@/views/ApplicationsShortStatsListView.vue'
 import EventLogsView from '@/views/EventLogsView.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -34,12 +34,12 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'applications',
         name: ROUTE_NAMES.APPLICATIONS,
-        component: ApplicationsList
+        component: EditApplicationsView
       },
       {
         path: 'logs',
         name: ROUTE_NAMES.LOGS,
-        component: ApplicationsListView
+        component: ApplicationsShortStatsListView
       },
       {
         path: 'logs/:applicationId',

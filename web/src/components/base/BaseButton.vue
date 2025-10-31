@@ -23,8 +23,8 @@ defineEmits<{
   box-sizing: border-box;
   border: none;
   border-radius: var(--border-radius-md);
-  background-color: var(--color-primary);
-  color: var(--color-secondary);
+  background-color: var(--color-button-bg);
+  color: var(--color-white);
   cursor: pointer;
   font-weight: var(--font-weight-medium);
   transition: all var(--transition-base);
