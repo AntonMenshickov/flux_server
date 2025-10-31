@@ -124,7 +124,6 @@ function formatDate(ts: number) {
   return new Date(ts).toLocaleString();
 }
 
-// removed click handler: using a regular anchor link now
 </script>
 
 <style scoped>

@@ -33,24 +33,23 @@ const userStore = useUserStore();
 const showUsers = computed(() => userStore.profile?.isOwner || false);
 
 function getActiveItem(): SidebarItemEnum {
-  // Определяем активный элемент на основе имени роута или пути
+  // Determine active item based on route name or path
   const routeName = route.name?.toString();
   
   if (routeName === ROUTE_NAMES.USERS) {
     return SidebarItemEnum.users;
   }
   
-  // 'applications' теперь это управление приложениями
   if (routeName === ROUTE_NAMES.APPLICATIONS) {
     return SidebarItemEnum.apps;
   }
   
-  // Для роутов logs, event-logs и online-log-stream используем logs
+  // Use logs for routes: logs, event-logs, and online-log-stream
   if (routeName === ROUTE_NAMES.LOGS || routeName === ROUTE_NAMES.EVENT_LOGS || routeName === ROUTE_NAMES.ONLINE_LOG_STREAM) {
     return SidebarItemEnum.logs;
   }
   
-  // Fallback: проверяем путь
+  // Fallback: check path
   const path = route.path;
   if (path.includes('/users')) {
     return SidebarItemEnum.users;

@@ -19,7 +19,7 @@ const props = defineProps<{
   appStats: ApplicationShortStats
 }>()
 
-// Calculate total events for today (stats are filtered by today's date on the server)
+// Calculate total events for today
 const totalRecords = computed(() => Object.values(props.appStats.stats).reduce((sum, count) => sum + count, 0));
 
 const chartRef = ref<HTMLCanvasElement | null>(null);

@@ -14,8 +14,8 @@ export const objectIdSchema = z
   .transform((val: string) => Number(val)).refine((val) => !isNaN(val), { message: 'Invalid number', });
 
 /**
- * Схема валидации для одного критерия поиска
- * Используется для валидации критериев в фильтрах событий
+ * Validation schema for a single search criterion
+ * Used for validating criteria in event filters
  */
 export const criterionItemSchema = z.object({
   field: z.enum(Object.values(SearchFieldKey) as [SearchFieldKey, ...SearchFieldKey[]]),
@@ -30,7 +30,7 @@ export const criterionItemSchema = z.object({
 });
 
 /**
- * Схема валидации для массива критериев поиска
+ * Validation schema for an array of search criteria
  */
 export const criteriaArraySchema = z.array(criterionItemSchema);
 

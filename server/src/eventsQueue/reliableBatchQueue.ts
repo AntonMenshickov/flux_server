@@ -57,14 +57,12 @@ export class ReliableBatchQueue {
     }
   }
 
-  //dev
   private async clearQueue() {
     await this.redis.del(this.queueName);
     await this.redis.del(this.processingName);
-    console.log('Очередь полностью очищена');
+    console.log('Queue cleared');
   }
 
-  //dev
   private async listQueue(name: string) {
     const messages: string[] = await this.redis.lrange(name, 0, -1);
     console.log(`${name}: `, messages.map(e => JSON.parse(e).id));

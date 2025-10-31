@@ -116,7 +116,6 @@ const isLoading = ref(true);
 let wsClient: WebsocketClient | null = null;
 const connectionStatus = ref<ConnectionStatus>('closed');
 
-// Computed property for filtered logs
 const filteredLogs = computed(() => {
   return filterLogs(logs.value, criteria.value);
 });
@@ -145,7 +144,7 @@ watch(
     await nextTick();
 
     if (isAtBottom.value) {
-      // Автоматическая прокрутка вниз только если пользователь у низа
+      // Auto-scroll only if user is at bottom
       scrollToBottom();
     }
   }
@@ -160,7 +159,6 @@ async function initializeEventsStream() {
     isLoading.value = false;
   } else {
     connectedDevice.value = deviceResult.value.result.device;
-    // ensure websocket is open before requesting start
     const ensureOpen = async () => {
       const maxWait = 3000;
       const start = Date.now();

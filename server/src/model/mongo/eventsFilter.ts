@@ -9,7 +9,7 @@ export interface IEventsFilter extends IBaseSchema {
   criteria: ICriteriaItem[];
   shareToken?: string;
   applicationId: Types.ObjectId;
-  isSharedOnly?: boolean; // true - создан только для шаринга, false - постоянный фильтр пользователя
+  isSharedOnly?: boolean; // true - created only for sharing, false - permanent user filter
 }
 
 export interface ICriteriaItem {

@@ -50,7 +50,6 @@ const newLogin = ref<string>('');
 const newPassword = ref<string>('');
 
 
-// let totalUsers: number = 0;
 const usersPerPage: number = 10;
 
 const debouncedSearch = debounce(fetchUsers, 200);
@@ -67,7 +66,6 @@ async function fetchUsers() {
     return;
   }
   usersList.value = result.value.result.users;
-  // totalUsers = result.value.result.total;
 }
 
 function onSearchInput() {

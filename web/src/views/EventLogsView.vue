@@ -115,8 +115,6 @@ import ModalDialog from '@/components/ModalDialog.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
 import type { EventsFilter } from '@/model/eventsFilter';
 
-// using shared model EventsFilter
-
 const logs = ref<EventMessage[]>([]);
 const application = ref<ApplicationStatsResponse | null>(null);
 const dateTimeFilter = ref<Date[] | null>(null);
@@ -144,7 +142,6 @@ onMounted(async () => {
   const shareToken = route.query.shareToken?.toString();
   
   if (shareToken) {
-    // Load shared filter
     currentShareToken.value = shareToken;
     await loadSharedFilter(shareToken, appId);
   } else if (appId) {
@@ -156,7 +153,6 @@ watch<string>(
   () => route.params.applicationId?.toString(),
   async (newId?: string) => {
     if (newId) {
-      // Clear shareToken when navigating to different application
       currentShareToken.value = null;
       onAppIdChanged(newId);
     }
@@ -182,7 +178,7 @@ async function onAppIdChanged(appId: string) {
   if (application.value) {
     applyFilters();
   } else {
-    // если нет доступа, список очищаем
+    // Clear list if no access
     logs.value = [];
   }
 }
@@ -261,7 +257,7 @@ async function fetchLogs(clear: boolean = false) {
     }
     hasMore = events.length == pageSize;
 
-    // Обновляем lastTimestamp и lastId для следующей страницы
+    // Update lastTimestamp and lastId for next page
     if (events.length > 0) {
       const lastEvent = events[events.length - 1];
       lastTimestamp = lastEvent.timestamp;
@@ -305,7 +301,7 @@ async function shareFilters() {
     return;
   }
 
-  // Открываем модал сразу и показываем спиннер в нем
+  // Open modal immediately and show spinner
   showShareDialog.value = true;
   shareLoading.value = true;
   shareLink.value = '';
@@ -314,26 +310,24 @@ async function shareFilters() {
   try {
     let result;
     
-    // Если выбран сохраненный фильтр, используем его ID
+    // If saved filter is selected, use its ID
     if (selectedFilter.value) {
       result = await eventFilters.share({
         filterId: selectedFilter.value.id,
         applicationId: application.value.id,
       });
     } else {
-      // Иначе создаем новый фильтр из текущих критериев
+      // Otherwise create new filter from current criteria
       if (criteria.value.length === 0 && !dateTimeFilter.value) {
         alert('Please add at least one filter criterion or date range');
         shareLoading.value = false;
         return;
       }
 
-      // Convert SearchCriterion[] to Criterion[]
       const criteriaList = criteria.value
         .map(c => c.toCriterion())
         .filter(c => c !== null) as Criterion[];
 
-      // Prepare dateTimeRange if exists
       const dateTimeRange = dateTimeFilter.value && dateTimeFilter.value.length === 2 ? {
         start: dateTimeFilter.value[0].getTime(),
         end: dateTimeFilter.value[1].getTime(),
@@ -395,14 +389,12 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
     if (result.isRight()) {
       const filterData = result.value.result;
       
-      // Convert Criterion[] to SearchCriterion[]
       const searchCriteria = filterData.criteria
         .map(c => SearchCriterion.fromCriterion(c))
         .filter(c => c !== null) as SearchCriterion[];
       
       criteria.value = searchCriteria;
 
-      // Set dateTimeRange if exists
       if (filterData.dateTimeRange) {
         dateTimeFilter.value = [
           new Date(filterData.dateTimeRange.start),
@@ -410,7 +402,6 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
         ];
       }
 
-      // Load application if appId provided or from filter data
       const targetAppId = appId || filterData.applicationId;
       if (targetAppId) {
         application.value = await fetchAppStats(targetAppId);

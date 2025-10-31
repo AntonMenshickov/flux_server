@@ -3,58 +3,58 @@ import type { RouteLocationRaw } from 'vue-router';
 import { ROUTE_NAMES } from '@/router/routes';
 
 /**
- * Composable функция для использования в компонентах
- * Все методы перехода на роуты должны использовать эту утилиту
- * Используется как: const routerUtils = useRouterUtils();
+ * Composable function for use in components
+ * All route navigation methods should use this utility
+ * Usage: const routerUtils = useRouterUtils();
  */
 export function useRouterUtils() {
   const router = useRouter();
 
   /**
-   * Переход на главную страницу
+   * Navigate to home page
    */
   function navigateToHome(): void {
     router.push({ name: ROUTE_NAMES.HOME });
   }
 
   /**
-   * Переход на страницу входа
+   * Navigate to login page
    */
   function navigateToLogin(): void {
     router.push({ name: ROUTE_NAMES.LOGIN });
   }
 
   /**
-   * Переход на дашборд
+   * Navigate to dashboard
    */
   function navigateToDashboard(): void {
     router.push({ name: ROUTE_NAMES.DASHBOARD });
   }
 
   /**
-   * Переход на страницу пользователей
+   * Navigate to users page
    */
   function navigateToUsers(): void {
     router.push({ name: ROUTE_NAMES.USERS });
   }
 
   /**
-   * Переход на страницу приложений
+   * Navigate to applications page
    */
   function navigateToApplications(): void {
     router.push({ name: ROUTE_NAMES.APPLICATIONS });
   }
 
   /**
-   * Переход на страницу списка логов
+   * Navigate to logs list page
    */
   function navigateToLogs(): void {
     router.push({ name: ROUTE_NAMES.LOGS });
   }
 
   /**
-   * Переход на страницу логов приложения
-   * @param applicationId - ID приложения
+   * Navigate to application event logs page
+   * @param applicationId - Application ID
    */
   function navigateToEventLogs(applicationId: string): void {
     router.push({
@@ -64,8 +64,8 @@ export function useRouterUtils() {
   }
 
   /**
-   * Переход на страницу онлайн стрима логов
-   * @param uuid - UUID устройства
+   * Navigate to online log stream page
+   * @param uuid - Device UUID
    */
   function navigateToOnlineLogStream(uuid: string): void {
     router.push({
@@ -75,8 +75,8 @@ export function useRouterUtils() {
   }
 
   /**
-   * Переход на страницу одного события
-   * @param id - ID события
+   * Navigate to single event log page
+   * @param id - Event ID
    */
   function navigateToEventLogSingle(id: string): void {
     router.push({
@@ -86,26 +86,26 @@ export function useRouterUtils() {
   }
 
   /**
-   * Возврат назад по истории
+   * Go back in history
    */
   function goBack(): void {
     router.back();
   }
 
   /**
-   * Переход по произвольному маршруту
-   * @param location - объект маршрута
+   * Navigate to arbitrary route
+   * @param location - Route location object
    */
   function push(location: RouteLocationRaw): void {
     router.push(location);
   }
 
   /**
-   * Генерирует URL для роута по его имени
-   * @param routeName - название роута
-   * @param params - параметры роута
-   * @param query - query параметры
-   * @returns полный URL
+   * Generate URL for route by its name
+   * @param routeName - Route name
+   * @param params - Route parameters
+   * @param query - Query parameters
+   * @returns Full URL
    */
   function resolveRouteUrl(routeName: string, params?: Record<string, string | number>, query?: Record<string, string>): string {
     const resolved = router.resolve({ name: routeName, params, query });
@@ -113,10 +113,10 @@ export function useRouterUtils() {
   }
 
   /**
-   * Генерирует URL для страницы логов приложения
-   * @param applicationId - ID приложения
-   * @param shareToken - опциональный токен для шаринга
-   * @returns полный URL
+   * Generate URL for application event logs page
+   * @param applicationId - Application ID
+   * @param shareToken - Optional share token
+   * @returns Full URL
    */
   function getEventLogsUrl(applicationId: string, shareToken?: string): string {
     const query = shareToken ? { shareToken } : undefined;
@@ -124,9 +124,9 @@ export function useRouterUtils() {
   }
 
   /**
-   * Генерирует URL для страницы одного события
-   * @param id - ID события
-   * @returns полный URL
+   * Generate URL for single event log page
+   * @param id - Event ID
+   * @returns Full URL
    */
   function getEventLogSingleUrl(id: string): string {
     return resolveRouteUrl(ROUTE_NAMES.EVENT_LOG_SINGLE, { id });

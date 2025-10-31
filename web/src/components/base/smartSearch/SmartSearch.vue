@@ -59,7 +59,6 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: SearchCriterion[]): void
 }>();
 
-// state
 const criteria = computed<SearchCriterion[]>({
   get: () => props.modelValue ?? [],
   set: (val: SearchCriterion[]) => emit('update:modelValue', val),
@@ -389,7 +388,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
   background: white;
 }
 
-/* подсветка при фокусе внутри */
+/* Highlight on focus */
 .smart-search-field:focus-within {
   border-color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(43, 124, 255, 0.12);
@@ -438,7 +437,7 @@ input {
   font-size: 0.95rem;
 }
 
-/* dropdown — абсолютный, не меняет размер родителя */
+/* Dropdown - absolute positioning, doesn't affect parent size */
 .suggestions-list {
   position: absolute;
   top: calc(100% + 6px);

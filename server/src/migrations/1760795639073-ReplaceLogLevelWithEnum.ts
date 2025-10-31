@@ -38,7 +38,7 @@ export class ReplaceLogLevelWithEnum1760795639073 implements MigrationInterface 
     console.log(`[Migration] ${this.constructor.name} down`);
     const table = container.resolve(ConfigService).postgresEventsTable;
     
-    // 1. Возвращаем обратно TEXT с CHECK
+    // Revert to TEXT with CHECK constraint
     await queryRunner.query(`
       ALTER TABLE "${table}" ADD COLUMN "logLevel_tmp" TEXT CHECK ("logLevel_tmp" IN ('info','warn','error','debug'));
     `);

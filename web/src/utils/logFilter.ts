@@ -2,10 +2,10 @@ import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/sma
 import { type EventMessage } from '@/model/event/eventMessage';
 
 /**
- * Фильтрует массив логов по заданным критериям поиска
- * @param logs - массив логов для фильтрации
- * @param criteria - критерии поиска
- * @returns отфильтрованный массив логов
+ * Filters log array by search criteria
+ * @param logs - array of logs to filter
+ * @param criteria - search criteria
+ * @returns filtered log array
  */
 export function filterLogs(logs: EventMessage[], criteria: SearchCriterion[]): EventMessage[] {
   if (!criteria.length) {
@@ -13,18 +13,18 @@ export function filterLogs(logs: EventMessage[], criteria: SearchCriterion[]): E
   }
 
   return logs.filter(log => {
-    // Все критерии должны совпадать (AND логика)
+    // All criteria must match (AND logic)
     return criteria.every(criterion => matchesCriterion(log, criterion));
   });
 }
 
 /**
- * Проверяет, соответствует ли лог одному критерию
+ * Checks if a log matches a single criterion
  */
 function matchesCriterion(log: EventMessage, criterion: SearchCriterion): boolean {
   const { field, operator, value } = criterion;
 
-  // Если критерий неполный, пропускаем его
+  // Skip incomplete criteria
   if (!field || !operator || value === null) {
     return true;
   }
@@ -66,7 +66,7 @@ function matchesCriterion(log: EventMessage, criterion: SearchCriterion): boolea
 }
 
 /**
- * Сравнивает строковое поле с критерием
+ * Compares string field with criterion
  */
 function matchString(fieldValue: string, operator: Operator, criterionValue: string): boolean {
   const normalizedField = fieldValue.toLowerCase();
@@ -88,7 +88,7 @@ function matchString(fieldValue: string, operator: Operator, criterionValue: str
 }
 
 /**
- * Сравнивает дату с критерием
+ * Compares date with criterion
  */
 function matchDate(fieldValue: Date, operator: Operator, criterionValue: Date): boolean {
 
@@ -103,24 +103,24 @@ function matchDate(fieldValue: Date, operator: Operator, criterionValue: Date): 
 }
 
 /**
- * Сравнивает массив с критерием
+ * Compares array with criterion
  */
 function matchArray(fieldValue: string[], operator: Operator, criterionValue: string[] | string): boolean {
-  // Нормализуем criterionValue к массиву
+  // Normalize criterionValue to array
   let criterionArray: string[];
 
   if (Array.isArray(criterionValue)) {
     criterionArray = criterionValue;
   } else if (typeof criterionValue === 'string') {
-    // Если это строка, разбиваем по запятым (для поддержки tags)
+    // Split by commas if string (for tags support)
     criterionArray = criterionValue.split(',').map(s => s.trim()).filter(s => s.length > 0);
   } else {
-    return true; // Если тип неизвестен, пропускаем
+    return true; // Skip if type is unknown
   }
 
   switch (operator) {
     case Operator.Equals:
-      // Проверяем, что массивы содержат одинаковые элементы
+      // Check that arrays contain identical elements
       if (fieldValue.length !== criterionArray.length) {
         return false;
       }
@@ -129,11 +129,11 @@ function matchArray(fieldValue: string[], operator: Operator, criterionValue: st
       return sortedField.every((val, idx) => val === sortedCriterion[idx]);
 
     case Operator.In:
-      // Хотя бы один элемент из criterionArray присутствует в fieldValue
+      // At least one element from criterionArray is present in fieldValue
       return criterionArray.some(val => fieldValue.includes(val));
 
     case Operator.NotIn:
-      // Ни один элемент из criterionArray не присутствует в fieldValue
+      // No elements from criterionArray are present in fieldValue
       return !criterionArray.some(val => fieldValue.includes(val));
 
     default:
@@ -142,7 +142,7 @@ function matchArray(fieldValue: string[], operator: Operator, criterionValue: st
 }
 
 /**
- * Сравнивает meta объект с критерием
+ * Compares meta object with criterion
  */
 function matchMeta(
   fieldValue: Map<string, string> | undefined,
@@ -153,7 +153,7 @@ function matchMeta(
 
   switch (operator) {
     case Operator.Equals: {
-      // Все пары ключ-значение из критерия должны точно совпадать
+      // All key-value pairs from criterion must match exactly
       return criterionValue.every(kv => {
         const key = Object.keys(kv)[0];
         const val = Object.values(kv)[0];
@@ -162,7 +162,7 @@ function matchMeta(
     }
 
     case Operator.NotEquals: {
-      // Все пары ключ-значение из критерия должны НЕ совпадать
+      // All key-value pairs from criterion must NOT match
       return criterionValue.every(kv => {
         const key = Object.keys(kv)[0];
         const val = Object.values(kv)[0];
@@ -171,7 +171,7 @@ function matchMeta(
     }
 
     case Operator.Similar: {
-      // Все значения из критерия должны содержаться в соответствующих ключах (case-insensitive)
+      // All values from criterion must be contained in corresponding keys (case-insensitive)
       return criterionValue.every(kv => {
         const key = Object.keys(kv)[0];
         const val = Object.values(kv)[0];

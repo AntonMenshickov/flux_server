@@ -107,7 +107,6 @@ async function saveAsFilter() {
     return;
   }
 
-  // Convert SearchCriterion[] to Criterion[]
   const criteriaList = props.criteria
     .map(c => c.toCriterion())
     .filter(c => c !== null) as Criterion[];
@@ -160,7 +159,6 @@ async function updateFilter() {
     return;
   }
 
-  // Convert SearchCriterion[] to Criterion[]
   const criteriaList = props.criteria
     .map(c => c.toCriterion())
     .filter(c => c !== null) as Criterion[];

@@ -1,6 +1,6 @@
 /**
- * Конфигурация названий роутов
- * Все названия роутов приложения должны быть определены здесь
+ * Route names configuration
+ * All application route names should be defined here
  */
 export const ROUTE_NAMES = {
   HOME: 'home',
@@ -15,7 +15,7 @@ export const ROUTE_NAMES = {
 } as const;
 
 /**
- * Тип для названий роутов
+ * Type for route names
  */
 export type RouteName = typeof ROUTE_NAMES[keyof typeof ROUTE_NAMES];
 

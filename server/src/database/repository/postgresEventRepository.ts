@@ -74,7 +74,7 @@ export class PostgresEventsRepository {
     const qb: SelectQueryBuilder<EventMessage> =
       EventMessage.createQueryBuilder("event");
 
-    // Белый список разрешённых полей -> соответствующие SQL-столбцы
+    // Whitelist of allowed fields -> corresponding SQL columns
     const FIELD_TO_COLUMN: Record<SearchFieldKey, string> = {
       [SearchFieldKey.Message]: 'event.message',
       [SearchFieldKey.LogLevel]: 'event."logLevel"',
@@ -118,7 +118,7 @@ export class PostgresEventsRepository {
         return;
       }
 
-      // --- logLevel (всегда массив строк) ---
+      // logLevel (always array of strings)
       if (criterion.field === SearchFieldKey.LogLevel && Array.isArray(value)) {
         const field = FIELD_TO_COLUMN[SearchFieldKey.LogLevel];
         switch (criterion.operator) {
@@ -185,7 +185,6 @@ export class PostgresEventsRepository {
         return;
       }
 
-      // --- tags ---
       if (criterion.field === SearchFieldKey.Tags) {
         const field = FIELD_TO_COLUMN[SearchFieldKey.Tags];
         const tagsArray = Array.isArray(value)
@@ -212,7 +211,7 @@ export class PostgresEventsRepository {
         return;
       }
 
-      // --- Общие случаи ---
+      // General cases
       const fieldExpr = FIELD_TO_COLUMN[criterion.field];
       if (!fieldExpr) {
         throw new Error(`Unsupported filter field: ${criterion.field}`);

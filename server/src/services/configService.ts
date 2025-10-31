@@ -41,7 +41,7 @@ export class ConfigService {
   private readonly config: AppConfig;
 
   constructor() {
-    //Reading config from config.env
+    // Read config from config.env
     const configName = process.env.CONFIG_NAME ?? 'config.env';
     const environmentConfig = path.join(__dirname, `../${configName}`);
     console.log('Loading config from file', environmentConfig);

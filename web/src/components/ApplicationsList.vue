@@ -67,14 +67,13 @@ const applicationToEdit = ref<Application | null>(null);
 const showCreateModal = ref<boolean>(false);
 
 
-// let totalApplications: number = 0;
 const appsPerPage: number = 10;
 
 const debouncedSearch = debounce(fetchApplications, 200);
 
 
 onMounted(() => {
-  fetchApplications(); // Call the function when the component is mounted
+  fetchApplications();
 });
 
 
@@ -85,7 +84,6 @@ async function fetchApplications() {
     return;
   }
   applicationsList.value = result.value.result.applications;
-  // totalApplications = result.value.result.total;
 }
 
 async function onApplicationSave(application: { id: string | null, name: string, bundles: Bundle[], maintainers: User[] }) {
@@ -160,7 +158,7 @@ function closeCreateModal() {
   font-family: sans-serif;
 }
 
-/* Верхняя панель */
+/* Top bar */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -173,7 +171,7 @@ function closeCreateModal() {
   flex: 1;
 }
 
-/* Список */
+/* List */
 .applications-list ul {
   list-style: none;
   padding: 0;

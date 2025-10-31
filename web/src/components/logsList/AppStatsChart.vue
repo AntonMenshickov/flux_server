@@ -107,7 +107,6 @@ const logColors: Record<LogLevel, string> = {
   [LogLevel.DEBUG]: '#a36fad',
 };
 
-// ---------- helpers ----------
 
 function sumMaps(
   maps: (Map<string, number> | Record<string, number> | undefined)[]
@@ -117,13 +116,13 @@ function sumMaps(
   for (const m of maps) {
     if (!m) continue;
 
-    // Проверяем, что это настоящий Map
+    // Check if it's a real Map
     if (m instanceof Map) {
       for (const [key, value] of m) {
         result.set(key, (result.get(key) ?? 0) + value);
       }
     } else {
-      // Любой объект, включая reactive Proxy
+      // Any object, including reactive Proxy
       for (const [key, value] of Object.entries(m)) {
         result.set(key, (result.get(key) ?? 0) + value as number);
       }
@@ -144,7 +143,6 @@ function colorFromString(str: string, saturation = 50, lightness = 65): string {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
-// ---------- computed checks ----------
 
 const hasLogLevelData = computed(() =>
   lastSevenDaysStats.value.some(d => d.logLevelStats !== undefined)
@@ -156,12 +154,11 @@ const hasOsData = computed(() =>
   lastSevenDaysStats.value.some(d => d.osStats !== undefined)
 );
 
-// ---------- chart rendering ----------
 
 const renderCharts = () => {
   if (!lastSevenDaysStats.value.length) return;
 
-  // --- 1. Линейный график logLevel по дням ---
+  // Line chart for logLevel by days
   if (hasLogLevelData.value && logChartRef.value) {
     const ctx = logChartRef.value.getContext('2d');
     if (ctx) {
@@ -200,7 +197,7 @@ const renderCharts = () => {
     logChart = null;
   }
 
-  // --- 2. Bar-chart по platformStats ---
+  // Bar chart for platformStats
   if (hasPlatformData.value && platformChartRef.value) {
     const ctx = platformChartRef.value.getContext('2d');
     if (ctx) {
@@ -209,7 +206,7 @@ const renderCharts = () => {
         const labels = Array.from(mergedPlatform.keys());
         const values = Array.from(mergedPlatform.values());
 
-        // <-- вычисляем цвет для каждой платформы -->
+        // Calculate color for each platform
         const colors = labels.map(label => colorFromString(label));
 
         platformChart?.destroy();
@@ -220,7 +217,7 @@ const renderCharts = () => {
             datasets: [
               {
                 data: values,
-                backgroundColor: colors, // используем динамические цвета
+                backgroundColor: colors,
               },
             ],
           },
@@ -248,7 +245,7 @@ const renderCharts = () => {
     platformChart = null;
   }
 
-  // --- 3. Donut-chart по osStats ---
+  // Bar chart for osStats
   if (hasOsData.value && osChartRef.value) {
     const ctx = osChartRef.value.getContext('2d');
     if (ctx) {
