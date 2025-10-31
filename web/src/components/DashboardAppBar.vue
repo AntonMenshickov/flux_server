@@ -33,7 +33,7 @@ function doLogout() {
 
 <style scoped>
 .dashboard-app-bar {
-  z-index: 1000;
+  z-index: var(--z-index-appbar);
   position: fixed;
   width: 100%;
   display: flex;
@@ -41,7 +41,7 @@ function doLogout() {
   justify-content: space-between;
   padding: 0.75em 0.75em;
   background-color: var(--color-primary);
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border-light);
   color: var(--color-secondary);
   box-sizing: border-box;
 }
@@ -52,23 +52,23 @@ function doLogout() {
 
 .page-name {
   position: absolute;
-  left: 250px;
+  left: var(--sidebar-width);
   right: 0;
   margin-inline: auto;
-  font-size: 1.25em;
-  font-weight: bold;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
 }
 
 .profile-options-icon {
-  width: 1.5em;
-  height: 1.5em;
+  width: var(--icon-size-xl);
+  height: var(--icon-size-xl);
 }
 
 .profile-name {
-  font-size: 1em;
+  font-size: var(--font-size-lg);
   display: flex;
   align-items: center;
-  gap: 0.5em;
+  gap: var(--spacing-sm);
 }
 
 .logout-icon {
@@ -85,6 +85,6 @@ function doLogout() {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 1em;
+  gap: var(--spacing-lg);
 }
 </style>

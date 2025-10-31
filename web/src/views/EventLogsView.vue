@@ -440,18 +440,18 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
 /* Statistics Section */
 .stats-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-subtle);
   overflow: hidden;
 }
 
 /* Filters Section */
 .filters-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 1.5rem;
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-subtle);
+  padding: var(--spacing-xl);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -460,12 +460,12 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 .filters-header {
   display: flex;
   align-items: center;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--spacing-xs);
 }
 
 .section-title {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
   margin: 0;
 }
@@ -478,14 +478,14 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
 .filter-row {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-lg);
   flex-wrap: wrap;
   align-items: center;
 }
 
 .search-row {
   display: flex;
-  gap: 1rem;
+  gap: var(--spacing-lg);
   align-items: start;
 }
 
@@ -499,53 +499,53 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 }
 
 .reload-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
 }
 
 /* Logs Section */
 .logs-section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .logs-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.25rem;
+  padding: 0 var(--spacing-xs);
 }
 
 .logs-count {
-  font-size: 0.875rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .logs-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .initial-loader {
-  margin: 2rem 0;
+  margin: var(--spacing-xxl) 0;
 }
 
 .pagination-loader {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Access denied message */
 .access-denied {
-  margin: 1rem 0;
-  padding: 1rem;
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #fff5f5;
-  color: #c53030;
+  border-radius: var(--border-radius-md);
+  background: var(--color-error-bg);
+  color: var(--color-danger-dark);
 }
 
 /* Responsive Design */
@@ -589,10 +589,10 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 
 .share-link-input {
   flex: 1;
-  padding: 0.5rem;
+  padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 0.875rem;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-base);
   background-color: var(--color-secondary);
   color: var(--color-text);
 }
@@ -603,12 +603,12 @@ async function loadSharedFilter(shareToken: string, appId?: string) {
 }
 
 .action-icon {
-  width: 1rem;
-  height: 1rem;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
 }
 
 /* Smooth transitions */
 * {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
 }
 </style>

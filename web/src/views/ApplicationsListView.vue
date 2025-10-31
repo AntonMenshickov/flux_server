@@ -51,7 +51,7 @@ async function selectApp(app: ApplicationShortStats) {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 3rem;
+  padding: var(--spacing-xxxl);
   text-align: center;
 }
 

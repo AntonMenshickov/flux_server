@@ -28,15 +28,15 @@ const localValue = computed<string>({
 
 <style scoped>
 .base-input {
-  min-height: 40px;
-  max-height: 40px;
+  min-height: var(--input-height);
+  max-height: var(--input-height);
   min-width: 200px;
   box-sizing: border-box;
   padding: 0.6rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
-  font-size: 0.95rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: var(--font-size-md);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .base-input:focus {

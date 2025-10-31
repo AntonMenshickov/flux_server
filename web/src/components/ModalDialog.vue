@@ -40,25 +40,25 @@ function onConfirm() {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--color-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
+  z-index: var(--z-index-modal);
 }
 
 .modal {
   display: flex;
   flex-direction: column;
   background-color: var(--color-secondary);
-  padding: 1.5rem;
-  border-radius: 8px;
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-md);
   text-align: center;
   min-width: 300px;
 }
 
 .modal-buttons {
-  margin-top: 1rem;
+  margin-top: var(--spacing-lg);
   display: flex;
   justify-content: space-around;
 }

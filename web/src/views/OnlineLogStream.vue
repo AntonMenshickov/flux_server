@@ -253,53 +253,41 @@ function goBack() {
 .status-badge {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  font-size: 0.875rem;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-white);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-badge);
+  font-size: var(--font-size-base);
 }
 
 .ws-icon,
 .device-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.ws-open {
-  color: #10b981;
-}
-
-.ws-connection {
-  color: #84cc16;
-}
-
-.ws-error,
-.ws-closed {
-  color: #ef4444;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
 }
 
 .device-icon {
-  color: #ef4444;
+  color: var(--log-error);
 }
 
+.ws-open,
 .device-connected {
-  color: #10b981;
+  color: var(--color-success);
 }
 
 .status-text {
   text-transform: capitalize;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   color: var(--color-text);
 }
 
 /* Device Info Section */
 .device-info-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 0.875rem 1rem;
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-subtle);
+  padding: 0.875rem var(--spacing-lg);
 }
 
 .device-info-content {
@@ -310,19 +298,19 @@ function goBack() {
 .info-compact-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
+  gap: var(--spacing-md) var(--spacing-xl);
   align-items: center;
 }
 
 .info-compact-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
 }
 
 .info-compact-label {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-dimmed);
   white-space: nowrap;
 }
@@ -338,33 +326,33 @@ function goBack() {
 
 /* Controls Section */
 .controls-section {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  padding: 0.75rem 1rem;
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-subtle);
+  padding: var(--spacing-md) var(--spacing-lg);
 }
 
 .controls-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 .autoscroll-button {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .autoscroll-button.enabled {
-  background-color: #10b981;
+  background-color: var(--color-success);
 }
 
 .auto-scroll-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
 }
 
 .filter-search {
@@ -388,19 +376,19 @@ function goBack() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.25rem;
+  padding: 0 var(--spacing-xs);
 }
 
 .logs-count {
-  font-size: 0.875rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .logs-list-container {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border-subtle);
   overflow: hidden;
   flex: 1;
 }
@@ -408,12 +396,12 @@ function goBack() {
 .logs-list {
   height: 100%;
   width: 100%;
-  padding: 1rem;
+  padding: var(--spacing-lg);
   box-sizing: border-box;
 }
 
 .log-card-container {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
 /* Responsive Design */
@@ -458,6 +446,6 @@ function goBack() {
 
 /* Smooth transitions */
 * {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
 }
 </style>

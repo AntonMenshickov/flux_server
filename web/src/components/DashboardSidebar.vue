@@ -91,18 +91,18 @@ watch(
 
 
 .menu {
-  padding: 1.1em 1em;
+  padding: 1.1em var(--spacing-lg);
 }
 
 .menu a {
   display: flex;
   align-items: center;
-  padding: 0.75em 1em;
-  margin-bottom: 0.5em;
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
   cursor: pointer;
-  transition: background 0.2s;
-  border-radius: 0.5em;
-  color: #fff;
+  transition: background var(--transition-base);
+  border-radius: var(--border-radius-sidebar-item);
+  color: var(--color-white);
   text-decoration: none;
 }
 
@@ -115,8 +115,8 @@ watch(
 }
 
 .icon {
-  width: 1em;
-  height: 1em;
-  margin-right: 0.5em;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  margin-right: var(--spacing-sm);
 }
 </style>

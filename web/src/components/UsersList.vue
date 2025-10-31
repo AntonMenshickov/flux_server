@@ -150,18 +150,18 @@ async function createUser() {
   padding: 0;
   margin: 0;
   border: 1px solid var(--color-on-primary);
-  border-radius: 6px;
-  background-color: #fff;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-white);
 }
 
 .user-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--color-on-primary);
   cursor: default;
-  transition: background 0.2s;
+  transition: background var(--transition-base);
 }
 
 .user-list li:last-child {
@@ -180,7 +180,7 @@ async function createUser() {
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.1s;
+  transition: opacity var(--transition-fast);
 }
 
 .user-list li:hover .delete-icon {
@@ -190,9 +190,9 @@ async function createUser() {
 
 
 .modal input {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border-radius: 4px;
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  border-radius: var(--border-radius-xs);
   border: 1px solid var(--color-on-primary);
 }
 </style>

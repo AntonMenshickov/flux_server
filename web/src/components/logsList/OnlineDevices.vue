@@ -131,26 +131,26 @@ watch(() => props.applicationId, (v) => load(v));
 }
 
 .toggle-wrapper {
-  background: #f1f5f9;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  background: var(--color-hover-bg-light);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base) var(--transition-ease);
 }
 
 .toggle-wrapper.open {
-  background: white;
+  background: var(--color-white);
 }
 
 .devices-count {
   box-sizing: border-box;
-  min-height: 40px;
-  padding: 0.4rem 1rem;
-  font-weight: 600;
+  min-height: var(--input-height);
+  padding: 0.4rem var(--spacing-lg);
+  font-weight: var(--font-weight-semibold);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   user-select: none;
 }
 
@@ -159,7 +159,7 @@ watch(() => props.applicationId, (v) => load(v));
   background: transparent;
   border: none !important;
   padding: 0.4rem 0.75rem;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   outline: none;
 }
 
@@ -176,7 +176,7 @@ watch(() => props.applicationId, (v) => load(v));
 
 .arrow {
   display: inline-block;
-  transition: transform 0.2s;
+  transition: transform var(--transition-base);
 }
 
 .arrow.open {
@@ -195,39 +195,39 @@ watch(() => props.applicationId, (v) => load(v));
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   width: 100%;
-  background-color: #fff;
+  background-color: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
 }
 
 .device-item {
-  padding: 0.25rem;
-  border-radius: 4px;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-xs);
   background: var(--color-secondary);
   cursor: pointer;
 }
 
 .device-name {
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-md);
 }
 
 .device-meta {
-  color: var(--color-text-dimmed, #888);
-  font-size: 0.85rem;
+  color: var(--color-text-dimmed);
+  font-size: var(--font-size-base);
 }
 
 .device-empty {
-  color: #888;
+  color: var(--color-text-dimmed);
   font-style: italic;
 }
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-base);
 }
 
 .fade-enter-from,

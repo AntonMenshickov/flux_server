@@ -303,9 +303,9 @@ function emitSearch(value: LogLevel) {
 .chart-wrapper {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: var(--spacing-lg);
   flex-wrap: wrap;
-  padding: 1.5rem;
+  padding: var(--spacing-xl);
 }
 
 .title {
@@ -314,8 +314,8 @@ function emitSearch(value: LogLevel) {
 }
 
 .subtitle {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-sm);
 }
 
 .chart-section {
@@ -343,18 +343,18 @@ function emitSearch(value: LogLevel) {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
   flex: 1;
 }
 
 .totals-header {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .totals-title {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   align-self: flex-start;
 }
 
@@ -366,18 +366,18 @@ function emitSearch(value: LogLevel) {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--spacing-xs);
 }
 
 .bundle-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
 }
 
 .bundle-platform {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .bundle-sep {
@@ -393,19 +393,19 @@ function emitSearch(value: LogLevel) {
 .totals-body {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--spacing-xs);
 }
 
 .totals-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
 }
 
 .totals-overall {
   border-bottom: 1px dashed var(--color-border);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--spacing-xs);
 }
 
 .totals-label {
@@ -413,7 +413,7 @@ function emitSearch(value: LogLevel) {
 }
 
 .totals-value {
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
 }
 
 .log-level-value {

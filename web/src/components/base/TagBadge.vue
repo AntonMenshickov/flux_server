@@ -18,12 +18,12 @@ defineEmits<{
 
 <style scoped>
 .tag-badge {
-  background: #e0f2fe;
-  color: #0284c7;
-  padding: 0.2rem 0.6rem;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  padding: 0.2rem var(--spacing-sm);
+  border-radius: var(--border-radius-round);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
   display: inline-block;
 }
 </style>

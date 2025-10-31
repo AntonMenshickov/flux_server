@@ -131,24 +131,24 @@ function formatDate(ts: number) {
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  background: #ffffff;
-  border-left: 4px solid #e5e7eb;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  gap: var(--spacing-lg);
+  background: var(--color-white);
+  border-left: 4px solid var(--color-border-light);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-subtle);
+  transition: box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease), border-color var(--transition-base) var(--transition-ease);
 }
 
 .log-card.expanded {
-  margin-bottom: 0.5rem;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: var(--spacing-sm);
+  background: var(--color-white);
+  box-shadow: var(--box-shadow-sm);
   border-left-width: 4px;
 }
 
 .expand-enter-active,
 .expand-leave-active {
-  transition: all 0.25s ease;
+  transition: all var(--transition-slow) var(--transition-ease);
   overflow: hidden;
 }
 
@@ -165,7 +165,7 @@ function formatDate(ts: number) {
 }
 
 .timestamp {
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
 }
 
@@ -173,22 +173,22 @@ function formatDate(ts: number) {
   display: flex;
   justify-content: start;
   align-items: start;
-  padding: 1rem;
-  gap: 0.75rem;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .expand-chevron {
   cursor: pointer;
-  width: 1rem;
-  height: 1rem;
-  margin-right: 0.5rem;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  margin-right: var(--spacing-sm);
   color: var(--color-text-dimmed);
 }
 
 .log-text {
   flex: 1;
-  margin: 0 1rem;
-  font-size: 1rem;
+  margin: 0 var(--spacing-lg);
+  font-size: var(--font-size-lg);
   text-align: start;
   font-family: 'Courier New', Courier, monospace
 }
@@ -199,45 +199,45 @@ function formatDate(ts: number) {
 }
 
 .log-card.log-message.info {
-  background-color: rgba(59, 130, 246, 0.04);
-  border-left-color: #3b82f6;
+  background-color: var(--log-info-bg);
+  border-left-color: var(--log-info);
   border-left-width: 4px;
 }
 
 .log-card.log-message.warn {
-  background-color: rgba(245, 158, 11, 0.04);
-  border-left-color: #f59e0b;
+  background-color: var(--log-warn-bg);
+  border-left-color: var(--log-warn);
   border-left-width: 4px;
 }
 
 .log-card.log-message.error {
-  border-left-color: #ef4444;
+  border-left-color: var(--log-error);
   border-left-width: 4px;
-  background-color: rgba(239, 68, 68, 0.04);
+  background-color: var(--log-error-bg);
 }
 
 .log-card.log-message.crash {
   border-color: #dc2626;
   border-left-color: #991b1b;
   border-left-width: 5px;
-  background-color: rgba(220, 38, 38, 0.06);
+  background-color: var(--log-crash-bg);
   border-width: 1px 1px 1px 5px;
 }
 
 .log-card.log-message.debug {
-  border-left-color: #a36fad;
+  border-left-color: var(--log-debug);
   border-left-width: 4px;
-  background-color: rgba(163, 111, 173, 0.05);
+  background-color: var(--log-debug-bg);
 }
 
 .logs-extra-info {
   display: flex;
   flex-direction: column;
-  padding: 0 1rem 1rem 1rem;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  padding-top: 1rem;
+  padding: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--spacing-lg);
 }
 
 .row {
@@ -245,13 +245,13 @@ function formatDate(ts: number) {
   flex-direction: row;
   align-items: stretch;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .extra-info-block {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex: 1;
 }
 
@@ -262,17 +262,17 @@ function formatDate(ts: number) {
 }
 
 .extra-info-header svg {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
   margin-right: 0.3rem;
   vertical-align: middle;
 }
 
 .extra-info-body {
   padding: 0.875rem;
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-background-light);
+  border: 1px solid var(--color-border-extra-light);
 }
 
 .detail {
@@ -283,14 +283,14 @@ function formatDate(ts: number) {
 }
 
 .detail .detail-label {
-  margin-right: 0.5rem;
-  color: #8a8a8a;
+  margin-right: var(--spacing-sm);
+  color: var(--color-text-dimmed);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   align-items: center;
 }
 
@@ -300,19 +300,19 @@ function formatDate(ts: number) {
 }
 
 .log-link-icon {
-  margin-left: 0.5rem;
+  margin-left: var(--spacing-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
 }
 .icon-link {
-  width: 1rem;
-  height: 1rem;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
   opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-base);
 }
 .icon-link:hover {
   opacity: 1;
-  color: var(--color-primary, #3b82f6);
+  color: var(--log-info);
 }
 </style>

@@ -108,14 +108,14 @@ function toggleSelect(option: T) {
   position: absolute;
   top: 100%;
   width: 100%;
-  padding: 0.5rem 0.8rem;
-  border-radius: 8px;
+  padding: var(--spacing-sm) 0.8rem;
+  border-radius: var(--border-radius-md);
   margin-top: 0.1rem;
   border: 1px solid var(--color-border);
-  background-color: white;
+  background-color: var(--color-white);
   box-sizing: border-box;
   box-shadow: var(--box-shadow-strong);
-  z-index: 1000;
+  z-index: var(--z-index-dropdown);
 }
 
 .options .option {
@@ -124,9 +124,9 @@ function toggleSelect(option: T) {
   align-items: center;
   justify-content: space-between;
   text-align: start;
-  padding: 0.5rem 0.8rem;
+  padding: var(--spacing-sm) 0.8rem;
   margin: 0.1rem 0;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
 }
 
@@ -135,8 +135,8 @@ function toggleSelect(option: T) {
 }
 
 .option .selected-icon {
-  width: 1rem;
-  height: 1rem;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
   color: var(--color-secondary);
 }
 
@@ -146,7 +146,7 @@ function toggleSelect(option: T) {
 }
 
 .option.selected:hover {
-  background-color: Var(--color-danger);
+  background-color: var(--color-danger);
 }
 
 .base-multiselect {
@@ -155,10 +155,10 @@ function toggleSelect(option: T) {
   align-items: center;
   justify-content: space-between;
   min-width: 220px;
-  padding: 0.5rem 0.8rem;
-  border-radius: 8px;
+  padding: var(--spacing-sm) 0.8rem;
+  border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
-  background-color: white;
+  background-color: var(--color-white);
 }
 
 .selected-items {
@@ -169,13 +169,13 @@ function toggleSelect(option: T) {
 }
 
 .base-multiselect .label {
-  color: #757575;
+  color: var(--color-label-placeholder);
 }
 
 .add-item {
   cursor: pointer;
-  width: 1.2rem;
-  height: 1.2rem;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
   padding: 0.1rem;
   border-radius: 50%;
 }
@@ -190,19 +190,19 @@ function toggleSelect(option: T) {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background: #e0f2fe;
-  color: #0284c7;
-  padding: 0.2rem 0.6rem;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  padding: 0.2rem var(--spacing-sm);
   padding-right: 0.4rem;
   margin-right: 0.2rem;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 500;
+  border-radius: var(--border-radius-round);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .tag-badge .tag-badge-close {
-  width: 1rem;
-  height: 1rem;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
   cursor: pointer;
 }
 </style>

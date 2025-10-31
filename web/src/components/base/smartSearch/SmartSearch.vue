@@ -379,19 +379,19 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 .smart-search-field {
   display: flex;
   flex-direction: column;
-  min-height: 40px;
-  padding: 0.25rem 0.6rem;
+  min-height: var(--input-height);
+  padding: var(--spacing-xs) var(--spacing-sm);
   box-sizing: border-box;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
-  font-size: 0.95rem;
-  background: white;
+  font-size: var(--font-size-md);
+  background: var(--color-white);
 }
 
 /* Highlight on focus */
 .smart-search-field:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(43, 124, 255, 0.12);
+  box-shadow: var(--box-shadow-focus);
 }
 
 .input-container {
@@ -410,13 +410,13 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 }
 
 .tag {
-  background-color: #eef2ff;
+  background-color: var(--color-tag-bg-alt);
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   text-align: start;
 }
 
@@ -434,7 +434,7 @@ input {
   flex: 1;
   min-width: 160px;
   padding: 6px 4px;
-  font-size: 0.95rem;
+  font-size: var(--font-size-md);
 }
 
 /* Dropdown - absolute positioning, doesn't affect parent size */
@@ -444,25 +444,25 @@ input {
   left: 0;
   max-width: 100%;
   padding: 0.3rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   margin: 0;
   border: 1px solid var(--color-border);
-  background-color: #fff;
+  background-color: var(--color-white);
   box-sizing: border-box;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  z-index: 1200;
+  box-shadow: var(--box-shadow-md);
+  z-index: var(--z-index-suggestions);
   list-style: none;
 }
 
 .suggestions-list li {
   padding: 6px 8px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--border-radius-sm);
 }
 
 .suggestions-list li.selected {
   background-color: var(--color-primary);
-  color: white;
+  color: var(--color-white);
 }
 
 .multiselect-option {

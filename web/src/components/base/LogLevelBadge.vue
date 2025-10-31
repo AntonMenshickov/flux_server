@@ -15,12 +15,12 @@ const levelClass = computed(() => props.level.toLowerCase());
 
 <style scoped>
 .log-level-badge {
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 0.2rem var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  font-size: 0.75rem;
-  color: #fff;
+  font-size: var(--font-size-xs);
+  color: var(--color-white);
   display: inline-block;
 }
 

@@ -111,13 +111,13 @@ const selectOption = (item: T) => {
 }
 
 .selector-input {
-  min-height: 40px;
+  min-height: var(--input-height);
   box-sizing: border-box;
   width: 100%;
   padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-md);
 }
 
 .selector-input:focus {
@@ -127,7 +127,7 @@ const selectOption = (item: T) => {
 }
 
 .selector-input.opened {
-  border-radius: 6px 6px 0 0;
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
 }
 
 .dropdown {
@@ -135,35 +135,35 @@ const selectOption = (item: T) => {
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
+  background: var(--color-white);
   border: 1px solid var(--color-border);
   border-top: none;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
   margin-top: 0;
   list-style: none;
   padding: 0;
   max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: var(--z-index-dropdown);
 }
 
 .dropdown li {
   display: flex;
   align-items: center;
-  min-height: 40px;
+  min-height: var(--input-height);
   padding: 0.4rem 0.6rem;
   box-sizing: border-box;
   cursor: pointer;
 }
 
 .dropdown li:hover {
-  background: #f0f0f0;
+  background: var(--color-hover-bg);
 }
 
 .loading,
 .no-results {
   padding: 0.4rem 0.6rem;
-  color: #888;
+  color: var(--color-text-dimmed);
   font-style: italic;
 }
 </style>

@@ -182,11 +182,11 @@ function closeCreateModal() {
 }
 
 .applications-list li {
-  background: #fff;
+  background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  padding: 1rem;
-  transition: box-shadow 0.2s;
+  padding: var(--spacing-lg);
+  transition: box-shadow var(--transition-base);
 }
 
 .applications-list li:hover {
@@ -197,8 +197,8 @@ function closeCreateModal() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-lg);
 }
 
 .action-icon {
@@ -207,7 +207,7 @@ function closeCreateModal() {
   color: var(--color-accent);
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: opacity var(--transition-base), transform var(--transition-base);
 }
 
 .action-icon.delete {
@@ -220,12 +220,12 @@ function closeCreateModal() {
 }
 
 .application-options {
-  margin-top: 0.75em;
+  margin-top: var(--spacing-md);
   display: flex;
   flex-direction: column;
   align-items: start;
   gap: 0.4em;
-  font-size: 0.9rem;
-  color: #555;
+  font-size: var(--font-size-base);
+  color: var(--color-text-dimmed);
 }
 </style>

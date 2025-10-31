@@ -38,7 +38,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 .loader-text {
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   color: var(--color-text-dimmed);
   margin: 0;
 }

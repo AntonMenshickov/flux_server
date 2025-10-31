@@ -32,26 +32,26 @@ defineEmits<{
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: var(--spacing-xl);
   flex-wrap: wrap;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .header-main {
   display: flex;
   align-items: start;
-  gap: 1rem;
+  gap: var(--spacing-lg);
   flex: 1;
   min-width: 0;
 }
 
 .back-button {
-  width: 2rem;
-  height: 2rem;
+  width: var(--icon-size-xxl);
+  height: var(--icon-size-xxl);
   cursor: pointer;
   color: var(--color-text-dimmed);
-  transition: color 0.2s ease, transform 0.2s ease;
+  transition: color var(--transition-base) var(--transition-ease), transform var(--transition-base) var(--transition-ease);
 }
 
 .back-button:hover {
@@ -62,7 +62,7 @@ defineEmits<{
 .header-info {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--spacing-xs);
   min-width: 0;
 }
 
@@ -72,8 +72,8 @@ defineEmits<{
 }
 
 .header-title {
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-size: var(--font-size-xxxl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
   margin: 0;
   line-height: 1.2;
@@ -84,7 +84,7 @@ defineEmits<{
 }
 
 .header-subtitle {
-  font-size: 0.875rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-dimmed);
   margin: 0;
   font-family: monospace;
@@ -97,7 +97,7 @@ defineEmits<{
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-lg);
   flex-wrap: wrap;
 }
 
@@ -109,13 +109,13 @@ defineEmits<{
   }
 
   .header-title {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
   }
 }
 
 /* Smooth transitions */
 * {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
 }
 </style>
 

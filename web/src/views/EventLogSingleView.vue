@@ -69,11 +69,11 @@ function openInList() {
 
 /* Access denied message */
 .access-denied {
-  margin: 1rem 0;
-  padding: 1rem;
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #fff5f5;
-  color: #c53030;
+  border-radius: var(--border-radius-md);
+  background: var(--color-error-bg);
+  color: var(--color-danger-dark);
 }
 </style>

@@ -88,11 +88,11 @@ watch(() => props.appStats, () => renderChart(), { deep: true });
 .app-card {
   width: 300px;
   height: auto;
-  padding: 1rem;
+  padding: var(--spacing-lg);
   border-radius: var(--border-radius);
-  background-color: white;
+  background-color: var(--color-white);
   box-shadow: var(--box-shadow);
-  transition: box-shadow 0.2s;
+  transition: box-shadow var(--transition-base);
   cursor: pointer;
 }
 

@@ -54,23 +54,23 @@ function handleCleared() {
 .date-time-display {
   display: flex;
   min-width: 200px;
-  min-height: 40px;
-  max-height: 40px;
+  min-height: var(--input-height);
+  max-height: var(--input-height);
   box-sizing: border-box;
   align-items: center;
   padding: 0.6rem 0.8rem;
   padding-right: 2rem;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   border: 1px solid var(--color-border);
-  font-size: 0.9rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-size: var(--font-size-base);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
   color: var(--color-text-dimmed);
-  background-color: white;
+  background-color: var(--color-white);
 }
 
 .date-time-display-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  margin-right: 0.5rem;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  margin-right: var(--spacing-sm);
 }
 </style>

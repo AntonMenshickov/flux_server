@@ -50,17 +50,17 @@ defineEmits<{
   height: 100%;
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: var(--spacing-xl);
   box-sizing: border-box;
 }
 
 .page-container {
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: var(--spacing-xl);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-xl);
   box-sizing: border-box;
 }
 
@@ -69,17 +69,17 @@ defineEmits<{
 }
 
 .page-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  margin: 0 0 1.5rem 0;
-  padding: 0 1.5rem;
+  margin: 0 0 var(--spacing-xl) 0;
+  padding: 0 var(--spacing-xl);
   box-sizing: border-box;
 }
 
 /* Smooth transitions */
 * {
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color var(--transition-base) var(--transition-ease), box-shadow var(--transition-base) var(--transition-ease), background-color var(--transition-base) var(--transition-ease);
 }
 </style>
 

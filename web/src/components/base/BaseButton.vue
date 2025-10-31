@@ -15,20 +15,20 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   white-space: nowrap;
-  height: 40px;
-  padding: 0 1.25rem;
-  min-height: 40px;
+  height: var(--button-height);
+  padding: 0 var(--spacing-xl);
+  min-height: var(--button-height);
   box-sizing: border-box;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius-md);
   background-color: var(--color-primary);
   color: var(--color-secondary);
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  font-size: 0.95rem;
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-base);
+  font-size: var(--font-size-md);
 }
 
 .base-btn:hover {
