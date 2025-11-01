@@ -1,7 +1,7 @@
 <template>
   <button class="theme-toggle" @click="toggleTheme" :title="getTitle()">
-    <SunIcon v-if="themeStore.theme === 'dark'" class="theme-icon" />
-    <MoonIcon v-else-if="themeStore.theme === 'light'" class="theme-icon" />
+    <MoonIcon v-if="themeStore.theme === 'dark'" class="theme-icon" />
+    <SunIcon v-else-if="themeStore.theme === 'light'" class="theme-icon" />
     <ComputerDesktopIcon v-else class="theme-icon" />
   </button>
 </template>
