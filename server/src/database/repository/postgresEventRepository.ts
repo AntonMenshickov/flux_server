@@ -226,7 +226,7 @@ export class PostgresEventsRepository {
           break;
 
         case Operator.Similar:
-          qb.andWhere(`CAST(${fieldExpr} AS TEXT) ILIKE :${paramKey}`, {
+          qb.andWhere(`${fieldExpr} ILIKE :${paramKey}`, {
             [paramKey]: `%${value}%`,
           });
           break;
