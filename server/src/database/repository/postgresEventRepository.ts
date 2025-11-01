@@ -226,9 +226,15 @@ export class PostgresEventsRepository {
           break;
 
         case Operator.Similar:
-          qb.andWhere(`CAST(${fieldExpr} AS TEXT) ILIKE :${paramKey}`, {
-            [paramKey]: `%${value}%`,
-          });
+          if (criterion.field === SearchFieldKey.Message) {
+            qb.andWhere(`similarity(${fieldExpr}, :${paramKey}) > 0.7`, {
+              [paramKey]: value,
+            });
+          } else {
+            qb.andWhere(`CAST(${fieldExpr} AS TEXT) ILIKE :${paramKey}`, {
+              [paramKey]: `%${value}%`,
+            });
+          }
           break;
 
         case Operator.GreaterThan:
