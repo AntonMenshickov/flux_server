@@ -12,7 +12,6 @@ import { ApplicationStatsCleanupService } from './services/applicationStatsClean
 import { container } from 'tsyringe';
 import { Postgres } from './database/postgres';
 import { ConfigService } from './services/configService';
-import { CreateEventContentsTable1762355121600 } from './migrations/1762355121600-CreateEventContentsTable';
 
 
 export async function startServer() {
@@ -27,7 +26,6 @@ export async function startServer() {
 
   const postgres = container.resolve(Postgres);
   await postgres.ensureInitialized();
-  await new CreateEventContentsTable1762355121600().down(postgres.dataSource.createQueryRunner());
 
   await container.resolve(ReliableBatchQueue).init();
 

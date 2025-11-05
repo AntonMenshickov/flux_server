@@ -90,11 +90,6 @@ export class CreateEventContentsTable1762355121600 implements MigrationInterface
     await queryRunner.query(`
       DROP TABLE IF EXISTS "${contentsTable}";
     `);
-
-    await queryRunner.query(`
-      DELETE FROM migrations
-      WHERE name = 'CreateEventContentsTable1762355121600';
-    `);
   }
 }
 
