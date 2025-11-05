@@ -26,4 +26,6 @@ export const responseMessages = {
   EVENTS_FILTER_NOT_FOUND: 'Events filter not found',
   EVENTS_FILTER_NAME_ALREADY_EXISTS: 'Events filter with this name already exists',
   NOT_ALLOWED_TO_VIEW_APP: 'Not allowed to view this application',
+  EVENT_NOT_FOUND: 'Event not found',
+  MESSAGE_NOT_FOUND: 'Message not found',
 }

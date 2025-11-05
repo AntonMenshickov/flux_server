@@ -1,6 +1,6 @@
 import { EventMessageDto } from '../../model/eventMessageDto';
 import { eventMessageDtoSchema } from '../../utils/zodUtil';
-import { eventMessageFromDto } from '../../model/eventMessageView';
+import { eventMessageFromDto } from '../../model/eventMessageFull';
 import { ReliableBatchQueue } from '../../eventsQueue/reliableBatchQueue';
 import { container } from 'tsyringe';
 import { DeviceClientInfo } from './deviceWsClient';

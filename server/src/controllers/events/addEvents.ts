@@ -5,7 +5,7 @@ import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
 import { eventMessageDtoSchema } from '../../utils/zodUtil';
 import { AppAuthRequest } from '../../middleware/authorizationRequired';
-import { eventMessageFromDto } from '../../model/eventMessageView';
+import { eventMessageFromDto } from '../../model/eventMessageFull';
 import { EventsStatsService } from '../../services/eventsStatsService';
 import { container } from 'tsyringe';
 import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';

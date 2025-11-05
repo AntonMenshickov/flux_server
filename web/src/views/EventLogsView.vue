@@ -94,7 +94,7 @@ import { applications, type ApplicationStatsResponse, type ConnectedDevice } fro
 import { events } from '@/api/events';
 import { eventFilters } from '@/api/eventFilters';
 import { ref, onMounted, watch } from 'vue';
-import type { EventMessage } from '@/model/event/eventMessage';
+import type { EventMessageBasic } from '@/model/event/eventMessageBasic';
 import LogCard from '@/components/base/LogCard.vue';
 import SmartSearch from '@/components/base/smartSearch/SmartSearch.vue';
 import { Operator, SearchCriterion, SearchFieldKey } from '@/components/base/smartSearch/types';
@@ -115,7 +115,7 @@ import ModalDialog from '@/components/ModalDialog.vue';
 import type { Criterion } from '@/components/base/smartSearch/types';
 import type { EventsFilter } from '@/model/eventsFilter';
 
-const logs = ref<EventMessage[]>([]);
+const logs = ref<EventMessageBasic[]>([]);
 const application = ref<ApplicationStatsResponse | null>(null);
 const dateTimeFilter = ref<Date[] | null>(null);
 const criteria = ref<SearchCriterion[]>([]);
@@ -246,10 +246,7 @@ async function fetchLogs(clear: boolean = false) {
 
   const eventsResult = await events.search(pageSize, application.value.id, criteriaWithDateTime, lastTimestamp, lastId);
   if (eventsResult.isRight()) {
-    const events = eventsResult.value.result.events.map(e => ({
-      ...e,
-      meta: e.meta instanceof Map ? e.meta : new Map<string, string>(Object.entries(e.meta || {})),
-    }));
+    const events = eventsResult.value.result.events;
     if (clear) {
       logs.value = events;
     } else {

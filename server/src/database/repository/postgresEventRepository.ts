@@ -1,4 +1,5 @@
-import { EventMessageView } from '../../model/eventMessageView';
+import { EventMessageFull } from '../../model/eventMessageFull';
+import { EventMessageBasic } from '../../model/eventMessageBasic';
 import { EventMessage } from '../../model/postgres/eventMessageDbView';
 import { Postgres } from '../postgres';
 import { Operator, SearchCriterion, SearchFieldKey } from '../../model/searchCriterion';
@@ -18,7 +19,7 @@ export class PostgresEventsRepository {
     this.contentsTable = `${this.configService.postgresEventsTable}_contents`;
   }
 
-  public async insert(events: EventMessageView[]): Promise<void> {
+  public async insert(events: EventMessageFull[]): Promise<void> {
     const chunkSize = 500;
     const maxMessageLength = 1000;
 
@@ -91,7 +92,7 @@ export class PostgresEventsRepository {
     return existingRecords.map(record => record.id);
   }
 
-  public async findById(id: string): Promise<EventMessageView | null> {
+  public async findById(id: string): Promise<EventMessageFull | null> {
     const res = await EventMessage.findOneBy({ id });
     if (res == null) return null;
     return this.eventMessageFromDatabase(res);
@@ -117,7 +118,7 @@ export class PostgresEventsRepository {
     lastTimestamp?: number,
     lastId?: string,
     filters: SearchCriterion[] = [],
-  ): Promise<EventMessageView[]> {
+  ): Promise<EventMessageBasic[]> {
     const hasMessageFilter = filters.some(f => f.field === SearchFieldKey.Message);
     
     const qb: SelectQueryBuilder<EventMessage> =
@@ -356,11 +357,20 @@ export class PostgresEventsRepository {
       .take(limit);
 
     const rows = await qb.getMany();
-    return rows.map((r) => this.eventMessageFromDatabase(r));
+    return rows.map((r) => this.eventMessageBasicFromDatabase(r));
   }
 
 
-  private eventMessageFromDatabase(dbEntry: EventMessage): EventMessageView {
+  private eventMessageBasicFromDatabase(dbEntry: EventMessage): EventMessageBasic {
+    return {
+      id: dbEntry.id,
+      timestamp: dbEntry.timestamp.getTime(),
+      logLevel: dbEntry.logLevel,
+      message: dbEntry.message,
+    };
+  }
+
+  private eventMessageFromDatabase(dbEntry: EventMessage): EventMessageFull {
     return {
       id: dbEntry.id,
       applicationId: dbEntry.applicationId,

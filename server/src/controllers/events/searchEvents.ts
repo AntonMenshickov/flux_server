@@ -1,7 +1,7 @@
 import { Response, NextFunction, application } from 'express';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
-import { EventMessageView } from '../../model/eventMessageView';
+import { EventMessageBasic } from '../../model/eventMessageBasic';
 import { objectIdSchema, criteriaArraySchema } from '../../utils/zodUtil';
 import { container } from 'tsyringe';
 import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
@@ -29,7 +29,7 @@ export async function searchEvents(req: UserAuthRequest, res: Response, next: Ne
   }
 
 
-  const events: EventMessageView[] = await container.resolve(PostgresEventsRepository).find(limit, applicationId.toString(), lastTimestamp, lastId, filter ?? []);
+  const events: EventMessageBasic[] = await container.resolve(PostgresEventsRepository).find(limit, applicationId.toString(), lastTimestamp, lastId, filter ?? []);
 
 
   return res.status(200).json({

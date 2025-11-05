@@ -1,5 +1,5 @@
 import Redis, { RedisOptions } from 'ioredis';
-import { EventMessageView } from '../model/eventMessageView';
+import { EventMessageFull } from '../model/eventMessageFull';
 import { PostgresEventsRepository } from '../database/repository/postgresEventRepository';
 import { EventsStatsService } from '../services/eventsStatsService';
 import { container, singleton } from 'tsyringe';
@@ -78,7 +78,7 @@ export class ReliableBatchQueue {
   }
 
 
-  async enqueue(event: EventMessageView) {
+  async enqueue(event: EventMessageFull) {
     const serialized = JSON.stringify(event);
     await this.redis.lpush(this.queueName, serialized);
     this.queueLen++;
@@ -86,7 +86,7 @@ export class ReliableBatchQueue {
   }
 
 
-  private async prepareBatch(): Promise<EventMessageView[]> {
+  private async prepareBatch(): Promise<EventMessageFull[]> {
     const script = `
       local src = KEYS[1]
       local dest = KEYS[2]
@@ -112,7 +112,7 @@ export class ReliableBatchQueue {
     }
     // this.listQueue(this.queueName);
     // this.listQueue(this.processingName);
-    return events.map(e => JSON.parse(e)) as EventMessageView[];
+    return events.map(e => JSON.parse(e)) as EventMessageFull[];
   }
 
   private async processQueue() {
@@ -128,7 +128,7 @@ export class ReliableBatchQueue {
 
     for (const item of items) {
       try {
-        const obj = JSON.parse(item) as EventMessageView;
+        const obj = JSON.parse(item) as EventMessageFull;
         if (idsToRemove.includes(obj.id)) {
           pipeline.lrem(queueName, 1, item);
         }

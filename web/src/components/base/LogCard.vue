@@ -4,24 +4,26 @@
       <ChevronRightIcon v-show="!expanded" @click="toggle" class="expand-chevron" />
       <ChevronDownIcon v-show="expanded" @click="toggle" class="expand-chevron" />
       <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
-      <span :class="{ 'log-text': true, 'expanded': expanded, 'loading': expanded && isLoadingFullMessage && isTruncated }">
+      <span :class="{ 'log-text': true, 'expanded': expanded, 'loading': expanded && isLoadingDetails && isTruncated }">
         {{ displayMessage }}
       </span>
       <LogLevelBadge :level="log.logLevel" />
-    <a v-if="showLink" class="log-link-icon" :href="logUrl" :title="'Permanent link'">
-      <LinkIcon class="icon-link" />
-    </a>
+      <a v-if="showLink" class="log-link-icon" :href="logUrl" :title="'Permanent link'">
+        <LinkIcon class="icon-link" />
+      </a>
     </section>
 
     <transition name="expand">
       <section v-if="expanded" class="logs-extra-info">
-        <section v-if="log.stackTrace" class="extra-info-block">
+        <section
+          v-if="stackTrace || (isLoadingDetails && (log.logLevel === LogLevel.ERROR || log.logLevel === LogLevel.CRASH))"
+          class="extra-info-block">
           <div class="extra-info-header">
             <CodeBracketIcon /> StackTrace
           </div>
           <div class="extra-info-body">
-            <pre class="stack-trace">{{ log.stackTrace }}</pre>
-
+            <pre v-if="stackTrace" class="stack-trace">{{ stackTrace }}</pre>
+            <div v-else-if="isLoadingDetails" class="loading-placeholder loading">Loading...</div>
           </div>
         </section>
 
@@ -31,16 +33,21 @@
               <DevicePhoneMobileIcon /> Device information
             </div>
             <div class="extra-info-body">
-              <div class="detail"><span class="detail-label">Device name:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceName, log.deviceName ?? '')">{{ log.deviceName }}</BaseCopyText>
-              </div>
-              <div class="detail"><span class="detail-label">Device ID:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.DeviceId, log.deviceId ?? '')">{{ log.deviceId }}</BaseCopyText>
-              </div>
-              <div class="detail"><span class="detail-label">OS name:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.OsName, log.osName ?? '')">{{ log.osName }}</BaseCopyText>
-              </div>
-
+              <div v-if="isLoadingDetails" class="loading-placeholder loading">Loading...</div>
+              <template v-else>
+                <div class="detail"><span class="detail-label">Device name:</span>
+                  <BaseCopyText v-if="deviceName" @click="emitSearch(SearchFieldKey.DeviceName, deviceName)">{{
+                    deviceName }}</BaseCopyText>
+                </div>
+                <div class="detail"><span class="detail-label">Device ID:</span>
+                  <BaseCopyText v-if="deviceId" @click="emitSearch(SearchFieldKey.DeviceId, deviceId)">{{ deviceId }}
+                  </BaseCopyText>
+                </div>
+                <div class="detail"><span class="detail-label">OS name:</span>
+                  <BaseCopyText v-if="osName" @click="emitSearch(SearchFieldKey.OsName, osName)">{{ osName }}
+                  </BaseCopyText>
+                </div>
+              </template>
             </div>
           </section>
 
@@ -49,12 +56,17 @@
               <ArrowDownOnSquareIcon />Application information
             </div>
             <div class="extra-info-body">
-              <div class="detail"><span class="detail-label">Bundle:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.BundleId, log.bundleId)">{{ log.bundleId }}</BaseCopyText>
-              </div>
-              <div class="detail"><span class="detail-label">Platform:</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.Platform, log.platform)">{{ log.platform }}</BaseCopyText>
-              </div>
+              <div v-if="isLoadingDetails" class="loading-placeholder loading">Loading...</div>
+              <template v-else>
+                <div class="detail"><span class="detail-label">Bundle:</span>
+                  <BaseCopyText v-if="bundleId" @click="emitSearch(SearchFieldKey.BundleId, bundleId)">{{ bundleId }}
+                  </BaseCopyText>
+                </div>
+                <div class="detail"><span class="detail-label">Platform:</span>
+                  <BaseCopyText v-if="platform" @click="emitSearch(SearchFieldKey.Platform, platform)">{{ platform }}
+                  </BaseCopyText>
+                </div>
+              </template>
             </div>
           </section>
 
@@ -63,20 +75,23 @@
               <ComputerDesktopIcon />Meta information
             </div>
             <div class="extra-info-body">
-              <div v-for="[key, value] in log.meta" :key="key" class="detail"><span class="detail-label">{{ key
-                  }}</span>
-                <BaseCopyText @click="emitSearch(SearchFieldKey.Meta, { key, value })">{{ value }}</BaseCopyText>
-              </div>
+              <div v-if="isLoadingDetails" class="loading-placeholder loading">Loading...</div>
+              <template v-else-if="meta && meta.size > 0">
+                <div v-for="[key, value] in meta" :key="key" class="detail"><span class="detail-label">{{ key
+                    }}</span>
+                  <BaseCopyText @click="emitSearch(SearchFieldKey.Meta, { key, value })">{{ value }}</BaseCopyText>
+                </div>
+              </template>
             </div>
           </section>
         </div>
 
-        <section v-if="log.tags?.length" class="extra-info-block">
+        <section v-if="(tags && tags.length > 0) || isLoadingDetails" class="extra-info-block">
           <div class="extra-info-header">
             <TagIcon />Tags
           </div>
-          <div v-if="log.tags && log.tags.length > 0" class="tags">
-            <TagBadge v-for="tag in log.tags" :key="tag" :label="tag" @click="emitSearch(SearchFieldKey.Tags, tag)" />
+          <div v-if="tags && tags.length > 0" class="tags">
+            <TagBadge v-for="tag in tags" :key="tag" :label="tag" @click="emitSearch(SearchFieldKey.Tags, tag)" />
           </div>
         </section>
       </section>
@@ -90,35 +105,44 @@ import TagBadge from '@/components/base/TagBadge.vue';
 import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
 import BaseCopyText from '@/components/base/BaseCopyText.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
+import type { EventMessageBasic } from '@/model/event/eventMessageBasic';
 import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon, LinkIcon } from '@heroicons/vue/24/outline';
 import { ref, computed, watch, onMounted } from 'vue';
 import { SearchFieldKey, SearchCriterion, Operator } from '@/components/base/smartSearch/types';
 import { useRouterUtils } from '@/utils/routerUtils';
 import { events } from '@/api/events';
+import { LogLevel } from '@/model/event/logLevel';
 
 const emit = defineEmits<{
   (e: 'search', criterion: SearchCriterion): void
 }>();
 
 const props = defineProps<{
-  log: EventMessage,
+  log: EventMessageBasic | EventMessage,
   showLink?: boolean,
   defaultExpanded?: boolean,
 }>();
 
 const expanded = ref<boolean>(props.defaultExpanded ?? false);
-const fullMessage = ref<string | null>(null);
-const isLoadingFullMessage = ref<boolean>(false);
+const fullDetails = ref<EventMessage | null>(null);
+let isLoadingFullMessage = false;
 const routerUtils = useRouterUtils();
 
 const logUrl = computed(() => routerUtils.getEventLogSingleUrl(props.log.id));
 
 const MESSAGE_MAX_LENGTH = 1000;
-const isTruncated = computed(() => props.log.message.length === MESSAGE_MAX_LENGTH);
+const isTruncated = computed(() => {
+  if (isFullEvent) {
+    return props.log.message.length === MESSAGE_MAX_LENGTH;
+  }
+  return props.log.message.length >= MESSAGE_MAX_LENGTH;
+});
+
+const isFullEvent = 'applicationId' in props.log;
 
 const displayMessage = computed(() => {
-  if (expanded.value && fullMessage.value !== null) {
-    return fullMessage.value;
+  if (expanded.value && fullDetails.value !== null) {
+    return fullDetails.value.message;
   }
   if (isTruncated.value) {
     return props.log.message + '...';
@@ -126,27 +150,83 @@ const displayMessage = computed(() => {
   return props.log.message;
 });
 
+const deviceName = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).deviceName;
+  }
+  return fullDetails.value?.deviceName;
+});
+
+const deviceId = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).deviceId;
+  }
+  return fullDetails.value?.deviceId;
+});
+
+const osName = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).osName;
+  }
+  return fullDetails.value?.osName;
+});
+
+const platform = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).platform;
+  }
+  return fullDetails.value?.platform;
+});
+
+const bundleId = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).bundleId;
+  }
+  return fullDetails.value?.bundleId;
+});
+
+const tags = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).tags;
+  }
+  return fullDetails.value?.tags;
+});
+
+const meta = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).meta;
+  }
+  return fullDetails.value?.meta;
+});
+
+const stackTrace = computed(() => {
+  if (isFullEvent) {
+    return (props.log as EventMessage).stackTrace;
+  }
+  return fullDetails.value?.stackTrace;
+});
+
+const isLoadingDetails = computed(() => {
+  return !isFullEvent && isLoadingFullMessage && fullDetails.value === null;
+});
+
 async function loadFullMessage() {
-  if (fullMessage.value !== null || isLoadingFullMessage.value) {
+  if (isLoadingFullMessage) {
+    return;
+  }
+  if (isFullEvent) {
     return;
   }
 
-  if (!isTruncated.value) {
-    fullMessage.value = props.log.message;
-    return;
-  }
+  isLoadingFullMessage = true;
 
-  isLoadingFullMessage.value = true;
-  try {
-    const result = await events.getFullMessage(props.log.id);
-    result.mapRight((r) => {
-      fullMessage.value = r.result.message;
-    });
-  } catch (error) {
-    console.error('Failed to load full message:', error);
-  } finally {
-    isLoadingFullMessage.value = false;
-  }
+  const result = await events.getById(props.log.id);
+  result.mapRight((r) => {
+    if (!isFullEvent) {
+      fullDetails.value = r.result;
+    }
+  });
+  isLoadingFullMessage = false;
 }
 
 watch(expanded, (newValue) => {
@@ -361,6 +441,7 @@ function formatDate(ts: number) {
   display: flex;
   align-items: center;
 }
+
 .icon-link {
   width: var(--icon-size-sm);
   height: var(--icon-size-sm);
@@ -368,6 +449,7 @@ function formatDate(ts: number) {
   transition: opacity var(--transition-base), color var(--transition-base);
   color: var(--color-text-dimmed);
 }
+
 .icon-link:hover {
   opacity: 1;
   color: var(--log-info);
@@ -377,10 +459,23 @@ function formatDate(ts: number) {
   animation: blink 1s ease-in-out infinite;
 }
 
+.loading-placeholder {
+  padding: var(--spacing-sm);
+  color: var(--color-text-dimmed);
+  font-style: italic;
+}
+
+.loading-placeholder.loading {
+  animation: blink 1s ease-in-out infinite;
+}
+
 @keyframes blink {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.3;
   }

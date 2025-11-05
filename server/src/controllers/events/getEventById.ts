@@ -8,7 +8,7 @@ import { responseMessages } from '../../strings/responseMessages';
 
 export const getEventByIdValidateSchema = z.object({
   params: z.object({
-    id: z.string().min(1),
+    id: z.uuid().nonoptional(),
   })
 });
 
@@ -19,7 +19,7 @@ export async function getEventById(req: UserAuthRequest, res: Response, _next: N
   const event = await repo.findById(id);
 
   if (!event) {
-    return res.status(404).json({ success: false, message: 'Event not found' });
+    return res.status(404).json({ success: false, message: responseMessages.EVENT_NOT_FOUND });
   }
 
   // Check user is a maintainer of the event's application
@@ -28,7 +28,13 @@ export async function getEventById(req: UserAuthRequest, res: Response, _next: N
     return res.status(403).json({ success: false, message: responseMessages.NOT_ALLOWED_TO_VIEW_APP });
   }
 
-  return res.status(200).json({ success: true, result: event });
+  const fullMessage = await repo.getFullMessage(id);
+  const result = {
+    ...event,
+    message: fullMessage ?? event.message,
+  };
+
+  return res.status(200).json({ success: true, result });
 }
 
 
