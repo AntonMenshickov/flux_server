@@ -18,28 +18,50 @@ export class CreateEventContentsTable1762355121600 implements MigrationInterface
       CREATE INDEX IF NOT EXISTS idx_${contentsTable.replace(/"/g, '')}_id ON "${contentsTable}"(id);
     `);
 
-    await queryRunner.query(`
-      DO $$
-      DECLARE
-        long_message_count INTEGER;
-      BEGIN
-        SELECT COUNT(*) INTO long_message_count
+    const longMessageCountResult = await queryRunner.query(`
+      SELECT COUNT(*) as count
+      FROM "${eventsTable}"
+      WHERE LENGTH(message) > 1000;
+    `);
+    
+    const longMessageCount = parseInt(longMessageCountResult[0]?.count || '0', 10);
+    
+    if (longMessageCount > 0) {
+      console.log(`Found ${longMessageCount} messages longer than 1000 characters. Migrating to contents table...`);
+      
+      await queryRunner.query(`
+        INSERT INTO "${contentsTable}" (id, message)
+        SELECT id, message
+        FROM "${eventsTable}"
+        WHERE LENGTH(message) > 1000
+        ON CONFLICT (id) DO UPDATE SET message = EXCLUDED.message;
+      `);
+      
+      const insertedCountResult = await queryRunner.query(`
+        SELECT COUNT(*) as count FROM "${contentsTable}";
+      `);
+      const insertedCount = parseInt(insertedCountResult[0]?.count || '0', 10);
+      console.log(`Inserted ${insertedCount} messages into contents table`);
+      
+      await queryRunner.query(`
+        UPDATE "${eventsTable}"
+        SET message = LEFT(message, 1000)
+        WHERE LENGTH(message) > 1000;
+      `);
+      
+      const updatedCountResult = await queryRunner.query(`
+        SELECT COUNT(*) as count
         FROM "${eventsTable}"
         WHERE LENGTH(message) > 1000;
-
-        IF long_message_count > 0 THEN
-          INSERT INTO "${contentsTable}" (id, message)
-          SELECT id, message
-          FROM "${eventsTable}"
-          WHERE LENGTH(message) > 1000
-          ON CONFLICT (id) DO NOTHING;
-
-          UPDATE "${eventsTable}"
-          SET message = LEFT(message, 1000)
-          WHERE LENGTH(message) > 1000;
-        END IF;
-      END $$;
-    `);
+      `);
+      const remainingCount = parseInt(updatedCountResult[0]?.count || '0', 10);
+      
+      if (remainingCount > 0) {
+        console.warn(`Warning: ${remainingCount} messages still longer than 1000 characters after truncation`);
+      } else {
+        console.log('All long messages have been migrated and truncated successfully');
+      }
+    }
 
     await queryRunner.query(`
       ALTER TABLE "${eventsTable}"
@@ -67,6 +89,11 @@ export class CreateEventContentsTable1762355121600 implements MigrationInterface
 
     await queryRunner.query(`
       DROP TABLE IF EXISTS "${contentsTable}";
+    `);
+
+    await queryRunner.query(`
+      DELETE FROM migrations
+      WHERE name = 'CreateEventContentsTable1762355121600';
     `);
   }
 }
