@@ -69,7 +69,6 @@ export const eventsFilterSchema = baseSchema<IEventsFilter>({
 });
 
 eventsFilterSchema.index({ user: 1, name: 1, applicationId: 1 }, { unique: true });
-eventsFilterSchema.index({ shareToken: 1 });
 eventsFilterSchema.index({ user: 1, applicationId: 1 });
 
 export const EventsFilter = model<IEventsFilter>('EventsFilter', eventsFilterSchema);
