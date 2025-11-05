@@ -4,7 +4,9 @@
       <ChevronRightIcon v-show="!expanded" @click="toggle" class="expand-chevron" />
       <ChevronDownIcon v-show="expanded" @click="toggle" class="expand-chevron" />
       <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
-      <span :class="{ 'log-text': true, 'expanded': expanded }">{{ log.message }}</span>
+      <span :class="{ 'log-text': true, 'expanded': expanded, 'loading': expanded && isLoadingFullMessage && isTruncated }">
+        {{ displayMessage }}
+      </span>
       <LogLevelBadge :level="log.logLevel" />
     <a v-if="showLink" class="log-link-icon" :href="logUrl" :title="'Permanent link'">
       <LinkIcon class="icon-link" />
@@ -89,9 +91,10 @@ import LogLevelBadge from '@/components/base/LogLevelBadge.vue';
 import BaseCopyText from '@/components/base/BaseCopyText.vue';
 import type { EventMessage } from '@/model/event/eventMessage';
 import { ChevronDownIcon, ChevronRightIcon, DevicePhoneMobileIcon, ArrowDownOnSquareIcon, ComputerDesktopIcon, TagIcon, CodeBracketIcon, LinkIcon } from '@heroicons/vue/24/outline';
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { SearchFieldKey, SearchCriterion, Operator } from '@/components/base/smartSearch/types';
 import { useRouterUtils } from '@/utils/routerUtils';
+import { events } from '@/api/events';
 
 const emit = defineEmits<{
   (e: 'search', criterion: SearchCriterion): void
@@ -104,9 +107,59 @@ const props = defineProps<{
 }>();
 
 const expanded = ref<boolean>(props.defaultExpanded ?? false);
+const fullMessage = ref<string | null>(null);
+const isLoadingFullMessage = ref<boolean>(false);
 const routerUtils = useRouterUtils();
 
 const logUrl = computed(() => routerUtils.getEventLogSingleUrl(props.log.id));
+
+const MESSAGE_MAX_LENGTH = 1000;
+const isTruncated = computed(() => props.log.message.length === MESSAGE_MAX_LENGTH);
+
+const displayMessage = computed(() => {
+  if (expanded.value && fullMessage.value !== null) {
+    return fullMessage.value;
+  }
+  if (isTruncated.value) {
+    return props.log.message + '...';
+  }
+  return props.log.message;
+});
+
+async function loadFullMessage() {
+  if (fullMessage.value !== null || isLoadingFullMessage.value) {
+    return;
+  }
+
+  if (!isTruncated.value) {
+    fullMessage.value = props.log.message;
+    return;
+  }
+
+  isLoadingFullMessage.value = true;
+  try {
+    const result = await events.getFullMessage(props.log.id);
+    result.mapRight((r) => {
+      fullMessage.value = r.result.message;
+    });
+  } catch (error) {
+    console.error('Failed to load full message:', error);
+  } finally {
+    isLoadingFullMessage.value = false;
+  }
+}
+
+watch(expanded, (newValue) => {
+  if (newValue) {
+    loadFullMessage();
+  }
+});
+
+onMounted(() => {
+  if (expanded.value) {
+    loadFullMessage();
+  }
+});
 
 function toggle() {
   expanded.value = !expanded.value;
@@ -318,5 +371,18 @@ function formatDate(ts: number) {
 .icon-link:hover {
   opacity: 1;
   color: var(--log-info);
+}
+
+.log-text.loading {
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 </style>

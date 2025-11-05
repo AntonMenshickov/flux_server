@@ -4,35 +4,60 @@ import { Postgres } from '../postgres';
 import { Operator, SearchCriterion, SearchFieldKey } from '../../model/searchCriterion';
 import { In, SelectQueryBuilder } from 'typeorm';
 import { injectable } from 'tsyringe';
+import { ConfigService } from '../../services/configService';
 
 
 @injectable()
 export class PostgresEventsRepository {
+  private readonly contentsTable: string;
 
-  constructor(private postgres: Postgres) { }
+  constructor(
+    private postgres: Postgres,
+    private configService: ConfigService
+  ) {
+    this.contentsTable = `${this.configService.postgresEventsTable}_contents`;
+  }
 
   public async insert(events: EventMessageView[]): Promise<void> {
     const chunkSize = 500;
+    const maxMessageLength = 1000;
 
     await this.postgres.dataSource.transaction(async (manager) => {
       for (let i = 0; i < events.length; i += chunkSize) {
         const chunk = events.slice(i, i + chunkSize);
 
-        const records: Partial<EventMessage>[] = chunk.map((e) => ({
-          id: e.id,
-          timestamp: new Date(e.timestamp),
-          logLevel: e.logLevel,
-          applicationId: e.applicationId,
-          platform: e.platform,
-          bundleId: e.bundleId,
-          deviceId: e.deviceId,
-          deviceName: e.deviceName,
-          osName: e.osName,
-          message: e.message,
-          tags: e.tags ?? undefined,
-          meta: e.meta ?? undefined,
-          stackTrace: e.stackTrace ?? undefined,
-        }));
+        const records: Partial<EventMessage>[] = [];
+        const contentsToInsert: Array<{ id: string; message: string }> = [];
+
+        chunk.forEach((e) => {
+          const messageLength = e.message.length;
+          const truncatedMessage = messageLength > maxMessageLength 
+            ? e.message.substring(0, maxMessageLength)
+            : e.message;
+
+          records.push({
+            id: e.id,
+            timestamp: new Date(e.timestamp),
+            logLevel: e.logLevel,
+            applicationId: e.applicationId,
+            platform: e.platform,
+            bundleId: e.bundleId,
+            deviceId: e.deviceId,
+            deviceName: e.deviceName,
+            osName: e.osName,
+            message: truncatedMessage,
+            tags: e.tags ?? undefined,
+            meta: e.meta ?? undefined,
+            stackTrace: e.stackTrace ?? undefined,
+          });
+
+          if (messageLength > maxMessageLength) {
+            contentsToInsert.push({
+              id: e.id,
+              message: e.message,
+            });
+          }
+        });
 
         await manager
           .createQueryBuilder()
@@ -40,6 +65,15 @@ export class PostgresEventsRepository {
           .into(EventMessage)
           .values(records)
           .execute();
+
+        if (contentsToInsert.length > 0) {
+          const values = contentsToInsert.map((_, idx) => `($${idx * 2 + 1}, $${idx * 2 + 2})`).join(', ');
+          const params = contentsToInsert.flatMap((c) => [c.id, c.message]);
+          await manager.query(
+            `INSERT INTO "${this.contentsTable}" (id, message) VALUES ${values} ON CONFLICT (id) DO UPDATE SET message = EXCLUDED.message`,
+            params
+          );
+        }
       }
     });
   }
@@ -58,10 +92,23 @@ export class PostgresEventsRepository {
   }
 
   public async findById(id: string): Promise<EventMessageView | null> {
-
     const res = await EventMessage.findOneBy({ id });
     if (res == null) return null;
     return this.eventMessageFromDatabase(res);
+  }
+
+  public async getFullMessage(id: string): Promise<string | null> {
+    const result = await this.postgres.dataSource.query(
+      `SELECT message FROM "${this.contentsTable}" WHERE id = $1`,
+      [id]
+    );
+    
+    if (result.length === 0) {
+      const event = await EventMessage.findOneBy({ id });
+      return event?.message ?? null;
+    }
+    
+    return result[0].message;
   }
 
   public async find(
@@ -71,12 +118,24 @@ export class PostgresEventsRepository {
     lastId?: string,
     filters: SearchCriterion[] = [],
   ): Promise<EventMessageView[]> {
+    const hasMessageFilter = filters.some(f => f.field === SearchFieldKey.Message);
+    
     const qb: SelectQueryBuilder<EventMessage> =
       EventMessage.createQueryBuilder("event");
 
+    if (hasMessageFilter) {
+      qb.leftJoin(
+        `(SELECT id, message FROM "${this.contentsTable}")`,
+        'contents',
+        'contents.id = event.id'
+      );
+    }
+
     // Whitelist of allowed fields -> corresponding SQL columns
     const FIELD_TO_COLUMN: Record<SearchFieldKey, string> = {
-      [SearchFieldKey.Message]: 'event.message',
+      [SearchFieldKey.Message]: hasMessageFilter 
+        ? `COALESCE(contents.message, event.message)`
+        : 'event.message',
       [SearchFieldKey.LogLevel]: 'event."logLevel"',
       [SearchFieldKey.Meta]: 'event.meta',
       [SearchFieldKey.Tags]: 'event.tags',
@@ -207,6 +266,42 @@ export class PostgresEventsRepository {
 
           default:
             throw new Error(`Unsupported operator for tags: ${criterion.operator}`);
+        }
+        return;
+      }
+
+      // Message field special handling - search in both tables using COALESCE
+      if (criterion.field === SearchFieldKey.Message) {
+        const messageField = FIELD_TO_COLUMN[SearchFieldKey.Message];
+        switch (criterion.operator) {
+          case Operator.Equals:
+            qb.andWhere(`${messageField} = :${paramKey}`, { [paramKey]: value });
+            break;
+
+          case Operator.NotEquals:
+            qb.andWhere(`${messageField} != :${paramKey}`, { [paramKey]: value });
+            break;
+
+          case Operator.Similar:
+            qb.andWhere(`${messageField} ILIKE :${paramKey}`, {
+              [paramKey]: `%${value}%`,
+            });
+            break;
+
+          case Operator.In:
+            qb.andWhere(`${messageField} IN (:...${paramKey})`, {
+              [paramKey]: value,
+            });
+            break;
+
+          case Operator.NotIn:
+            qb.andWhere(`${messageField} NOT IN (:...${paramKey})`, {
+              [paramKey]: value,
+            });
+            break;
+
+          default:
+            throw new Error(`Unsupported operator for message: ${criterion.operator}`);
         }
         return;
       }
