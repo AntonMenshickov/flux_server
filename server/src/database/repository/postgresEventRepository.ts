@@ -1,6 +1,7 @@
 import { EventMessageFull } from '../../model/eventMessageFull';
 import { EventMessageBasic } from '../../model/eventMessageBasic';
 import { EventMessage } from '../../model/postgres/eventMessageDbView';
+import { EventContents } from '../../model/postgres/eventContentsDbView';
 import { Postgres } from '../postgres';
 import { Operator, SearchCriterion, SearchFieldKey } from '../../model/searchCriterion';
 import { In, SelectQueryBuilder } from 'typeorm';
@@ -10,14 +11,10 @@ import { ConfigService } from '../../services/configService';
 
 @injectable()
 export class PostgresEventsRepository {
-  private readonly contentsTable: string;
-
   constructor(
     private postgres: Postgres,
     private configService: ConfigService
-  ) {
-    this.contentsTable = `${this.configService.postgresEventsTable}_contents`;
-  }
+  ) {}
 
   public async insert(events: EventMessageFull[]): Promise<void> {
     const chunkSize = 500;
@@ -68,12 +65,17 @@ export class PostgresEventsRepository {
           .execute();
 
         if (contentsToInsert.length > 0) {
-          const values = contentsToInsert.map((_, idx) => `($${idx * 2 + 1}, $${idx * 2 + 2})`).join(', ');
-          const params = contentsToInsert.flatMap((c) => [c.id, c.message]);
-          await manager.query(
-            `INSERT INTO "${this.contentsTable}" (id, message) VALUES ${values} ON CONFLICT (id) DO UPDATE SET message = EXCLUDED.message`,
-            params
-          );
+          const contentsRecords: Partial<EventContents>[] = contentsToInsert.map((c) => ({
+            id: c.id,
+            message: c.message,
+          }));
+          
+          await manager
+            .createQueryBuilder()
+            .insert()
+            .into(EventContents)
+            .values(contentsRecords)
+            .execute();
         }
       }
     });
@@ -99,17 +101,14 @@ export class PostgresEventsRepository {
   }
 
   public async getFullMessage(id: string): Promise<string | null> {
-    const result = await this.postgres.dataSource.query(
-      `SELECT message FROM "${this.contentsTable}" WHERE id = $1`,
-      [id]
-    );
+    const contents = await EventContents.findOneBy({ id });
     
-    if (result.length === 0) {
+    if (contents == null) {
       const event = await EventMessage.findOneBy({ id });
       return event?.message ?? null;
     }
     
-    return result[0].message;
+    return contents.message;
   }
 
   public async find(
@@ -119,24 +118,23 @@ export class PostgresEventsRepository {
     lastId?: string,
     filters: SearchCriterion[] = [],
   ): Promise<EventMessageBasic[]> {
-    const hasMessageFilter = filters.some(f => f.field === SearchFieldKey.Message);
+    // const hasMessageFilter = filters.some(f => f.field === SearchFieldKey.Message);
+
     
     const qb: SelectQueryBuilder<EventMessage> =
       EventMessage.createQueryBuilder("event");
 
-    if (hasMessageFilter) {
-      qb.leftJoin(
-        `(SELECT id, message FROM "${this.contentsTable}")`,
-        'contents',
-        'contents.id = event.id'
-      );
-    }
+    // if (hasMessageFilter) {
+    //   qb.leftJoin(
+    //     `(SELECT id, message FROM "${this.contentsTable}")`,
+    //     'contents',
+    //     'contents.id = event.id'
+    //   );
+    // }
 
     // Whitelist of allowed fields -> corresponding SQL columns
     const FIELD_TO_COLUMN: Record<SearchFieldKey, string> = {
-      [SearchFieldKey.Message]: hasMessageFilter 
-        ? `COALESCE(contents.message, event.message)`
-        : 'event.message',
+      [SearchFieldKey.Message]: 'event.message',
       [SearchFieldKey.LogLevel]: 'event."logLevel"',
       [SearchFieldKey.Meta]: 'event.meta',
       [SearchFieldKey.Tags]: 'event.tags',
@@ -161,16 +159,17 @@ export class PostgresEventsRepository {
 
     filters.forEach((criterion, index) => {
       const paramKey = `param_${index}`;
+      const field = FIELD_TO_COLUMN[criterion.field];
       let value: any = criterion.value;
 
       if (criterion.field === SearchFieldKey.Timestamp) {
         value = new Date(value);
         switch (criterion.operator) {
           case Operator.GreaterThan:
-            qb.andWhere(`event.timestamp > :${paramKey}`, { [paramKey]: value });
+            qb.andWhere(`${field} > :${paramKey}`, { [paramKey]: value });
             break;
           case Operator.LessThan:
-            qb.andWhere(`event.timestamp < :${paramKey}`, { [paramKey]: value });
+            qb.andWhere(`${field} < :${paramKey}`, { [paramKey]: value });
             break;
           default:
             throw new Error(`Unsupported operator for timestamp: ${criterion.operator}`);
@@ -180,7 +179,6 @@ export class PostgresEventsRepository {
 
       // logLevel (always array of strings)
       if (criterion.field === SearchFieldKey.LogLevel && Array.isArray(value)) {
-        const field = FIELD_TO_COLUMN[SearchFieldKey.LogLevel];
         switch (criterion.operator) {
           case Operator.In:
             qb.andWhere(`${field} IN (:...${paramKey})`, {
@@ -200,7 +198,6 @@ export class PostgresEventsRepository {
 
 
       if (criterion.field === SearchFieldKey.Meta && Array.isArray(value)) {
-        const field = FIELD_TO_COLUMN[SearchFieldKey.Meta];
         const metaFilters = value as Record<string, string>[];
 
         switch (criterion.operator) {
@@ -246,7 +243,6 @@ export class PostgresEventsRepository {
       }
 
       if (criterion.field === SearchFieldKey.Tags) {
-        const field = FIELD_TO_COLUMN[SearchFieldKey.Tags];
         const tagsArray = Array.isArray(value)
           ? value
           : String(value).split(",").map((t) => t.trim()).filter(Boolean);
@@ -273,31 +269,18 @@ export class PostgresEventsRepository {
 
       // Message field special handling - search in both tables using COALESCE with pg_trgm
       if (criterion.field === SearchFieldKey.Message) {
-        const messageField = FIELD_TO_COLUMN[SearchFieldKey.Message];
         switch (criterion.operator) {
           case Operator.Equals:
-            qb.andWhere(`${messageField} = :${paramKey}`, { [paramKey]: value });
+            qb.andWhere(`${field} = :${paramKey}`, { [paramKey]: value });
             break;
 
           case Operator.NotEquals:
-            qb.andWhere(`${messageField} != :${paramKey}`, { [paramKey]: value });
+            qb.andWhere(`${field} != :${paramKey}`, { [paramKey]: value });
             break;
 
           case Operator.Similar:
-            qb.andWhere(`${messageField} ILIKE :${paramKey}`, {
+            qb.andWhere(`${field} ILIKE :${paramKey}`, {
               [paramKey]: `%${value}%`,
-            });
-            break;
-
-          case Operator.In:
-            qb.andWhere(`${messageField} IN (:...${paramKey})`, {
-              [paramKey]: value,
-            });
-            break;
-
-          case Operator.NotIn:
-            qb.andWhere(`${messageField} NOT IN (:...${paramKey})`, {
-              [paramKey]: value,
             });
             break;
 
@@ -308,41 +291,40 @@ export class PostgresEventsRepository {
       }
 
       // General cases
-      const fieldExpr = FIELD_TO_COLUMN[criterion.field];
-      if (!fieldExpr) {
+      if (!field) {
         throw new Error(`Unsupported filter field: ${criterion.field}`);
       }
       switch (criterion.operator) {
         case Operator.Equals:
-          qb.andWhere(`${fieldExpr} = :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${field} = :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.NotEquals:
-          qb.andWhere(`${fieldExpr} != :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${field} != :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.Similar:
-          qb.andWhere(`${fieldExpr} ILIKE :${paramKey}`, {
+          qb.andWhere(`${field} ILIKE :${paramKey}`, {
             [paramKey]: `%${value}%`,
           });
           break;
 
         case Operator.GreaterThan:
-          qb.andWhere(`${fieldExpr} > :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${field} > :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.LessThan:
-          qb.andWhere(`${fieldExpr} < :${paramKey}`, { [paramKey]: value });
+          qb.andWhere(`${field} < :${paramKey}`, { [paramKey]: value });
           break;
 
         case Operator.In:
-          qb.andWhere(`${fieldExpr} IN (:...${paramKey})`, {
+          qb.andWhere(`${field} IN (:...${paramKey})`, {
             [paramKey]: value,
           });
           break;
 
         case Operator.NotIn:
-          qb.andWhere(`${fieldExpr} NOT IN (:...${paramKey})`, {
+          qb.andWhere(`${field} NOT IN (:...${paramKey})`, {
             [paramKey]: value,
           });
           break;

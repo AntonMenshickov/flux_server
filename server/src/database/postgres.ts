@@ -5,6 +5,7 @@ import { singleton } from 'tsyringe';
 import path from 'path';
 import { ConfigService } from '../services/configService';
 import { container } from 'tsyringe';
+import { EventContents } from '../model/postgres/eventContentsDbView';
 
 @singleton()
 export class Postgres {
@@ -44,7 +45,7 @@ export class Postgres {
           username: this.username,
           password: this.password,
           database: this.database,
-          entities: [EventMessage],
+          entities: [EventMessage, EventContents],
           migrations: [path.join(__dirname, '../migrations/*{.ts,.js}')],
           synchronize: false,
           migrationsRun: true,
