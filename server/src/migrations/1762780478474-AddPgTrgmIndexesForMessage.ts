@@ -18,7 +18,7 @@ export class AddPgTrgmIndexesForMessage1762780478474 implements MigrationInterfa
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS idx_${contentsTable.replace(/"/g, '')}_message_trgm 
-      ON "${contentsTable}" USING gist(message gist_trgm_ops);
+      ON "${contentsTable}" USING gin(message gin_trgm_ops);
     `);
   }
 
