@@ -271,7 +271,7 @@ export class PostgresEventsRepository {
         return;
       }
 
-      // Message field special handling - search in both tables using COALESCE
+      // Message field special handling - search in both tables using COALESCE with pg_trgm
       if (criterion.field === SearchFieldKey.Message) {
         const messageField = FIELD_TO_COLUMN[SearchFieldKey.Message];
         switch (criterion.operator) {

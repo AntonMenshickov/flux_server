@@ -14,8 +14,6 @@ export class CreateEventContentsTable1762355121600 implements MigrationInterface
         id UUID NOT NULL PRIMARY KEY,
         message TEXT NOT NULL
       );
-
-      CREATE INDEX IF NOT EXISTS idx_${contentsTable.replace(/"/g, '')}_id ON "${contentsTable}"(id);
     `);
 
     const longMessageCountResult = await queryRunner.query(`
