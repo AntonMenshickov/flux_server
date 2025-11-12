@@ -120,7 +120,6 @@ watch(() => themeStore.effectiveTheme, () => {
 
 <style scoped>
 .app-card {
-  width: 300px;
   height: auto;
   padding: var(--spacing-lg);
   border-radius: var(--border-radius);
