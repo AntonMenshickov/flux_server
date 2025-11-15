@@ -1,5 +1,5 @@
 import { schedule } from 'node-cron';
-import { DataSource, LessThan } from 'typeorm';
+import { DataSource, LessThan, In } from 'typeorm';
 import { EventMessage } from '../model/postgres/eventMessageDbView';
 import { singleton } from 'tsyringe';
 import path from 'path';
@@ -71,9 +71,29 @@ export class Postgres {
     console.info(`Postgres deleting rows older than ${this.logsMaxAgeInDays} days`);
     const deleteFrom = new Date();
     deleteFrom.setDate(deleteFrom.getDate() - this.logsMaxAgeInDays);
-    const result = await EventMessage.delete({
-      timestamp: LessThan(deleteFrom)
+    
+    await this.dataSource.transaction(async (manager) => {
+      const oldEventMessages = await manager.find(EventMessage, {
+        where: {
+          timestamp: LessThan(deleteFrom)
+        },
+        select: ['id']
+      });
+      
+      if (oldEventMessages.length > 0) {
+        const idsToDelete = oldEventMessages.map(e => e.id);
+        
+        await manager.delete(EventContents, {
+          id: In(idsToDelete)
+        });
+        
+        const eventsResult = await manager.delete(EventMessage, {
+          id: In(idsToDelete)
+        });
+        console.info(`Postgres deleted ${eventsResult.affected} old rows from EventMessage`);
+      } else {
+        console.info(`Postgres: no old rows to delete`);
+      }
     });
-    console.info(`Postgres deleted ${result.affected} old rows`);
   }
 }
