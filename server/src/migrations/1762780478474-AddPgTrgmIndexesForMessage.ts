@@ -7,7 +7,7 @@ export class AddPgTrgmIndexesForMessage1762780478474 implements MigrationInterfa
     console.log(`[Migration] ${this.constructor.name} up`);
 
     const eventsTable = container.resolve(ConfigService).postgresEventsTable;
-    const contentsTable = `${eventsTable}_contents`;
+    const contentsTable = container.resolve(ConfigService).postgresEventsContentsTable;
 
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);
 
@@ -26,7 +26,7 @@ export class AddPgTrgmIndexesForMessage1762780478474 implements MigrationInterfa
     console.log(`[Migration] ${this.constructor.name} down`);
 
     const eventsTable = container.resolve(ConfigService).postgresEventsTable;
-    const contentsTable = `${eventsTable}_contents`;
+    const contentsTable = container.resolve(ConfigService).postgresEventsContentsTable;
 
     await queryRunner.query(`DROP INDEX IF EXISTS idx_${eventsTable}_message_trgm;`);
     await queryRunner.query(`DROP INDEX IF EXISTS idx_${contentsTable.replace(/"/g, '')}_message_trgm;`);

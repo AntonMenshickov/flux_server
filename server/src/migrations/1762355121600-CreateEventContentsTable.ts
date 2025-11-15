@@ -7,7 +7,7 @@ export class CreateEventContentsTable1762355121600 implements MigrationInterface
     console.log(`[Migration] ${this.constructor.name} up`);
 
     const eventsTable = container.resolve(ConfigService).postgresEventsTable;
-    const contentsTable = `${eventsTable}_contents`;
+    const contentsTable = container.resolve(ConfigService).postgresEventsContentsTable;
 
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "${contentsTable}" (
@@ -71,7 +71,7 @@ export class CreateEventContentsTable1762355121600 implements MigrationInterface
     console.log(`[Migration] ${this.constructor.name} down`);
 
     const eventsTable = container.resolve(ConfigService).postgresEventsTable;
-    const contentsTable = `${eventsTable}_contents`;
+    const contentsTable = container.resolve(ConfigService).postgresEventsContentsTable;
 
     await queryRunner.query(`
       ALTER TABLE "${eventsTable}"

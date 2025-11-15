@@ -148,6 +148,7 @@ export class ConfigService {
   get postgresPassword() { return this.config.postgresPassword; }
   get postgresDatabase() { return this.config.postgresDatabase; }
   get postgresEventsTable() { return this.config.postgresEventsTable; }
+  get postgresEventsContentsTable() { return `${this.postgresEventsTable}_contents`; }
 
   get dbLogsMaxAgeDays() { return this.config.dbLogsMaxAgeDays; }
 
