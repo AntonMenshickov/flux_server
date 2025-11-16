@@ -1,10 +1,11 @@
 import { Response, NextFunction } from 'express';
 import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
-import { Application, IApplication } from '../../model/mongo/application';
+import { Application, IApplication, ApplicationPopulatedDoc } from '../../model/mongo/application';
 import z from 'zod';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { objectIdSchema } from '../../utils/zodUtil';
+import { serializeApplication } from '../../model/responses/applicationResponse';
 
 
 export const updateAppValidateSchema = z.object({
@@ -45,16 +46,10 @@ export async function updateApp(req: UserAuthRequest, res: Response, next: NextF
   app.name = name;
   await app.save();
 
-  const populatedMaintainers = await app.populate('maintainers');
+  const populatedApp = await app.populate('maintainers') as ApplicationPopulatedDoc;
 
   return res.status(200).json({
     success: true,
-    result: {
-      id: app.id,
-      name: app.name,
-      bundles: bundles,
-      token: app.token,
-      maintainers: populatedMaintainers.maintainers,
-    }
+    result: serializeApplication(populatedApp)
   });
 }

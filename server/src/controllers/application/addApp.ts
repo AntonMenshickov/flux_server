@@ -1,13 +1,14 @@
 import { Response, NextFunction } from 'express';
 import { responseMessages } from '../../strings/responseMessages';
 import { Document } from 'mongoose';
-import { Application, IApplication } from '../../model/mongo/application';
+import { Application, IApplication, ApplicationPopulatedDoc } from '../../model/mongo/application';
 import z from 'zod';
 import { tokenUtil } from '../../utils/tokenUtil';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import { objectIdSchema } from '../../utils/zodUtil';
-import { Postgres } from '../../database/postgres';
 import { container } from 'tsyringe';
+import { serializeApplication } from '../../model/responses/applicationResponse';
+import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
 
 
 export const addAppValidateSchema = z.object({
@@ -20,16 +21,6 @@ export const addAppValidateSchema = z.object({
     maintainers: z.array(objectIdSchema)
   })
 });
-
-export async function createAppPartition(applicationId: string) {
-  const postgres: Postgres = container.resolve(Postgres);
-  const partitionName = `events_app_${applicationId}`;
-  await postgres.dataSource.query(`
-    CREATE TABLE IF NOT EXISTS ${partitionName}
-    PARTITION OF ${postgres.table}
-    FOR VALUES IN ('${applicationId}');
-  `);
-}
 
 export async function addApp(req: UserAuthRequest, res: Response, next: NextFunction) {
   const { name, bundles, maintainers } = addAppValidateSchema.parse(req).body;
@@ -53,18 +44,13 @@ export async function addApp(req: UserAuthRequest, res: Response, next: NextFunc
     app.token = token;
     await app.save();
 
-    const populatedMaintainers = await app.populate('maintainers');
-    await createAppPartition(app._id.toString());
+    const populatedApp = await app.populate('maintainers') as ApplicationPopulatedDoc;
+    const repository = container.resolve(PostgresEventsRepository);
+    await repository.createAppPartition(app._id.toString());
 
     return res.status(200).json({
       success: true,
-      result: {
-        id: app.id,
-        name: app.name,
-        bundles: bundles,
-        token,
-        maintainers: populatedMaintainers.maintainers,
-      }
+      result: serializeApplication(populatedApp)
     });
   } catch (e) {
     await app.deleteOne();

@@ -1,5 +1,6 @@
-import { model, Schema, Types } from 'mongoose';
+import { model, Schema, Types, Document } from 'mongoose';
 import { IBaseSchema, baseSchema } from './baseSchema';
+import { IUser } from './user';
 
 export interface IApplication extends IBaseSchema {
   _id: Types.ObjectId;
@@ -15,6 +16,10 @@ export interface IBundleId {
   platform: string;
   bundleId: string;
 }
+
+export type ApplicationPopulatedDoc = Omit<IApplication, 'maintainers'> & {
+  maintainers: IUser[];
+} & Document;
 
 export const bundleSchema = new Schema<IBundleId>({
   platform: { type: String, required: true },

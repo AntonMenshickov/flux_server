@@ -9,5 +9,8 @@ export class EventContents extends BaseEntity {
 
     @Column({ type: 'text' })
     message!: string;
+
+    @Column({ type: 'text' })
+    applicationId!: string;
 }
 

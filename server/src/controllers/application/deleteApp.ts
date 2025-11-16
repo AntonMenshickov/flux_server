@@ -5,8 +5,8 @@ import { Application, IApplication } from '../../model/mongo/application';
 import z from 'zod';
 import { objectIdSchema } from '../../utils/zodUtil';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
-import { Postgres } from '../../database/postgres';
 import { container } from 'tsyringe';
+import { PostgresEventsRepository } from '../../database/repository/postgresEventRepository';
 
 
 export const deleteAppValidateSchema = z.object({
@@ -14,15 +14,6 @@ export const deleteAppValidateSchema = z.object({
     applicationId: objectIdSchema,
   })
 });
-
-export async function dropAppPartition(applicationId: string) {
-  const postgres: Postgres = container.resolve(Postgres);
-  const partitionName = `events_app_${applicationId}`;
-
-  await postgres.dataSource.query(`
-    DROP TABLE IF EXISTS ${partitionName};
-  `);
-}
 
 export async function deleteApp(req: UserAuthRequest, res: Response, next: NextFunction) {
   const applicationId: string = (req.query.applicationId as string).trim();
@@ -33,7 +24,8 @@ export async function deleteApp(req: UserAuthRequest, res: Response, next: NextF
   }
 
   await application.deleteOne().exec();
-  await dropAppPartition(applicationId);
+  const repository = container.resolve(PostgresEventsRepository);
+  await repository.dropAppPartition(applicationId);
 
   return res.status(200).json({
     success: true,

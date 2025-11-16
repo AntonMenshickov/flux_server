@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express';
 import { IUser } from '../../model/mongo/user';
-import { Document } from 'mongoose';
 import { UserAuthRequest } from '../../middleware/authorizationRequired';
 import z from 'zod';
-import { Application, IApplication } from '../../model/mongo/application';
+import { Application, ApplicationPopulatedDoc } from '../../model/mongo/application';
+import { serializeApplication } from '../../model/responses/applicationResponse';
 
 export const searchAppsValidateSchema = z.object({
   query: z.object({
@@ -12,10 +12,6 @@ export const searchAppsValidateSchema = z.object({
     offset: z.coerce.number().int().nonnegative(),
   })
 });
-
-type ApplicationPopulatedDoc = Omit<IApplication, 'maintainers'> & {
-  maintainers: IUser[];
-} & Document;
 
 
 export async function searchApps(req: UserAuthRequest, res: Response, next: NextFunction) {
@@ -38,20 +34,7 @@ export async function searchApps(req: UserAuthRequest, res: Response, next: Next
     success: true,
     result: {
       total: applicationsCount,
-      applications: applications.map(app => ({
-        id: app._id.toString(),
-        name: app.name,
-        bundles: app.bundles.map(bundle => ({
-          platform: bundle.platform,
-          bundleId: bundle.bundleId,
-        })),
-        token: app.token,
-        maintainers: app.maintainers.map(m => ({
-          id: m._id,
-          login: m.login,
-          isOwner: m.isOwner,
-        })),
-      }))
+      applications: applications.map(serializeApplication)
     }
   });
 }

@@ -25,7 +25,7 @@ export class PostgresEventsRepository {
         const chunk = events.slice(i, i + chunkSize);
 
         const records: Partial<EventMessage>[] = [];
-        const contentsToInsert: Array<{ id: string; message: string }> = [];
+        const contentsToInsert: Array<{ id: string; message: string; applicationId: string }> = [];
 
         chunk.forEach((e) => {
           const messageLength = e.message.length;
@@ -53,6 +53,7 @@ export class PostgresEventsRepository {
             contentsToInsert.push({
               id: e.id,
               message: e.message,
+              applicationId: e.applicationId,
             });
           }
         });
@@ -68,6 +69,7 @@ export class PostgresEventsRepository {
           const contentsRecords: Partial<EventContents>[] = contentsToInsert.map((c) => ({
             id: c.id,
             message: c.message,
+            applicationId: c.applicationId,
           }));
           
           await manager
@@ -368,5 +370,30 @@ export class PostgresEventsRepository {
       deviceName: dbEntry.deviceName,
       osName: dbEntry.osName,
     };
+  }
+
+  public async createAppPartition(applicationId: string): Promise<void> {
+    const partitionName = `events_app_${applicationId}`;
+    await this.postgres.dataSource.query(`
+      CREATE TABLE IF NOT EXISTS ${partitionName}
+      PARTITION OF ${this.postgres.table}
+      FOR VALUES IN ('${applicationId}');
+    `);
+  }
+
+  public async dropAppPartition(applicationId: string): Promise<void> {
+    const partitionName = `events_app_${applicationId}`;
+    const contentsTable = this.configService.postgresEventsContentsTable;
+
+    await this.postgres.dataSource.transaction(async (manager) => {
+      await manager.query(`
+        DELETE FROM "${contentsTable}"
+        WHERE "applicationId" = '${applicationId}';
+      `);
+
+      await manager.query(`
+        DROP TABLE IF EXISTS ${partitionName};
+      `);
+    });
   }
 }
