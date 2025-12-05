@@ -9,7 +9,7 @@ export const objectIdSchema = z
     message: "Invalid ObjectId",
   }).transform((val: string) => new Types.ObjectId(val));
 
-  export const numberFromStringSchema = z
+export const numberFromStringSchema = z
   .string()
   .transform((val: string) => Number(val)).refine((val) => !isNaN(val), { message: 'Invalid number', });
 
@@ -37,7 +37,7 @@ export const criteriaArraySchema = z.array(criterionItemSchema);
 export const eventMessageDtoSchema = z.object({
   message: z.string().trim(),
   logLevel: z.enum(LogLevel),
-  tags: z.array(z.string().trim().nonempty()).optional(),
+  tags: z.array(z.string().trim()).transform(arr => arr.filter(s => s.length > 0)).optional(),
   meta: z.record(z.string(), z.string()).optional(),
   timestamp: z.number(),
   stackTrace: z.string().optional()
